@@ -1,0 +1,25 @@
+# Core FastAPI dependencies
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+pydantic==2.5.0
+pydantic-settings==2.1.0
+
+# Log processing and syntax highlighting
+pygments==2.17.2
+rich==13.7.0
+
+# Security and rate limiting
+slowapi==0.1.9
+python-multipart==0.0.6
+
+# Language detection
+langdetect==1.0.9
+
+# Testing dependencies
+pytest==7.4.3
+pytest-asyncio==0.21.1
+httpx==0.25.2
+
+# Development tools
+black==23.11.0
+flake8==6.1.0

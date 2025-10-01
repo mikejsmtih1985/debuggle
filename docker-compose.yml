@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  debuggle-trace:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - DEBUGGLE_DEBUG=false
+      - DEBUGGLE_RATE_LIMIT_PER_MINUTE=100
+    volumes:
+      - ./.env:/app/.env:ro
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Optional: Add nginx proxy for production
+  # nginx:
+  #   image: nginx:alpine
+  #   ports:
+  #     - "80:80"
+  #     - "443:443"
+  #   volumes:
+  #     - ./nginx.conf:/etc/nginx/nginx.conf:ro
+  #   depends_on:
+  #     - debuggle-trace
+  #   restart: unless-stopped
