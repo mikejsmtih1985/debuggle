@@ -68,3 +68,29 @@ poetry.lock
 venv/
 ENV/
 env/
+
+# Logs
+*.log
+logs/
+server.log
+test_error.log
+
+# IDE
+.idea/
+*.swp
+*.swo
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Icon?
+ehthumbs.db
+Thumbs.db
+
+# Temporary files
+tmp/
+temp/
+*.tmp
