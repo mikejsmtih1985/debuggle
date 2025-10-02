@@ -1,8 +1,8 @@
 # 🐞 Debuggle Core
 
-**Professional log debuggling and error analysis web application**
+**Debug faster with intelligent log analysis**
 
-Debuggle Core is the foundation tier of the Debuggle ecosystem - a powerful web application with REST API that transforms ugly, hard-to-read error logs and stack traces into debuggled, easy-to-understand output with intelligent summaries and categorization.
+Debuggle Core automatically transforms complex error logs into clear, actionable insights with smart tagging, plain-English summaries, and developer-friendly explanations. The foundation tier of the Debuggle ecosystem - a powerful web application with REST API that transforms ugly, hard-to-read error logs and stack traces into debuggled, easy-to-understand output with intelligent summaries and categorization.
 
 ## 🚀 Service Tiers
 
