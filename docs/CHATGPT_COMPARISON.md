@@ -154,7 +154,7 @@ mvn compile debug
 docker run -d -p 8000:8000 debuggle/core:latest
 
 # Everyone on the team can use:
-curl -X POST "http://team-debuggle:8000/api/v1/beautify" \
+curl -X POST "http://team-debuggle:8000/api/v1/analyze" \
   -d '{"log_input": "$(command_that_errors 2>&1)"}'
 
 # No individual ChatGPT subscriptions needed

@@ -236,7 +236,7 @@ class TestMainAPIMissingLines:
         
         # Test with invalid JSON
         response = client.post(
-            "/api/v1/beautify",
+            "/api/v1/analyze",
             content='{"invalid": json}',
             headers={"content-type": "application/json"}
         )
@@ -247,17 +247,17 @@ class TestMainAPIMissingLines:
         """Test file upload error handling - targets various error lines"""
         client = TestClient(app)
         
-        # Test beautify API with invalid data
+        # Test analyzy API with invalid data
         response = client.post(
-            "/api/v1/beautify",
+            "/api/v1/analyze",
             json={"text": "", "language": "invalid", "max_lines": 0}
         )
         # Should handle invalid data appropriately
         assert response.status_code in [200, 400, 422]
         
-        # Test beautify API with binary-like content
+        # Test analyzy API with binary-like content
         response = client.post(
-            "/api/v1/beautify", 
+            "/api/v1/analyze", 
             json={"text": "\x00\x01\x02\x03", "language": "auto", "max_lines": 100}
         )
         # Should handle binary data gracefully

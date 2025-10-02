@@ -152,7 +152,7 @@ class TestMainAPICoverage:
         client = TestClient(app)
         
         # Send invalid JSON to trigger RequestValidationError
-        response = client.post("/api/beautify", json={
+        response = client.post("/api/analyzy", json={
             "log_input": "",  # Invalid: empty string
             "language": "invalid_language"  # Invalid enum value
         })
@@ -221,7 +221,7 @@ class TestMainAPICoverage:
         
         # Send malformed JSON
         response = client.post(
-            "/api/beautify",
+            "/api/analyzy",
             content='{"log_input": "test", invalid_json',
             headers={"content-type": "application/json"}
         )
@@ -232,7 +232,7 @@ class TestMainAPICoverage:
         """Test CORS headers are properly set"""
         client = TestClient(app)
         
-        response = client.options("/api/beautify")
+        response = client.options("/api/analyzy")
         assert response.status_code == 200
         
         # Check CORS headers
@@ -247,7 +247,7 @@ class TestMainAPICoverage:
         # Make multiple rapid requests
         responses = []
         for i in range(5):
-            response = client.post("/api/beautify", json={
+            response = client.post("/api/analyzy", json={
                 "log_input": f"Test error {i}",
                 "language": "python"
             })
@@ -345,7 +345,7 @@ class TestAdditionalCoverageTargets:
         
         # Test with extremely large input to trigger size limits
         huge_input = "X" * 100000
-        response = client.post("/api/beautify", json={
+        response = client.post("/api/analyzy", json={
             "log_input": huge_input,
             "language": "python"
         })

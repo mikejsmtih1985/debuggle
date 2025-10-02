@@ -23,7 +23,7 @@ import json
 from typing import Optional
 
 from .models import (
-    BeautifyRequest, BeautifyResponse, BeautifyMetadata,
+    AnalyzeRequest, AnalyzeResponse, AnalyzeMetadata,
     FileUploadResponse, FileUploadMetadata, LanguageEnum,
     HealthResponse, TiersResponse, TierFeature, ErrorResponse
 )
@@ -123,21 +123,21 @@ async def get_tiers():
     return TiersResponse(tiers=tiers)
 
 
-@app.post("/api/v1/beautify", response_model=BeautifyResponse)
+@app.post("/api/v1/analyze", response_model=AnalyzeResponse)
 @limiter.limit(f"{settings.api.rate_limit_per_minute}/minute")
-async def beautify_log(request: Request, beautify_request: BeautifyRequest):
+async def analyze_log(request: Request, analyze_request: AnalyzeRequest):
     """
-    Debuggle and analyze log entries or stack traces.
+    Analyze and process log entries or stack traces.
     
     Takes raw log input and returns:
-    - Debuggled and formatted log with syntax highlighting
+    - Analyzed and formatted log with syntax highlighting
     - Human-readable error summary (if recognizable)
     - Error category tags
     - Processing metadata
     """
     try:
         # Validate input size
-        if len(beautify_request.log_input) > settings.api.max_log_size:
+        if len(analyze_request.log_input) > settings.api.max_log_size:
             raise HTTPException(
                 status_code=400,
                 detail=ErrorResponse(
@@ -148,7 +148,7 @@ async def beautify_log(request: Request, beautify_request: BeautifyRequest):
             )
         
         # Validate max_lines parameter
-        if beautify_request.options.max_lines > settings.api.max_lines_limit:
+        if analyze_request.options.max_lines > settings.api.max_lines_limit:
             raise HTTPException(
                 status_code=400,
                 detail=ErrorResponse(
@@ -161,12 +161,12 @@ async def beautify_log(request: Request, beautify_request: BeautifyRequest):
         # Process the log
         try:
             cleaned_log, summary, tags, metadata = processor.process_log(
-                log_input=beautify_request.log_input,
-                language=beautify_request.language.value,
-                highlight=beautify_request.options.highlight,
-                summarize=beautify_request.options.summarize and settings.enable_summarization,
-                tags=beautify_request.options.tags,
-                max_lines=beautify_request.options.max_lines
+                log_input=analyze_request.log_input,
+                language=analyze_request.language.value,
+                highlight=analyze_request.options.highlight,
+                summarize=analyze_request.options.summarize and settings.enable_summarization,
+                tags=analyze_request.options.tags,
+                max_lines=analyze_request.options.max_lines
             )
             
             # Report successful processing to real-time monitoring
@@ -174,12 +174,12 @@ async def beautify_log(request: Request, beautify_request: BeautifyRequest):
                 await error_monitor.report_error(
                     error_type="ErrorDetected",
                     message=f"Error detected in log processing: {summary[:100] if summary else 'No summary available'}",
-                    source="api_beautify",
+                    source="api_analyze",
                     severity="warning",
                     metadata={
                         "detected_language": metadata.get("detected_language"),
                         "error_tags": tags,
-                        "input_size": len(beautify_request.log_input),
+                        "input_size": len(analyze_request.log_input),
                         "processing_time": metadata.get("processing_time")
                     }
                 )
@@ -187,22 +187,22 @@ async def beautify_log(request: Request, beautify_request: BeautifyRequest):
         except Exception as processing_error:
             # Report processing failure to real-time monitoring
             await error_monitor.report_log_processing_error(
-                beautify_request.log_input,
+                analyze_request.log_input,
                 processing_error,
                 {
-                    "endpoint": "/api/v1/beautify",
-                    "language": beautify_request.language.value,
+                    "endpoint": "/api/v1/analyze",
+                    "language": analyze_request.language.value,
                     "client_ip": str(request.client.host) if request.client else "unknown"
                 }
             )
             raise processing_error
         
         # Build response
-        return BeautifyResponse(
+        return AnalyzeResponse(
             cleaned_log=cleaned_log,
             summary=summary,
             tags=tags,
-            metadata=BeautifyMetadata(**metadata)
+            metadata=AnalyzeMetadata(**metadata)
         )
         
     except HTTPException:
@@ -233,7 +233,7 @@ async def upload_log_file(
     Upload and process a log file.
     
     Accepts various file formats (.log, .txt, .out, etc.) and processes them
-    through the same beautification pipeline as the text endpoint.
+    through the same analysis pipeline as the text endpoint.
     """
     try:
         # Validate file size (check content length if available)
@@ -444,7 +444,7 @@ async def api_info():
         "docs": "/docs",
         "health": "/health",
         "endpoints": {
-            "beautify": "/api/v1/beautify",
+            "analyze": "/api/v1/analyze",
             "upload": "/api/v1/upload-log",
             "tiers": "/api/v1/tiers",
             "realtime": "/ws/errors",

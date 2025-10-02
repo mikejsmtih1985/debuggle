@@ -62,7 +62,7 @@ cd examples && python demo_errors.py 1 2>&1 | python ../cli/debuggle_cli.py
 **Problem**: Integration example used wrong API endpoints
 
 **Changes Made**:
-- ✅ Updated from `/debuggle-log` to `/api/v1/beautify`
+- ✅ Updated from `/debuggle-log` to `/api/v1/analyze`
 - ✅ Updated from `/upload-file` to `/api/v1/upload-log`  
 - ✅ Fixed request/response data structures
 - ✅ Added proper error handling
@@ -78,7 +78,7 @@ data = {"content": content, "tier": tier}
 **After**:
 ```python  
 # Correct endpoint and data format
-url = f"{self.base_url}/api/v1/beautify"
+url = f"{self.base_url}/api/v1/analyze"
 data = {
     "log_input": content,
     "language": language,

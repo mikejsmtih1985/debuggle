@@ -266,7 +266,7 @@ class TestFullCoverage:
                 "options": {"highlight": True, "summarize": True, "tags": True}
             }
             
-            response = client.post("/api/v1/beautify", json=payload)
+            response = client.post("/api/v1/analyze", json=payload)
             # Should trigger the exception handler
             assert response.status_code == 500
             # Response structure might be different

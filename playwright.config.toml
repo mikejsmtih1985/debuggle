@@ -1,0 +1,47 @@
+# Playwright configuration for Debuggle UI tests
+# This file configures Playwright for running UI tests against the Debuggle web interface
+
+[tool.playwright]
+# Browser configurations
+browsers = ["chromium", "firefox"]  # Use chromium and firefox for testing
+
+# Test configurations
+[tool.playwright.projects.chromium]
+name = "chromium"
+use = { browserName = "chromium" }
+
+[tool.playwright.projects.firefox]
+name = "firefox"
+use = { browserName = "firefox" }
+
+# Global test settings
+[tool.playwright.use]
+# Base URL for tests - should point to running Debuggle server
+baseURL = "http://localhost:8000"
+
+# Viewport size
+viewport = { width = 1280, height = 720 }
+
+# Screenshots and videos
+screenshot = "only-on-failure"
+video = "retain-on-failure"
+
+# Timeout settings
+actionTimeout = 30000  # 30 seconds for actions
+navigationTimeout = 30000  # 30 seconds for navigation
+
+# Test directories
+testDir = "tests/"
+testMatch = ["**/test_ui_*.py"]
+
+# Output directories
+outputDir = "test-results/"
+
+# Test parallelization
+workers = 2  # Run tests in parallel
+
+# Retries
+retries = 1  # Retry failed tests once
+
+# Reporter
+reporter = [["html", {"outputFolder": "playwright-report"}]]

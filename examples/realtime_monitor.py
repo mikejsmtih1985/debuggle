@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 WebSocket client test for real-time error monitoring.
-This demonstrates how to connect to the real-time error stream.
+This demonstra    print("   Example: curl -X POST http://localhost:8000/api/v1/analyze \\\\")es how to connect to the real-time error stream.
 """
 
 import asyncio
@@ -93,7 +93,7 @@ async def test_error_reporting():
     
     print("🧪 Testing error reporting...")
     print("   (Use curl in another terminal to send errors)")
-    print("   Example: curl -X POST http://localhost:8000/api/v1/beautify \\")
+    print("   print("   Example: curl -X POST http://localhost:8000/api/v1/analyze \\")\")
     print("     -H 'Content-Type: application/json' \\")
     print("     -d '{\"log_input\": \"IndexError: test error\", \"language\": \"python\"}'")
     print("   Monitoring will show any errors that occur...")

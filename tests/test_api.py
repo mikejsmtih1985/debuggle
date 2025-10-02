@@ -34,9 +34,9 @@ class TestTiersEndpoint:
         assert "Debuggle logs" in core_tier["features"]
 
 
-class TestBeautifyEndpoint:
-    def test_beautify_python_error_success(self):
-        """Test beautifying a Python IndexError."""
+class TestAnalyzeEndpoint:
+    def test_analyze_python_error_success(self):
+        """Test analyzying a Python IndexError."""
         payload = {
             "log_input": 'Traceback (most recent call last):\n  File "app.py", line 14, in <module>\n    main()\nIndexError: list index out of range',
             "language": "python",
@@ -47,7 +47,7 @@ class TestBeautifyEndpoint:
             }
         }
         
-        response = client.post("/api/v1/beautify", json=payload)
+        response = client.post("/api/v1/analyze", json=payload)
         assert response.status_code == 200
         
         data = response.json()
@@ -67,21 +67,21 @@ class TestBeautifyEndpoint:
         assert data["metadata"]["language_detected"] == "python"
         assert data["metadata"]["lines"] > 0
     
-    def test_beautify_auto_language_detection(self):
+    def test_analyze_auto_language_detection(self):
         """Test automatic language detection."""
         payload = {
             "log_input": 'Traceback (most recent call last):\n  File "test.py", line 1\n    print "hello"\n          ^\nSyntaxError: Missing parentheses',
             "language": "auto"
         }
         
-        response = client.post("/api/v1/beautify", json=payload)
+        response = client.post("/api/v1/analyze", json=payload)
         assert response.status_code == 200
         
         data = response.json()
         assert data["metadata"]["language_detected"] == "python"
     
-    def test_beautify_with_options_disabled(self):
-        """Test beautification with all options disabled."""
+    def test_analyze_with_options_disabled(self):
+        """Test analyzication with all options disabled."""
         payload = {
             "log_input": "Simple error message",
             "options": {
@@ -91,24 +91,24 @@ class TestBeautifyEndpoint:
             }
         }
         
-        response = client.post("/api/v1/beautify", json=payload)
+        response = client.post("/api/v1/analyze", json=payload)
         assert response.status_code == 200
         
         data = response.json()
         assert data["summary"] is None
         assert len(data["tags"]) == 0
     
-    def test_beautify_empty_input_error(self):
+    def test_analyze_empty_input_error(self):
         """Test error handling for empty input."""
         payload = {
             "log_input": "",
             "language": "python"
         }
         
-        response = client.post("/api/v1/beautify", json=payload)
+        response = client.post("/api/v1/analyze", json=payload)
         assert response.status_code == 422  # Validation error
     
-    def test_beautify_max_lines_limit(self):
+    def test_analyze_max_lines_limit(self):
         """Test max_lines parameter enforcement."""
         # Create a large log input
         large_log = "\n".join([f"Line {i}: Some error message" for i in range(100)])
@@ -120,14 +120,14 @@ class TestBeautifyEndpoint:
             }
         }
         
-        response = client.post("/api/v1/beautify", json=payload)
+        response = client.post("/api/v1/analyze", json=payload)
         assert response.status_code == 200
         
         data = response.json()
         assert data["metadata"]["lines"] == 50
         assert data["metadata"]["truncated"] == True
     
-    def test_beautify_max_lines_too_large_error(self):
+    def test_analyze_max_lines_too_large_error(self):
         """Test error when max_lines exceeds limit."""
         payload = {
             "log_input": "test error",
@@ -136,7 +136,7 @@ class TestBeautifyEndpoint:
             }
         }
         
-        response = client.post("/api/v1/beautify", json=payload)
+        response = client.post("/api/v1/analyze", json=payload)
         assert response.status_code == 422
         
         data = response.json()
@@ -169,7 +169,7 @@ class TestErrorHandling:
     def test_invalid_json_error(self):
         """Test handling of malformed JSON."""
         response = client.post(
-            "/api/v1/beautify",
+            "/api/v1/analyze",
             content="invalid json",  # Not JSON
             headers={"Content-Type": "application/json"}
         )
@@ -182,7 +182,7 @@ class TestErrorHandling:
             "language": "python"
         }
         
-        response = client.post("/api/v1/beautify", json=payload)
+        response = client.post("/api/v1/analyze", json=payload)
         assert response.status_code == 422
     
     def test_invalid_language_enum_error(self):
@@ -192,14 +192,14 @@ class TestErrorHandling:
             "language": "invalid_language"
         }
         
-        response = client.post("/api/v1/beautify", json=payload)
+        response = client.post("/api/v1/analyze", json=payload)
         assert response.status_code == 422
 
 
 class TestStackTraceIntegration:
     """Integration tests for enhanced stack trace processing."""
     
-    def test_beautify_complex_java_stack_trace(self):
+    def test_analyze_complex_java_stack_trace(self):
         """Test processing complex Java stack trace with multiple caused by."""
         complex_java_stack = """Fatal Error: NullReferenceException: Object reference not set to an instance of an object
    at com.megacorp.chaosengine.core.UnstableQuantumProcessorImpl.invokeParadoxLoop(UnstableQuantumProcessorImpl.java:472)
@@ -224,7 +224,7 @@ Caused by: ConcurrentModificationException: Race condition detected in fractal c
             }
         }
         
-        response = client.post("/api/v1/beautify", json=payload)
+        response = client.post("/api/v1/analyze", json=payload)
         assert response.status_code == 200
         
         data = response.json()
@@ -256,7 +256,7 @@ Caused by: ConcurrentModificationException: Race condition detected in fractal c
         # Check metadata
         assert data["metadata"]["language_detected"] == "java"
     
-    def test_beautify_python_stack_trace(self):
+    def test_analyze_python_stack_trace(self):
         """Test processing Python stack trace."""
         python_stack = """Traceback (most recent call last):
   File "/app/main.py", line 25, in process_data
@@ -275,7 +275,7 @@ IndexError: list index out of range"""
             }
         }
         
-        response = client.post("/api/v1/beautify", json=payload)
+        response = client.post("/api/v1/analyze", json=payload)
         assert response.status_code == 200
         
         data = response.json()
@@ -292,7 +292,7 @@ IndexError: list index out of range"""
         # Check metadata  
         assert data["metadata"]["language_detected"] == "python"
     
-    def test_beautify_csharp_stack_trace(self):
+    def test_analyze_csharp_stack_trace(self):
         """Test processing C# stack trace."""
         csharp_stack = """System.ArgumentNullException: Value cannot be null. (Parameter 'input')
    at MyApp.DataProcessor.ProcessInput(String input) in C:\\MyApp\\DataProcessor.cs:line 25
@@ -309,7 +309,7 @@ IndexError: list index out of range"""
             }
         }
         
-        response = client.post("/api/v1/beautify", json=payload)
+        response = client.post("/api/v1/analyze", json=payload)
         assert response.status_code == 200
         
         data = response.json()
@@ -324,7 +324,7 @@ IndexError: list index out of range"""
         meaningful_tags = [tag for tag in data["tags"] if tag not in ["Error", "Exception"]]
         assert len(meaningful_tags) > 0
     
-    def test_beautify_javascript_stack_trace(self):
+    def test_analyze_javascript_stack_trace(self):
         """Test processing JavaScript stack trace."""
         js_stack = """TypeError: Cannot read property 'length' of undefined
     at processArray (app.js:15:10)
@@ -343,7 +343,7 @@ IndexError: list index out of range"""
             }
         }
         
-        response = client.post("/api/v1/beautify", json=payload)
+        response = client.post("/api/v1/analyze", json=payload)
         assert response.status_code == 200
         
         data = response.json()
@@ -461,7 +461,7 @@ Caused by: IllegalArgumentException: Invalid parameter
             }
         }
         
-        response = client.post("/api/v1/beautify", json=payload)
+        response = client.post("/api/v1/analyze", json=payload)
         assert response.status_code == 200
         
         data = response.json()
@@ -500,7 +500,7 @@ Caused by: IllegalArgumentException: Invalid parameter
             }
         }
         
-        response = client.post("/api/v1/beautify", json=payload)
+        response = client.post("/api/v1/analyze", json=payload)
         assert response.status_code == 200
         
         data = response.json()
@@ -540,7 +540,7 @@ Caused by: IllegalArgumentException: Invalid parameter
                 }
             }
             
-            response = client.post("/api/v1/beautify", json=payload)
+            response = client.post("/api/v1/analyze", json=payload)
             assert response.status_code == 200
             
             data = response.json()

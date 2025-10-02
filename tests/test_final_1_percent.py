@@ -21,10 +21,10 @@ class TestFinal1Percent:
     
     def test_models_edge_case(self):
         """Hit remaining model validation"""
-        from src.debuggle.models import BeautifyRequest, LanguageEnum
+        from src.debuggle.models import AnalyzeRequest, LanguageEnum
         
         # Hit validation edge case (line 36 in models.py)
-        request = BeautifyRequest(
+        request = AnalyzeRequest(
             log_input="test",
             language=LanguageEnum.AUTO
         )

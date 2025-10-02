@@ -22,19 +22,19 @@ class TestAPIEndpointCoverage:
             data = response.json()
             assert "endpoints" in data
     
-    def test_invalid_json_beautify(self):
-        """Test beautify endpoint with invalid JSON."""
+    def test_invalid_json_analyzy(self):
+        """Test analyzy endpoint with invalid JSON."""
         # Test with malformed JSON
         response = client.post(
-            "/api/v1/beautify",
+            "/api/v1/analyze",
             content="invalid json content",
             headers={"content-type": "application/json"}
         )
         # Should return 422 for validation error
         assert response.status_code == 422
     
-    def test_beautify_with_invalid_language(self):
-        """Test beautify with invalid language parameter."""
+    def test_analyze_with_invalid_language(self):
+        """Test analyzy with invalid language parameter."""
         payload = {
             "log_input": "Error: test error",
             "language": "invalid_language",
@@ -45,12 +45,12 @@ class TestAPIEndpointCoverage:
             }
         }
         
-        response = client.post("/api/v1/beautify", json=payload)
+        response = client.post("/api/v1/analyze", json=payload)
         # Should be 422 for validation error
         assert response.status_code == 422
     
-    def test_beautify_with_oversized_content(self):
-        """Test beautify with content that exceeds limits."""
+    def test_analyze_with_oversized_content(self):
+        """Test analyzy with content that exceeds limits."""
         # Create very large content
         large_content = "Error: test\n" * 10000  # Very large content
         
@@ -65,7 +65,7 @@ class TestAPIEndpointCoverage:
             }
         }
         
-        response = client.post("/api/v1/beautify", json=payload)
+        response = client.post("/api/v1/analyze", json=payload)
         # Might succeed with truncation or fail with validation error
         assert response.status_code in [200, 400, 422]
     
@@ -107,7 +107,7 @@ class TestAPIEndpointCoverage:
                 "options": {"highlight": True, "summarize": True, "tags": True}
             }
             
-            response = client.post("/api/v1/beautify", json=payload)
+            response = client.post("/api/v1/analyze", json=payload)
             # Should succeed or hit rate limit
             assert response.status_code in [200, 429]
     
@@ -126,7 +126,7 @@ class TestAPIEndpointCoverage:
     def test_cors_headers(self):
         """Test CORS headers in responses."""
         # Test with a known endpoint
-        response = client.post("/api/v1/beautify", json={
+        response = client.post("/api/v1/analyze", json={
             "log_input": "test",
             "language": "auto",
             "options": {"highlight": True}
@@ -140,7 +140,7 @@ class TestAPIEndpointCoverage:
         """Test content type validation."""
         # Test with wrong content type for JSON endpoint
         response = client.post(
-            "/api/v1/beautify",
+            "/api/v1/analyze",
             content="not json",
             headers={"content-type": "text/plain"}
         )

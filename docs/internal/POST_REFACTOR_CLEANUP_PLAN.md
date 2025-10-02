@@ -26,7 +26,7 @@ After completing the major refactoring to modular architecture, we now have:
 from debuggle.processor import LogProcessor        # 8 test files
 from debuggle.main import app                      # 6 test files  
 from debuggle.context_extractor import ContextExtractor  # 1 test file
-from debuggle.models import BeautifyRequest       # 1 test file
+from debuggle.models import AnalyzyRequest       # 1 test file
 ```
 
 **App modules with mixed imports:**

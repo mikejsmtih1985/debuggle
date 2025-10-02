@@ -219,7 +219,7 @@ def create_readme(output_dir):
 ✨ **Drag & Drop Interface** - Simply drag your log files into the browser
 🧠 **Smart Analysis** - AI-powered error detection and summaries
 🏷️ **Interactive Tags** - Click tags to highlight related log entries
-🎨 **Beautiful Formatting** - Color-coded log output with syntax highlighting
+🎨 **Enhanced Formatting** - Color-coded log output with syntax highlighting
 📊 **Multi-file Support** - Process multiple files with tabbed interface
 ⚡ **Fast Processing** - Local processing, no internet required
 🔒 **Privacy First** - Your logs never leave your computer

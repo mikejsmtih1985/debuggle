@@ -1,13 +1,10 @@
 import re
 import time
 from typing import List, Tuple, Optional
-from pygments import highlight
-from pygments.lexers import get_lexer_by_name, guess_lexer
 from pygments.formatters import TerminalFormatter
-from pygments.util import ClassNotFound
 from langdetect import detect, DetectorFactory
-from .error_fixes import ERROR_FIX_PATTERNS, generate_enhanced_error_summary
-from .context_extractor import ContextExtractor, ErrorContext
+from .error_fixes import generate_enhanced_error_summary
+from .context_extractor import ContextExtractor
 
 # Set seed for consistent language detection
 DetectorFactory.seed = 0
@@ -760,7 +757,7 @@ class LogProcessor:
                    highlight: bool = True, summarize: bool = True, 
                    tags: bool = True, max_lines: int = 1000) -> Tuple[str, Optional[str], List[str], dict]:
         """
-        Process a log entry with beautification, highlighting, and analysis.
+        Process a log entry with analysis, highlighting, and error detection.
         
         Returns:
             Tuple of (cleaned_log, summary, tags, metadata)

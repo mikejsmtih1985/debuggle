@@ -1,15 +1,15 @@
 import pytest
 from pydantic import ValidationError
-from src.debuggle.models import BeautifyRequest, BeautifyOptions, LanguageEnum
+from src.debuggle.models import AnalyzeRequest, AnalyzeOptions, LanguageEnum
 
 
-class TestBeautifyRequest:
+class TestAnalyzeRequest:
     def test_valid_request(self):
-        """Test creating a valid beautify request."""
-        request = BeautifyRequest(
+        """Test creating a valid analyzy request."""
+        request = AnalyzeRequest(
             log_input="IndexError: list index out of range",
             language=LanguageEnum.PYTHON,
-            options=BeautifyOptions(highlight=True, summarize=True)
+            options=AnalyzeOptions(highlight=True, summarize=True)
         )
         
         assert request.log_input == "IndexError: list index out of range"
@@ -19,7 +19,7 @@ class TestBeautifyRequest:
     
     def test_default_values(self):
         """Test default values are set correctly."""
-        request = BeautifyRequest(log_input="test error")
+        request = AnalyzeRequest(log_input="test error")
         
         assert request.language == LanguageEnum.AUTO
         assert request.options.highlight == True
@@ -30,7 +30,7 @@ class TestBeautifyRequest:
     def test_empty_log_input_error(self):
         """Test validation error for empty log input."""
         with pytest.raises(ValidationError) as exc_info:
-            BeautifyRequest(log_input="")
+            AnalyzeRequest(log_input="")
         
         errors = exc_info.value.errors()
         assert any("String should have at least 1 character" in str(error) for error in errors)
@@ -38,7 +38,7 @@ class TestBeautifyRequest:
     def test_whitespace_only_log_input_error(self):
         """Test validation error for whitespace-only log input."""
         with pytest.raises(ValidationError) as exc_info:
-            BeautifyRequest(log_input="   \n  \t  ")
+            AnalyzeRequest(log_input="   \n  \t  ")
         
         errors = exc_info.value.errors()
         assert any("log_input cannot be empty or whitespace only" in str(error) for error in errors)
@@ -48,16 +48,16 @@ class TestBeautifyRequest:
         long_input = "x" * 50001  # Exceeds 50000 character limit
         
         with pytest.raises(ValidationError) as exc_info:
-            BeautifyRequest(log_input=long_input)
+            AnalyzeRequest(log_input=long_input)
         
         errors = exc_info.value.errors()
         assert any("String should have at most 50000 characters" in str(error) for error in errors)
 
 
-class TestBeautifyOptions:
+class TestAnalyzeOptions:
     def test_valid_options(self):
-        """Test creating valid beautify options."""
-        options = BeautifyOptions(
+        """Test creating valid analyzy options."""
+        options = AnalyzeOptions(
             highlight=False,
             summarize=False,
             tags=True,
@@ -73,23 +73,23 @@ class TestBeautifyOptions:
         """Test max_lines validation bounds."""
         # Test minimum bound
         with pytest.raises(ValidationError) as exc_info:
-            BeautifyOptions(max_lines=0)
+            AnalyzeOptions(max_lines=0)
         
         errors = exc_info.value.errors()
         assert any("Input should be greater than or equal to 1" in str(error) for error in errors)
         
         # Test maximum bound
         with pytest.raises(ValidationError) as exc_info:
-            BeautifyOptions(max_lines=5001)
+            AnalyzeOptions(max_lines=5001)
         
         errors = exc_info.value.errors()
         assert any("Input should be less than or equal to 5000" in str(error) for error in errors)
         
         # Test valid values
-        valid_options = BeautifyOptions(max_lines=1)
+        valid_options = AnalyzeOptions(max_lines=1)
         assert valid_options.max_lines == 1
         
-        valid_options = BeautifyOptions(max_lines=5000)
+        valid_options = AnalyzeOptions(max_lines=5000)
         assert valid_options.max_lines == 5000
 
 
@@ -118,7 +118,7 @@ class TestLanguageEnum:
     def test_invalid_language_enum(self):
         """Test validation error for invalid language."""
         with pytest.raises(ValidationError) as exc_info:
-            BeautifyRequest(
+            AnalyzeRequest(
                 log_input="test error",
                 language="invalid_language"
             )

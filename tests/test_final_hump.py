@@ -81,13 +81,13 @@ class TestFinalHump:
         client = TestClient(app)
         
         # Test OPTIONS requests (CORS preflight)
-        response = client.options("/api/v1/beautify")
+        response = client.options("/api/v1/analyze")
         # Should handle OPTIONS request
         assert response.status_code in [200, 405]
         
         # Test with very long input
         long_text = "Error: " + "x" * 10000
-        response = client.post("/api/v1/beautify", json={
+        response = client.post("/api/v1/analyze", json={
             "log_input": long_text,
             "language": "python"
         })
@@ -124,14 +124,14 @@ class TestFinalHump:
     def test_simple_imports_and_calls(self):
         """Test simple imports and method calls for coverage"""
         # Import various modules to hit import lines
-        from src.debuggle.models import BeautifyRequest, LanguageEnum, BeautifyOptions
+        from src.debuggle.models import AnalyzeRequest, LanguageEnum, AnalyzeOptions
         from src.debuggle import __version__
         
         # Create objects to hit initialization code
-        options = BeautifyOptions()
+        options = AnalyzeOptions()
         assert options.highlight is True
         
-        request = BeautifyRequest(log_input="test error", language=LanguageEnum.PYTHON)
+        request = AnalyzeRequest(log_input="test error", language=LanguageEnum.PYTHON)
         assert request.log_input == "test error"
         
         # Hit version access

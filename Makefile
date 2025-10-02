@@ -23,6 +23,43 @@ test:
 test-cov:
 	pytest --cov=src/debuggle --cov-report=html --cov-report=term-missing
 
+# Run UI tests
+test-ui:
+	./run_ui_tests.py
+
+# Run UI tests with visible browser (for debugging)
+test-ui-debug:
+	./run_ui_tests.py --headed --debug
+
+# Run specific UI test categories
+test-ui-basic:
+	./run_ui_tests.py --category basic
+
+test-ui-tags:
+	./run_ui_tests.py --category tags
+
+test-ui-upload:
+	./run_ui_tests.py --category upload
+
+test-ui-websocket:
+	./run_ui_tests.py --category websocket
+
+test-ui-integration:
+	./run_ui_tests.py --category integration
+
+# Setup UI testing environment
+setup-ui-tests:
+	./setup_ui_tests.sh
+
+# Run all tests (unit + UI)
+test-all:
+	pytest tests/ -v --ignore=tests/test_ui_*.py
+	./run_ui_tests.py
+
+# Generate comprehensive test report with UI tests
+test-report:
+	./run_ui_tests.py --report
+
 # Format code
 format:
 	black src/ tests/ cli/ examples/
@@ -95,8 +132,11 @@ help:
 	@echo "Available commands:"
 	@echo "  dev      - Start development server"
 	@echo "  install  - Install Python dependencies"
-	@echo "  test     - Run test suite"
+	@echo "  test     - Run unit test suite"
 	@echo "  test-cov - Run tests with coverage report"
+	@echo "  test-ui  - Run UI tests"
+	@echo "  test-all - Run all tests (unit + UI)"
+	@echo "  setup-ui-tests - Set up UI testing environment"
 	@echo "  format   - Format code with black"
 	@echo "  lint     - Lint code with flake8"
 	@echo "  build    - Build Docker image"

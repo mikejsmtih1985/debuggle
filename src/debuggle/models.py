@@ -15,19 +15,19 @@ class LanguageEnum(str, Enum):
     AUTO = "auto"
 
 
-class BeautifyOptions(BaseModel):
-    """Options for log beautification."""
+class AnalyzeOptions(BaseModel):
+    """Options for log analysis."""
     highlight: bool = Field(default=True, description="Apply syntax highlighting")
     summarize: bool = Field(default=True, description="Generate error summary")
     tags: bool = Field(default=True, description="Generate error tags")
     max_lines: int = Field(default=1000, ge=1, le=5000, description="Maximum lines to process")
 
 
-class BeautifyRequest(BaseModel):
-    """Request model for log beautification."""
+class AnalyzeRequest(BaseModel):
+    """Request model for log analysis."""
     log_input: str = Field(..., min_length=1, max_length=50000, description="Raw log or stack trace")
     language: LanguageEnum = Field(default=LanguageEnum.AUTO, description="Programming language")
-    options: BeautifyOptions = Field(default_factory=BeautifyOptions, description="Processing options")
+    options: AnalyzeOptions = Field(default_factory=AnalyzeOptions, description="Processing options")
     
     @field_validator('log_input')
     @classmethod
@@ -37,7 +37,7 @@ class BeautifyRequest(BaseModel):
         return v
 
 
-class BeautifyMetadata(BaseModel):
+class AnalyzeMetadata(BaseModel):
     """Metadata about the processing."""
     lines: int = Field(..., description="Number of lines processed")
     language_detected: str = Field(..., description="Detected or specified language")
@@ -45,12 +45,12 @@ class BeautifyMetadata(BaseModel):
     truncated: bool = Field(default=False, description="Whether input was truncated")
 
 
-class BeautifyResponse(BaseModel):
-    """Response model for log beautification."""
-    cleaned_log: str = Field(..., description="Beautified and formatted log")
+class AnalyzeResponse(BaseModel):
+    """Response model for log analysis."""
+    cleaned_log: str = Field(..., description="Analyzed and formatted log")
     summary: Optional[str] = Field(None, description="Plain English error explanation")
     tags: List[str] = Field(default_factory=list, description="Error category tags")
-    metadata: BeautifyMetadata = Field(..., description="Processing metadata")
+    metadata: AnalyzeMetadata = Field(..., description="Processing metadata")
 
 
 class HealthResponse(BaseModel):
@@ -84,7 +84,7 @@ class FileUploadMetadata(BaseModel):
 
 class FileUploadResponse(BaseModel):
     """Response model for file upload processing."""
-    cleaned_log: str = Field(..., description="Beautified and formatted log")
+    cleaned_log: str = Field(..., description="Analyzed and formatted log")
     summary: Optional[str] = Field(None, description="Plain English error explanation")
     tags: List[str] = Field(default_factory=list, description="Error category tags")
     metadata: FileUploadMetadata = Field(..., description="File processing metadata")

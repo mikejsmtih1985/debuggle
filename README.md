@@ -186,7 +186,7 @@ go run main.go debug
 ```bash
 # One-time team setup
 docker run -d -p 8000:8000 debuggle/core:latest
-# Everyone uses: curl -X POST team-server:8000/api/v1/beautify
+# Everyone uses: curl -X POST team-server:8000/api/v1/analyzy
 
 # Or shared CLI setup
 git clone https://github.com/mikejsmtih1985/debuggle.git /shared/debuggle
@@ -273,7 +273,7 @@ curl http://localhost:8000/api/v1/errors/stats
 curl http://localhost:8000/health
 
 # Analyze any error output
-curl -X POST "http://localhost:8000/api/v1/beautify" \
+curl -X POST "http://localhost:8000/api/v1/analyze" \
   -H "Content-Type: application/json" \
   -d '{"log_input": "Your error here", "language": "auto"}'
 

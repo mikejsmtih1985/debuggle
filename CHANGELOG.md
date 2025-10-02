@@ -58,7 +58,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Previous Versions
 
 ### [0.1.0] - Initial Release
-- Basic log beautification and syntax highlighting
+- Basic log analysis and syntax highlighting
 - Simple web interface for file upload
 - REST API with FastAPI framework
 - Docker containerization

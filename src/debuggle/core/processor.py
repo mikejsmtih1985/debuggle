@@ -41,7 +41,7 @@ class LogProcessor:
         max_lines: int = 1000
     ) -> Tuple[str, Optional[str], List[str], Dict[str, Any]]:
         """
-        Process a log entry with beautification and analysis.
+        Process a log entry with analysis and analysis.
         
         This maintains compatibility with the existing API while using
         the new modular architecture internally.

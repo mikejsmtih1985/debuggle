@@ -4,7 +4,7 @@ Welcome to Debuggle! This guide will help you get up and running with our log pr
 
 ## 🎯 What is Debuggle?
 
-Debuggle transforms your raw log data into beautiful, structured, and analyzable formats. Whether you're debugging applications, monitoring systems, or analyzing user behavior, Debuggle makes your logs more readable and actionable.
+Debuggle transforms your raw log data into analyzul, structured, and analyzable formats. Whether you're debugging applications, monitoring systems, or analyzing user behavior, Debuggle makes your logs more readable and actionable.
 
 ## 🚀 Quick Start
 

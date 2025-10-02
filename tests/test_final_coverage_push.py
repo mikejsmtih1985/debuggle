@@ -256,7 +256,7 @@ class TestFinalCoveragePush:
                     "options": {"highlight": True, "summarize": True, "tags": True}
                 }
                 
-                response = client.post("/api/v1/beautify", json=payload)
+                response = client.post("/api/v1/analyze", json=payload)
                 assert response.status_code == 500
     
     def test_health_endpoint_comprehensive(self):

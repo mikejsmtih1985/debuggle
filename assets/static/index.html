@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🐞 Debuggle - Log File Processor</title>
+    <title>🐞 Debuggle - Error Analysis Tool</title>
     <style>
         * {
             margin: 0;
@@ -721,7 +721,7 @@
     <div class="container">
         <div class="header">
             <h1>🐞 Debuggle</h1>
-            <p>Transform chaotic logs into beautiful, understandable code</p>
+            <p>Transform chaotic logs into clear, understandable insights</p>
         </div>
 
         <div class="main-content">
@@ -729,7 +729,7 @@
                 <div class="drag-drop-area" id="dragDropArea">
                     <div class="upload-icon">📁</div>
                     <div class="upload-text">Drag & drop your log file(s) here</div>
-                    <div class="upload-subtext">Single files auto-debuggle • Multiple files need manual debuggling</div>
+                    <div class="upload-subtext">Single files auto-analyze • Multiple files need manual analysis</div>
                     <button class="btn" onclick="document.getElementById('fileInput').click()">
                         Choose File
                     </button>
@@ -745,7 +745,7 @@
                         <div class="file-icon">📄</div>
                         <div class="file-details">
                             <h3 id="fileName">filename.log</h3>
-                            <p id="fileSize">File size • Ready to process</p>
+                            <p id="fileSize">File size • Ready to analyze</p>
                         </div>
                     </div>
                     <div class="file-actions">
@@ -799,7 +799,7 @@
                 </div>
 
                 <div class="results-header">
-                    <strong>🎨 Beautified Log Output</strong>
+                    <strong>🔍 Analyzed Log Output</strong>
                 </div>
                 <div class="results-content" id="resultsContent"></div>
 
@@ -1070,9 +1070,7 @@
             
             // Update file details - show it's auto-processing
             fileName.textContent = file.name;
-            fileSize.textContent = `${formatFileSize(file.size)} • ${getFileIcon(file.name)} Auto-debuggling...`;
-            
-            // Show file preview section
+                    fileSize.textContent = `${formatFileSize(file.size)} • ${getFileIcon(file.name)} Auto-analyzing...`;            // Show file preview section
             filePreview.classList.add('show');
             
             // Reset action buttons - hide process button since it's auto-processing
@@ -1114,8 +1112,8 @@
             const fileQueueHtml = `
                 <div class="file-queue show" id="fileQueue">
                     <div class="queue-header">
-                        <h3>📁 Multiple Files Ready for Debuggling</h3>
-                        <p>Review your files below and process them individually or all at once.</p>
+                        <h3>📁 Multiple Files Ready for Analysis</h3>
+                        <p>Review your files below and analyze them individually or all at once.</p>
                     </div>
                     <div class="queue-actions">
                         <button class="btn-primary" onclick="processAllFiles()" id="processAllBtn">
@@ -1220,10 +1218,10 @@
             })
             .catch(error => {
                 console.error('Error:', error);
-                showError(error.detail?.error || 'An error occurred while debuggling the file.');
+                showError(error.detail?.error || 'An error occurred while analyzing the file.');
                 
                 // Reset file size display
-                fileSize.textContent = `${formatFileSize(file.size)} • ${getFileIcon(file.name)} Processing failed`;
+                fileSize.textContent = `${formatFileSize(file.size)} • ${getFileIcon(file.name)} Analysis failed`;
             })
             .finally(() => {
                 hideProgress();
@@ -1234,7 +1232,7 @@
             if (selectedFiles.length === 0) return;
             
             // Show processing state
-            processBtn.textContent = 'Debuggling...';
+            processBtn.textContent = 'Analyzing...';
             processBtn.disabled = true;
             showProgress();
             
@@ -1259,9 +1257,7 @@
             }
             
             const file = selectedFiles[currentFileIndex];
-            fileName.textContent = `Processing: ${file.name} (${currentFileIndex + 1}/${selectedFiles.length})`;
-            
-            // Create form data
+                fileName.textContent = `Analyzing: ${file.name} (${currentFileIndex + 1}/${selectedFiles.length})`;            // Create form data
             const formData = new FormData();
             formData.append('file', file);
             formData.append('language', 'auto');
@@ -1582,45 +1578,46 @@
             const tags = [];
             const lowerLine = line.toLowerCase();
             
-            // Map line content to tags
-            if (line.startsWith('❌') && (lowerLine.includes('connection') || lowerLine.includes('connect'))) {
+            // Map line content to common API tags based on content patterns
+            if (lowerLine.includes('connection') || lowerLine.includes('connect')) {
                 tags.push('Connection Problems');
             }
-            if (line.startsWith('🔒') && (lowerLine.includes('password') || lowerLine.includes('login'))) {
-                tags.push('Login Issues');
-            }
-            if (line.startsWith('📁') && lowerLine.includes('file')) {
-                tags.push('File Problems');
-            }
-            if (line.startsWith('📧') && lowerLine.includes('email')) {
-                tags.push('Email Issues');
-            }
-            if (lowerLine.includes('timeout') || lowerLine.includes('took too long')) {
-                tags.push('Slow Response');
-            }
-            if (lowerLine.includes('database')) {
+            if (lowerLine.includes('database') || lowerLine.includes('db')) {
                 tags.push('Database');
             }
-            if (lowerLine.includes('cache') || lowerLine.includes('saved information')) {
-                tags.push('Memory Storage');
-            }
-            if (lowerLine.includes('scheduled') || lowerLine.includes('job')) {
-                tags.push('Scheduled Jobs');
-            }
-            if (lowerLine.includes('box that isn\'t there') || line.startsWith('🐛')) {
-                tags.push('Programming Bug');
-            }
-            if (lowerLine.includes('stuck waiting')) {
-                tags.push('System Conflict');
-            }
-            if (line.startsWith('❌') || line.startsWith('🐛')) {
+            if (lowerLine.includes('error') || lowerLine.includes('exception') || lowerLine.includes('failed')) {
                 tags.push('Serious Problems');
             }
-            if (line.startsWith('⚠️') || line.startsWith('📁') || line.startsWith('📧')) {
+            if (lowerLine.includes('critical') || lowerLine.includes('fatal')) {
+                tags.push('Critical Error');
+            }
+            if (lowerLine.includes('warning') || lowerLine.includes('warn')) {
                 tags.push('Minor Warnings');
             }
-            if (line.startsWith('✅')) {
-                tags.push('Some Things Working');
+            if (lowerLine.includes('timeout') || lowerLine.includes('slow')) {
+                tags.push('Slow Response');
+            }
+            if (lowerLine.includes('password') || lowerLine.includes('login') || lowerLine.includes('auth')) {
+                tags.push('Login Issues');
+            }
+            if (lowerLine.includes('file') || lowerLine.includes('directory')) {
+                tags.push('File Problems');
+            }
+            if (lowerLine.includes('python') && (lowerLine.includes('traceback') || lowerLine.includes('exception'))) {
+                tags.push('Python');
+            }
+            if (lowerLine.includes('stack trace') || lowerLine.includes('traceback')) {
+                tags.push('Stack Trace');
+            }
+            if (lowerLine.includes('attribute') && lowerLine.includes('error')) {
+                tags.push('AttributeError');
+            }
+            if (lowerLine.includes('needs attention') || lowerLine.includes('developer attention')) {
+                tags.push('Needs Attention');
+                tags.push('Needs Developer Attention');
+            }
+            if (lowerLine.includes('programming') && lowerLine.includes('bug')) {
+                tags.push('Programming Bug');
             }
             
             return tags;
@@ -1650,16 +1647,22 @@
             tagElement.classList.add('active');
             
             // Highlight matching log entries
+            let firstMatch = null;
             document.querySelectorAll('.log-entry').forEach(entry => {
                 const entryTags = entry.getAttribute('data-tags');
                 if (entryTags && entryTags.split(',').includes(tagName)) {
                     entry.classList.add('highlighted');
-                    // Scroll first match into view
-                    if (!document.querySelector('.log-entry.highlighted:not(' + entry.tagName + ')')) {
-                        entry.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    // Track first match for scrolling
+                    if (!firstMatch) {
+                        firstMatch = entry;
                     }
                 }
             });
+            
+            // Scroll first match into view
+            if (firstMatch) {
+                firstMatch.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
         }
 
         function liveReprocess() {
@@ -1907,7 +1910,7 @@
                     </div>
                     
                     <div class="results-header">
-                        <strong>🎨 Beautified Log Output</strong>
+                        <strong>🔍 Analyzed Log Output</strong>
                     </div>
                     <div class="results-content" id="resultsContent_${fileItem.id}"></div>
                     

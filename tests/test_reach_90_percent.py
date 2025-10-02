@@ -119,7 +119,7 @@ class TestReach90Percent:
 
     def test_models_more_coverage(self):
         """Test models for additional coverage"""
-        from src.debuggle.models import BeautifyRequest, LanguageEnum
+        from src.debuggle.models import AnalyzeRequest, LanguageEnum
         
         # Test all enum values
         for lang in LanguageEnum:
@@ -127,11 +127,11 @@ class TestReach90Percent:
             assert len(lang.value) > 0
         
         # Test request creation with various parameters
-        from src.debuggle.models import BeautifyOptions
-        req = BeautifyRequest(
+        from src.debuggle.models import AnalyzeOptions
+        req = AnalyzeRequest(
             log_input="Test error",
             language=LanguageEnum.PYTHON,
-            options=BeautifyOptions()
+            options=AnalyzeOptions()
         )
         assert req.log_input == "Test error"
 

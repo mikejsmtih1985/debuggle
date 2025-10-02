@@ -25,8 +25,8 @@ class DebuggleClient:
     
     def process_log(self, content: str, language: str = "auto", highlight: bool = True, 
                    summarize: bool = True, tags: bool = True) -> Dict[str, Any]:
-        """Process a single log entry using the beautify endpoint"""
-        url = f"{self.base_url}/api/v1/beautify"
+        """Process a single log entry using the analyze endpoint"""
+        url = f"{self.base_url}/api/v1/analyze"
         data = {
             "log_input": content,
             "language": language,

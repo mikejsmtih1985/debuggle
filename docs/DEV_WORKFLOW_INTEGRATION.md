@@ -167,7 +167,7 @@ esac
 docker run -d -p 8000:8000 --name team-debuggle debuggle/core:latest
 
 # Everyone can use:
-curl -X POST "http://team-server:8000/api/v1/beautify" \
+curl -X POST "http://team-server:8000/api/v1/analyze" \
   -H "Content-Type: application/json" \
   -d "{\"log_input\": \"$(command_that_might_fail 2>&1)\"}"
 ```

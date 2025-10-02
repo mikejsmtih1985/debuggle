@@ -59,7 +59,7 @@ class TestEasyCoverageBoost:
             
             # Create a request that would trigger an exception
             # This tests the debug branch in the exception handler
-            response = self.client.post("/api/v1/beautify", json={
+            response = self.client.post("/api/v1/analyze", json={
                 "log_input": "test" * 20000,  # Exceeds max size
                 "language": "python"
             })
@@ -145,8 +145,8 @@ class TestEasyCoverageBoost:
         )
         assert response.status_code == 404  # Endpoint doesn't exist
         
-        # Test with beautify endpoint for large max_lines instead
-        response = self.client.post("/api/v1/beautify", json={
+        # Test with analyzy endpoint for large max_lines instead
+        response = self.client.post("/api/v1/analyze", json={
             "log_input": "IndexError: test",
             "options": {"max_lines": 10000}  # Exceeds limit
         })
@@ -197,20 +197,20 @@ class TestEasyCoverageBoost:
     
     def test_main_api_edge_cases(self):
         """Test main API edge cases."""
-        # Test beautify with processing error simulation
+        # Test analyzy with processing error simulation
         # This is hard to trigger without actually breaking the processor
         # So we'll test valid edge cases instead
         
         # Test with maximum allowed input size
         large_input = "x" * 49999  # Just under the 50KB limit
-        response = self.client.post("/api/v1/beautify", json={
+        response = self.client.post("/api/v1/analyze", json={
             "log_input": large_input,
             "language": "python"
         })
         assert response.status_code == 200
         
         # Test with maximum lines parameter
-        response = self.client.post("/api/v1/beautify", json={
+        response = self.client.post("/api/v1/analyze", json={
             "log_input": "test\\ntest\\ntest",
             "options": {"max_lines": 4999}  # Just under limit
         })

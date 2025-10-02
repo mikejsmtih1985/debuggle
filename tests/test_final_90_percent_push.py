@@ -90,7 +90,7 @@ class TestFinalCoveragePush:
 
     def test_models_validation_edge_cases(self):
         """Test models.py validation that might be missed"""
-        from src.debuggle.models import BeautifyRequest, BeautifyOptions, LanguageEnum
+        from src.debuggle.models import AnalyzeRequest, AnalyzeOptions, LanguageEnum
         
         # Test enum values
         for lang in LanguageEnum:
@@ -99,7 +99,7 @@ class TestFinalCoveragePush:
         # Test request validation edge cases
         try:
             # Test with minimal valid request
-            req = BeautifyRequest(log_input="test")
+            req = AnalyzeRequest(log_input="test")
             assert req.log_input == "test"
         except Exception:
             pass  # If validation fails, that's also coverage
