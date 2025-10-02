@@ -33,7 +33,7 @@ class TestBeautifyRequest:
             BeautifyRequest(log_input="")
         
         errors = exc_info.value.errors()
-        assert any("ensure this value has at least 1 characters" in str(error) for error in errors)
+        assert any("String should have at least 1 character" in str(error) for error in errors)
     
     def test_whitespace_only_log_input_error(self):
         """Test validation error for whitespace-only log input."""
@@ -51,7 +51,7 @@ class TestBeautifyRequest:
             BeautifyRequest(log_input=long_input)
         
         errors = exc_info.value.errors()
-        assert any("ensure this value has at most 50000 characters" in str(error) for error in errors)
+        assert any("String should have at most 50000 characters" in str(error) for error in errors)
 
 
 class TestBeautifyOptions:
@@ -76,14 +76,14 @@ class TestBeautifyOptions:
             BeautifyOptions(max_lines=0)
         
         errors = exc_info.value.errors()
-        assert any("ensure this value is greater than or equal to 1" in str(error) for error in errors)
+        assert any("Input should be greater than or equal to 1" in str(error) for error in errors)
         
         # Test maximum bound
         with pytest.raises(ValidationError) as exc_info:
             BeautifyOptions(max_lines=5001)
         
         errors = exc_info.value.errors()
-        assert any("ensure this value is less than or equal to 5000" in str(error) for error in errors)
+        assert any("Input should be less than or equal to 5000" in str(error) for error in errors)
         
         # Test valid values
         valid_options = BeautifyOptions(max_lines=1)
@@ -124,4 +124,4 @@ class TestLanguageEnum:
             )
         
         errors = exc_info.value.errors()
-        assert any("value is not a valid enumeration member" in str(error) for error in errors)
+        assert any("Input should be" in str(error) for error in errors)

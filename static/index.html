@@ -1,0 +1,1873 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🐞 Debuggle - Log File Processor</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            padding: 40px;
+        }
+
+        .upload-section {
+            margin-bottom: 40px;
+        }
+
+        .drag-drop-area {
+            border: 3px dashed #ddd;
+            border-radius: 15px;
+            padding: 60px 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            background: #f8f9fa;
+        }
+
+        .drag-drop-area:hover,
+        .drag-drop-area.drag-over {
+            border-color: #2a5298;
+            background: #e3f2fd;
+        }
+
+        .drag-drop-area.processing {
+            border-color: #ff9800;
+            background: #fff3e0;
+        }
+
+        .upload-icon {
+            font-size: 4em;
+            margin-bottom: 20px;
+            color: #666;
+        }
+
+        .upload-text {
+            font-size: 1.3em;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .upload-subtext {
+            color: #999;
+            margin-bottom: 30px;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #2a5298 0%, #1e3c72 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(42, 82, 152, 0.3);
+        }
+
+        .options-section {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 30px;
+            margin: 30px 0;
+            padding: 25px;
+            background: #f8f9fa;
+            border-radius: 15px;
+        }
+
+        .option-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .option-group label {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .option-group select,
+        .option-group input {
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1em;
+        }
+
+        .toggle-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .toggle-button {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            color: #6c757d;
+            border: 2px solid #dee2e6;
+            padding: 15px 25px;
+            border-radius: 25px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 200px;
+            text-align: center;
+            user-select: none;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .toggle-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .toggle-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+            border-color: #adb5bd;
+        }
+
+        .toggle-button:hover::before {
+            left: 100%;
+        }
+
+        .toggle-button.active {
+            background: linear-gradient(135deg, #2a5298 0%, #1e3c72 100%);
+            color: white;
+            border-color: #2a5298;
+            box-shadow: 0 6px 20px rgba(42, 82, 152, 0.3);
+        }
+
+        .toggle-button.active:hover {
+            box-shadow: 0 8px 25px rgba(42, 82, 152, 0.4);
+            transform: translateY(-3px);
+        }
+
+        .toggle-button.active::before {
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+        }
+
+        .toggle-button.processing {
+            animation: pulseProcess 1s ease-in-out infinite;
+        }
+
+        @keyframes pulseProcess {
+            0% { box-shadow: 0 6px 20px rgba(42, 82, 152, 0.3); }
+            50% { box-shadow: 0 6px 25px rgba(255, 107, 53, 0.4); }
+            100% { box-shadow: 0 6px 20px rgba(42, 82, 152, 0.3); }
+        }
+
+        /* Multi-file tab system */
+        .file-tabs {
+            display: flex;
+            background: #f8f9fa;
+            border-radius: 10px 10px 0 0;
+            overflow-x: auto;
+            border-bottom: 2px solid #dee2e6;
+            margin-top: 20px;
+        }
+
+        .file-tab {
+            padding: 12px 20px;
+            background: #e9ecef;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            font-weight: 600;
+            color: #6c757d;
+            border-radius: 8px 8px 0 0;
+            margin-right: 2px;
+        }
+
+        .file-tab:hover {
+            background: #dee2e6;
+            color: #495057;
+        }
+
+        .file-tab.active {
+            background: #2a5298;
+            color: white;
+            box-shadow: 0 2px 8px rgba(42, 82, 152, 0.3);
+        }
+
+        .file-tab.processing {
+            background: #ff9800;
+            color: white;
+            animation: pulseTab 1s ease-in-out infinite;
+        }
+
+        @keyframes pulseTab {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+
+        .tab-content {
+            display: none;
+            background: white;
+            border-radius: 0 0 10px 10px;
+            border: 2px solid #dee2e6;
+            border-top: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .file-queue {
+            display: none;
+            margin: 20px 0;
+        }
+
+        .file-queue.show {
+            display: block;
+        }
+
+        .file-item {
+            background: #f8f9fa;
+            border: 2px solid #dee2e6;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .file-item.processed {
+            border-color: #28a745;
+            background: #d4edda;
+        }
+
+        .file-item.processing {
+            border-color: #ff9800;
+            background: #fff3e0;
+        }
+
+        .file-item.error {
+            border-color: #dc3545;
+            background: #f8d7da;
+        }
+
+        .file-info-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .file-icon-large {
+            font-size: 2em;
+        }
+
+        .file-details-multi {
+            flex-grow: 1;
+        }
+
+        .file-details-multi h4 {
+            margin: 0 0 5px 0;
+            color: #333;
+        }
+
+        .file-details-multi p {
+            margin: 0;
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .file-actions-multi {
+            display: flex;
+            gap: 10px;
+        }
+
+        .process-all-section {
+            background: #e3f2fd;
+            border: 2px solid #2196f3;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 15px 0;
+            text-align: center;
+        }
+
+        .hidden-checkbox {
+            display: none;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: #eee;
+            border-radius: 3px;
+            overflow: hidden;
+            margin: 20px 0;
+            display: none;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #2a5298, #667eea);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .results-section {
+            margin-top: 40px;
+            display: none;
+        }
+
+        .results-header {
+            background: #e8f5e8;
+            padding: 20px;
+            border-radius: 10px 10px 0 0;
+            border-left: 4px solid #4caf50;
+        }
+
+        .results-content {
+            background: #f8f9fa;
+            color: #333;
+            padding: 20px;
+            border-radius: 0 0 10px 10px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-size: 15px;
+            line-height: 1.8;
+            overflow-x: auto;
+            max-height: 600px;
+            overflow-y: auto;
+            transition: all 0.3s ease;
+        }
+
+        .results-content.plain-mode {
+            background: #ffffff;
+            border: 1px solid #dee2e6;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.4;
+            padding: 15px;
+        }
+
+        .timestamp {
+            background: #e3f2fd;
+            color: #1565c0;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 13px;
+        }
+
+        .log-error {
+            background: #ffebee;
+            border-left: 4px solid #f44336;
+            padding: 12px 16px;
+            margin: 8px 0;
+            border-radius: 6px;
+            color: #c62828;
+        }
+
+        .log-security {
+            background: #fff3e0;
+            border-left: 4px solid #ff9800;
+            padding: 12px 16px;
+            margin: 8px 0;
+            border-radius: 6px;
+            color: #f57c00;
+        }
+
+        .log-warning {
+            background: #fff8e1;
+            border-left: 4px solid #ffc107;
+            padding: 12px 16px;
+            margin: 8px 0;
+            border-radius: 6px;
+            color: #f9a825;
+        }
+
+        .log-success {
+            background: #e8f5e8;
+            border-left: 4px solid #4caf50;
+            padding: 12px 16px;
+            margin: 8px 0;
+            border-radius: 6px;
+            color: #2e7d32;
+        }
+
+        .log-info {
+            background: #f3e5f5;
+            border-left: 4px solid #9c27b0;
+            padding: 12px 16px;
+            margin: 8px 0;
+            border-radius: 6px;
+            color: #7b1fa2;
+        }
+
+        .log-repeated {
+            background: #fce4ec;
+            border-left: 4px solid #e91e63;
+            padding: 8px 16px;
+            margin: 4px 0;
+            border-radius: 6px;
+            color: #c2185b;
+            font-weight: 600;
+        }
+
+        .log-normal {
+            padding: 8px 16px;
+            margin: 4px 0;
+            color: #666;
+        }
+
+        .log-plain {
+            padding: 4px 8px;
+            margin: 2px 0;
+            color: #333;
+            background: white;
+            border: none;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        .log-plain.highlighted {
+            background: #fff3cd !important;
+            border-left: 3px solid #ffc107 !important;
+            padding-left: 12px !important;
+        }
+
+        .summary-section {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .summary-header {
+            font-weight: 600;
+            color: #856404;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tags-section {
+            margin: 20px 0;
+        }
+
+        .tag {
+            display: inline-block;
+            background: #2a5298;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.9em;
+            margin: 3px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .tag:hover {
+            background: #1e3c72;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(42, 82, 152, 0.3);
+        }
+
+        .tag.active {
+            background: #ff6b35;
+            box-shadow: 0 0 0 2px #ff6b35, 0 0 10px rgba(255, 107, 53, 0.3);
+        }
+
+        .log-entry.highlighted {
+            animation: highlightPulse 0.6s ease-in-out;
+            box-shadow: 0 0 0 3px #ff6b35, 0 4px 12px rgba(255, 107, 53, 0.2);
+            transform: scale(1.02);
+        }
+
+        @keyframes highlightPulse {
+            0% { box-shadow: 0 0 0 0 #ff6b35; }
+            50% { box-shadow: 0 0 0 6px rgba(255, 107, 53, 0.4); }
+            100% { box-shadow: 0 0 0 3px #ff6b35; }
+        }
+
+        .metadata-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        .metadata-item {
+            text-align: center;
+        }
+
+        .metadata-value {
+            font-size: 1.5em;
+            font-weight: 600;
+            color: #2a5298;
+        }
+
+        .metadata-label {
+            font-size: 0.9em;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 4px solid #dc3545;
+        }
+
+        .file-preview {
+            background: #e8f5e8;
+            border: 2px solid #4caf50;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            display: none;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .file-preview.show {
+            display: block;
+        }
+
+        .file-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .file-icon {
+            font-size: 3em;
+            color: #4caf50;
+        }
+
+        .file-details h3 {
+            margin: 0 0 5px 0;
+            color: #2e7d32;
+            font-size: 1.2em;
+        }
+
+        .file-details p {
+            margin: 0;
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .file-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .btn-small {
+            background: #2a5298;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-small:hover {
+            background: #1e3c72;
+            transform: translateY(-1px);
+        }
+
+        .btn-remove {
+            background: #dc3545;
+        }
+
+        .btn-remove:hover {
+            background: #c82333;
+        }
+
+        .upload-success {
+            color: #4caf50;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .drag-drop-area.file-selected {
+            border-color: #4caf50;
+            background: #f1f8e9;
+            padding: 30px 20px;
+        }
+
+        .drag-drop-area.file-selected .upload-icon {
+            color: #4caf50;
+        }
+
+        .drag-drop-area.file-selected .upload-text {
+            color: #2e7d32;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                border-radius: 15px;
+            }
+            
+            .main-content {
+                padding: 20px;
+            }
+            
+            .options-section {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🐞 Debuggle</h1>
+            <p>Transform chaotic logs into beautiful, understandable code</p>
+        </div>
+
+        <div class="main-content">
+            <div class="upload-section">
+                <div class="drag-drop-area" id="dragDropArea">
+                    <div class="upload-icon">📁</div>
+                    <div class="upload-text">Drag & drop your log file(s) here</div>
+                    <div class="upload-subtext">Single files auto-process • Multiple files need manual processing</div>
+                    <button class="btn" onclick="document.getElementById('fileInput').click()">
+                        Choose File
+                    </button>
+                    <input type="file" id="fileInput" class="file-input" accept=".log,.txt,.out,.err,.json" multiple>
+                </div>
+
+                <div class="progress-bar" id="progressBar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+
+                <div class="file-preview" id="filePreview">
+                    <div class="file-info">
+                        <div class="file-icon">📄</div>
+                        <div class="file-details">
+                            <h3 id="fileName">filename.log</h3>
+                            <p id="fileSize">File size • Ready to process</p>
+                        </div>
+                    </div>
+                    <div class="file-actions">
+                        <div class="upload-success" id="uploadSuccess" style="display: none;">
+                            ✅ File uploaded successfully!
+                        </div>
+                        <button class="btn-small" onclick="processFile()" id="processBtn">
+                            Process File
+                        </button>
+                        <button class="btn-small btn-remove" onclick="removeFile()" id="removeBtn">
+                            Remove
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="options-section">
+                <div class="toggle-group">
+                    <input type="checkbox" id="summarize" class="hidden-checkbox" checked>
+                    <div class="toggle-button active" onclick="toggleOption('summarize', this)">
+                        🧠 Generate Smart Analysis
+                    </div>
+                </div>
+
+                <div class="toggle-group">
+                    <input type="checkbox" id="tags" class="hidden-checkbox" checked>
+                    <div class="toggle-button active" onclick="toggleOption('tags', this)">
+                        🏷️ Show Interactive Tags
+                    </div>
+                </div>
+
+                <div class="toggle-group">
+                    <input type="checkbox" id="highlight" class="hidden-checkbox" checked>
+                    <div class="toggle-button active" onclick="toggleOption('highlight', this)">
+                        ✨ Enhanced Formatting
+                    </div>
+                </div>
+            </div>
+
+            <div class="results-section" id="resultsSection">
+                <div id="summarySection" class="summary-section" style="display: none;">
+                    <div class="summary-header">
+                        🧠 Smart Analysis
+                    </div>
+                    <div id="summaryContent"></div>
+                </div>
+
+                <div id="tagsSection" class="tags-section" style="display: none;">
+                    <strong>Tags:</strong>
+                    <div id="tagsContent"></div>
+                </div>
+
+                <div class="results-header">
+                    <strong>🎨 Beautified Log Output</strong>
+                </div>
+                <div class="results-content" id="resultsContent"></div>
+
+                <div class="metadata-section" id="metadataSection">
+                    <!-- Metadata will be populated here -->
+                </div>
+            </div>
+
+            <div id="errorMessage" class="error-message" style="display: none;"></div>
+        </div>
+    </div>
+
+    <script>
+        const dragDropArea = document.getElementById('dragDropArea');
+        const fileInput = document.getElementById('fileInput');
+        const progressBar = document.getElementById('progressBar');
+        const progressFill = document.getElementById('progressFill');
+        const resultsSection = document.getElementById('resultsSection');
+        const resultsContent = document.getElementById('resultsContent');
+        const summarySection = document.getElementById('summarySection');
+        const summaryContent = document.getElementById('summaryContent');
+        const tagsSection = document.getElementById('tagsSection');
+        const tagsContent = document.getElementById('tagsContent');
+        const metadataSection = document.getElementById('metadataSection');
+        const errorMessage = document.getElementById('errorMessage');
+        const filePreview = document.getElementById('filePreview');
+        const fileName = document.getElementById('fileName');
+        const fileSize = document.getElementById('fileSize');
+        const uploadSuccess = document.getElementById('uploadSuccess');
+        const processBtn = document.getElementById('processBtn');
+        const removeBtn = document.getElementById('removeBtn');
+        
+        let selectedFile = null;
+        let selectedFiles = [];
+        let currentFileIndex = 0;
+        let lastProcessedData = null; // Store the last processed results for live filtering
+        let fileQueue = []; // Queue for multiple files
+        let activeTab = null; // Currently active tab
+
+        // Drag and drop functionality
+        dragDropArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dragDropArea.classList.add('drag-over');
+        });
+
+        dragDropArea.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            dragDropArea.classList.remove('drag-over');
+        });
+
+        dragDropArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dragDropArea.classList.remove('drag-over');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFiles(Array.from(files));
+            }
+        });
+
+        dragDropArea.addEventListener('click', (e) => {
+            // Only trigger file input if not clicking on the button
+            if (!e.target.closest('button')) {
+                fileInput.click();
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFiles(Array.from(e.target.files));
+                // Clear the input value to allow selecting the same file again
+                e.target.value = '';
+            }
+        });
+
+        function handleFiles(files) {
+            // Reset UI
+            hideError();
+            hideResults();
+            
+            if (files.length === 1) {
+                // Single file: auto-process immediately
+                selectedFile = files[0];
+                showFilePreview(files[0]);
+                // Auto-process after a brief delay to show the preview
+                setTimeout(() => {
+                    processFile();
+                }, 500);
+            } else {
+                // Multiple files: show selection and require manual processing
+                selectedFiles = files;
+                showMultipleFilePreview(files);
+            }
+        }
+
+        function handleFile(file) {
+            // Backward compatibility - convert single file to array
+            handleFiles([file]);
+        }
+
+        function showFilePreview(file) {
+            // Update drag drop area appearance
+            dragDropArea.classList.add('file-selected');
+            
+            // Update file details - show it's auto-processing
+            fileName.textContent = file.name;
+            fileSize.textContent = `${formatFileSize(file.size)} • ${getFileIcon(file.name)} Auto-processing...`;
+            
+            // Show file preview section
+            filePreview.classList.add('show');
+            
+            // Reset action buttons - hide process button since it's auto-processing
+            uploadSuccess.style.display = 'none';
+            processBtn.style.display = 'none';
+            processBtn.textContent = 'Process File';
+            processBtn.disabled = false;
+            
+            // Scroll to show the file preview
+            filePreview.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        function showMultipleFilePreview(files) {
+            // Update drag drop area appearance
+            dragDropArea.classList.add('file-selected');
+            hideResults();
+            
+            // Initialize file queue
+            fileQueue = files.map((file, index) => ({
+                id: `file_${Date.now()}_${index}`,
+                file: file,
+                status: 'pending', // pending, processing, completed, error
+                data: null,
+                error: null
+            }));
+            
+            // Hide single file preview, show file queue
+            filePreview.classList.remove('show');
+            
+            // Create and show file queue UI
+            createFileQueueUI();
+            
+            // Scroll to show the file queue
+            document.getElementById('fileQueue').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        function createFileQueueUI() {
+            const pendingCount = fileQueue.filter(f => f.status === 'pending').length;
+            const fileQueueHtml = `
+                <div class="file-queue show" id="fileQueue">
+                    <div class="queue-header">
+                        <h3>📁 Multiple Files Ready for Processing</h3>
+                        <p>Review your files below and process them individually or all at once.</p>
+                    </div>
+                    <div class="queue-actions">
+                        <button class="btn-primary" onclick="processAllFiles()" id="processAllBtn">
+                            🚀 Process All ${pendingCount} Files
+                        </button>
+                        <button class="btn-secondary" onclick="removeFile()">
+                            🗑️ Clear All Files
+                        </button>
+                    </div>
+                    <div class="file-list" id="fileList">
+                        ${fileQueue.map(item => createFileItemHTML(item)).join('')}
+                    </div>
+                    <div class="file-tabs" id="fileTabs" style="display: none;"></div>
+                    <div class="tab-contents" id="tabContents"></div>
+                </div>
+            `;
+            
+            // Insert after the main upload section
+            const uploadSection = document.querySelector('.upload-section');
+            const existingQueue = document.getElementById('fileQueue');
+            if (existingQueue) {
+                existingQueue.remove();
+            }
+            uploadSection.insertAdjacentHTML('afterend', fileQueueHtml);
+        }
+
+        function createFileItemHTML(item) {
+            const statusIcons = {
+                pending: '⏳',
+                processing: '🔄',
+                completed: '✅',
+                error: '❌'
+            };
+            
+            const statusClass = item.status;
+            const statusText = item.status.charAt(0).toUpperCase() + item.status.slice(1);
+            
+            return `
+                <div class="file-item ${statusClass}" id="${item.id}">
+                    <div class="file-info-left">
+                        <div class="file-icon-large">${getFileIcon(item.file.name)}</div>
+                        <div class="file-details-multi">
+                            <h4>${item.file.name}</h4>
+                            <p>${formatFileSize(item.file.size)} • ${statusIcons[item.status]} ${statusText}</p>
+                        </div>
+                    </div>
+                    <div class="file-actions-multi">
+                        ${item.status === 'pending' ? `<button class="btn-small" onclick="processSingleFileFromQueue('${item.id}')">Process</button>` : ''}
+                        ${item.status === 'completed' ? `<button class="btn-small" onclick="viewFileResults('${item.id}')">View Results</button>` : ''}
+                        <button class="btn-small btn-remove" onclick="removeFileFromQueue('${item.id}')">Remove</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function processFile() {
+            if (selectedFiles.length > 0) {
+                // Process multiple files
+                processMultipleFiles();
+            } else if (selectedFile) {
+                // Process single file
+                processSingleFile(selectedFile);
+            }
+        }
+
+        function processSingleFile(file) {
+            // Show processing state
+            showProgress();
+            
+            // Create form data
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('language', 'auto'); // Always auto-detect
+            formData.append('highlight', document.getElementById('highlight').checked);
+            formData.append('summarize', document.getElementById('summarize').checked);
+            formData.append('tags', document.getElementById('tags').checked);
+            formData.append('max_lines', '1000'); // Default to 1000 lines
+
+            // Upload and process file
+            fetch('/api/v1/upload-log', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(err => Promise.reject(err));
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Store data for live filtering
+                lastProcessedData = data;
+                
+                // Show success state
+                uploadSuccess.style.display = 'flex';
+                
+                // Update file size display
+                fileSize.textContent = `${formatFileSize(file.size)} • ${getFileIcon(file.name)} Processed successfully!`;
+                
+                // Display results
+                displayResults(data);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showError(error.detail?.error || 'An error occurred while processing the file.');
+                
+                // Reset file size display
+                fileSize.textContent = `${formatFileSize(file.size)} • ${getFileIcon(file.name)} Processing failed`;
+            })
+            .finally(() => {
+                hideProgress();
+            });
+        }
+
+        function processMultipleFiles() {
+            if (selectedFiles.length === 0) return;
+            
+            // Show processing state
+            processBtn.textContent = 'Processing...';
+            processBtn.disabled = true;
+            showProgress();
+            
+            currentFileIndex = 0;
+            const allResults = [];
+            
+            // Process files sequentially
+            processNextFile(allResults);
+        }
+
+        function processNextFile(allResults) {
+            if (currentFileIndex >= selectedFiles.length) {
+                // All files processed - combine results
+                displayMultipleResults(allResults);
+                
+                // Update UI
+                uploadSuccess.style.display = 'flex';
+                processBtn.textContent = 'Reprocess All';
+                processBtn.disabled = false;
+                hideProgress();
+                return;
+            }
+            
+            const file = selectedFiles[currentFileIndex];
+            fileName.textContent = `Processing: ${file.name} (${currentFileIndex + 1}/${selectedFiles.length})`;
+            
+            // Create form data
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('language', 'auto');
+            formData.append('highlight', document.getElementById('highlight').checked);
+            formData.append('summarize', document.getElementById('summarize').checked);
+            formData.append('tags', document.getElementById('tags').checked);
+            formData.append('max_lines', '1000');
+
+            // Process current file
+            fetch('/api/v1/upload-log', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(err => Promise.reject(err));
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Add file info to results
+                data.filename = file.name;
+                allResults.push(data);
+                
+                // Process next file
+                currentFileIndex++;
+                processNextFile(allResults);
+            })
+            .catch(error => {
+                console.error('Error processing', file.name, ':', error);
+                
+                // Add error result
+                allResults.push({
+                    filename: file.name,
+                    error: error.detail?.error || 'Processing failed',
+                    cleaned_log: '',
+                    summary: '',
+                    tags: [],
+                    metadata: { filename: file.name, file_size: file.size }
+                });
+                
+                // Process next file
+                currentFileIndex++;
+                processNextFile(allResults);
+            });
+        }
+
+        function removeFile() {
+            // Clear selected files
+            selectedFile = null;
+            selectedFiles = [];
+            currentFileIndex = 0;
+            
+            // Reset UI
+            dragDropArea.classList.remove('file-selected');
+            filePreview.classList.remove('show');
+            hideResults();
+            hideError();
+            
+            // Reset file input
+            fileInput.value = '';
+        }
+
+        function displayMultipleResults(allResults) {
+            // Store data for live filtering
+            lastProcessedData = { 
+                type: 'multiple', 
+                results: allResults 
+            };
+            
+            // Show results section
+            resultsSection.style.display = 'block';
+            
+            // Combine all logs with file separators
+            let combinedLog = '';
+            let allTags = new Set();
+            let successCount = 0;
+            let errorCount = 0;
+            
+            allResults.forEach((result, index) => {
+                if (result.error) {
+                    combinedLog += `\n📁 File: ${result.filename}\n❌ Error: ${result.error}\n\n`;
+                    errorCount++;
+                } else {
+                    combinedLog += `\n📁 File: ${result.filename}\n${result.cleaned_log}\n\n`;
+                    if (result.tags) {
+                        result.tags.forEach(tag => allTags.add(tag));
+                    }
+                    successCount++;
+                }
+            });
+            
+            // Apply live filtering based on current toggle states
+            const showSummary = document.getElementById('summarize').checked;
+            const showTags = document.getElementById('tags').checked;
+            const showFormatting = document.getElementById('highlight').checked;
+            
+            // Display combined results with conditional formatting
+            if (showFormatting) {
+                const formattedLog = formatLogOutput(combinedLog);
+                resultsContent.innerHTML = formattedLog;
+                resultsContent.classList.remove('plain-mode');
+            } else {
+                const plainLog = formatPlainLogOutput(combinedLog);
+                resultsContent.innerHTML = plainLog;
+                resultsContent.classList.add('plain-mode');
+            }
+            
+            // Create combined summary
+            const combinedSummary = `Processed ${allResults.length} files: ${successCount} successful, ${errorCount} failed. ` +
+                (successCount > 0 ? allResults.filter(r => !r.error).map(r => r.summary).filter(s => s).join(' | ') : '');
+            
+            if (showSummary && combinedSummary) {
+                summarySection.style.display = 'block';
+                summaryContent.textContent = combinedSummary;
+            } else {
+                summarySection.style.display = 'none';
+            }
+            
+            // Display combined tags
+            if (showTags && allTags.size > 0) {
+                tagsSection.style.display = 'block';
+                tagsContent.innerHTML = Array.from(allTags).map((tag, index) => 
+                    `<span class="tag" onclick="toggleTagHighlight('${escapeHtml(tag)}', this)" data-tag="${escapeHtml(tag)}">${escapeHtml(tag)}</span>`
+                ).join('');
+            } else {
+                tagsSection.style.display = 'none';
+            }
+            
+            // Display metadata for multiple files
+            const totalSize = allResults.reduce((sum, result) => sum + (result.metadata?.file_size || 0), 0);
+            const totalLines = allResults.reduce((sum, result) => sum + (result.metadata?.lines || 0), 0);
+            
+            metadataSection.innerHTML = `
+                <div class="metadata-item">
+                    <div class="metadata-value">${allResults.length}</div>
+                    <div class="metadata-label">Files Processed</div>
+                </div>
+                <div class="metadata-item">
+                    <div class="metadata-value">${successCount}</div>
+                    <div class="metadata-label">Successful</div>
+                </div>
+                <div class="metadata-item">
+                    <div class="metadata-value">${errorCount}</div>
+                    <div class="metadata-label">Failed</div>
+                </div>
+                <div class="metadata-item">
+                    <div class="metadata-value">${formatFileSize(totalSize)}</div>
+                    <div class="metadata-label">Total Size</div>
+                </div>
+                <div class="metadata-item">
+                    <div class="metadata-value">${totalLines}</div>
+                    <div class="metadata-label">Total Lines</div>
+                </div>
+                <div class="metadata-item">
+                    <div class="metadata-value">Live Filtered</div>
+                    <div class="metadata-label">Processing Mode</div>
+                </div>
+            `;
+        }
+
+        function getFileIcon(filename) {
+            const ext = filename.split('.').pop().toLowerCase();
+            const icons = {
+                'log': '📋',
+                'txt': '📄',
+                'err': '❌',
+                'out': '📤',
+                'json': '🔧',
+                'py': '🐍',
+                'js': '💛',
+                'java': '☕',
+                'xml': '📜'
+            };
+            return icons[ext] || '📄';
+        }
+
+        function showProgress() {
+            progressBar.style.display = 'block';
+            progressFill.style.width = '100%';
+        }
+
+        function hideProgress() {
+            progressBar.style.display = 'none';
+            progressFill.style.width = '0%';
+        }
+
+        function displayResults(data) {
+            // Show results section
+            resultsSection.style.display = 'block';
+            
+            // Apply live filtering based on current toggle states
+            const showSummary = document.getElementById('summarize').checked;
+            const showTags = document.getElementById('tags').checked;
+            const showFormatting = document.getElementById('highlight').checked;
+            
+            // Display cleaned log with conditional formatting
+            if (showFormatting) {
+                const formattedLog = formatLogOutput(data.cleaned_log);
+                resultsContent.innerHTML = formattedLog;
+                resultsContent.classList.remove('plain-mode');
+            } else {
+                // Plain text mode - no fancy formatting, just basic text
+                const plainLog = formatPlainLogOutput(data.cleaned_log);
+                resultsContent.innerHTML = plainLog;
+                resultsContent.classList.add('plain-mode');
+            }
+            
+            // Display summary conditionally
+            if (showSummary && data.summary) {
+                summarySection.style.display = 'block';
+                summaryContent.textContent = data.summary;
+            } else {
+                summarySection.style.display = 'none';
+            }
+            
+            // Display tags conditionally
+            if (showTags && data.tags && data.tags.length > 0) {
+                tagsSection.style.display = 'block';
+                tagsContent.innerHTML = data.tags.map((tag, index) => 
+                    `<span class="tag" onclick="toggleTagHighlight('${escapeHtml(tag)}', this)" data-tag="${escapeHtml(tag)}">${escapeHtml(tag)}</span>`
+                ).join('');
+            } else {
+                tagsSection.style.display = 'none';
+            }
+            
+            // Display metadata
+            const metadata = data.metadata;
+            metadataSection.innerHTML = `
+                <div class="metadata-item">
+                    <div class="metadata-value">${metadata.filename}</div>
+                    <div class="metadata-label">Filename</div>
+                </div>
+                <div class="metadata-item">
+                    <div class="metadata-value">${formatFileSize(metadata.file_size)}</div>
+                    <div class="metadata-label">File Size</div>
+                </div>
+                <div class="metadata-item">
+                    <div class="metadata-value">${metadata.lines}</div>
+                    <div class="metadata-label">Lines</div>
+                </div>
+                <div class="metadata-item">
+                    <div class="metadata-value">${metadata.language_detected}</div>
+                    <div class="metadata-label">Language</div>
+                </div>
+                <div class="metadata-item">
+                    <div class="metadata-value">${metadata.processing_time_ms}ms</div>
+                    <div class="metadata-label">Processing Time</div>
+                </div>
+                <div class="metadata-item">
+                    <div class="metadata-value">Live Filtered</div>
+                    <div class="metadata-label">Processing Mode</div>
+                </div>
+            `;
+        }
+
+        function formatLogOutput(logText) {
+            // Split into lines and format each one (ENHANCED MODE)
+            const lines = logText.split('\n');
+            const formattedLines = lines.map((line, index) => {
+                if (!line.trim()) return '';
+                
+                // Determine which tags this line relates to
+                const lineTags = getLineTagMapping(line);
+                const tagDataAttr = lineTags.length > 0 ? `data-tags="${lineTags.join(',')}"` : '';
+                
+                // Color-code different types of messages
+                let formattedLine = escapeHtml(line);
+                
+                // Style timestamps (look for "At HH:MM:SS AM/PM on Mon DD" pattern)
+                formattedLine = formattedLine.replace(
+                    /(At \d{1,2}:\d{2}:\d{2} (?:AM|PM) on \w{3} \d{1,2})/g, 
+                    '<span class="timestamp">$1</span>'
+                );
+                
+                // Style different emoji categories with tag data
+                if (line.startsWith('❌')) {
+                    return `<div class="log-error log-entry" ${tagDataAttr}>${formattedLine}</div>`;
+                } else if (line.startsWith('🔒')) {
+                    return `<div class="log-security log-entry" ${tagDataAttr}>${formattedLine}</div>`;
+                } else if (line.startsWith('📁') || line.startsWith('📧')) {
+                    return `<div class="log-warning log-entry" ${tagDataAttr}>${formattedLine}</div>`;
+                } else if (line.startsWith('✅')) {
+                    return `<div class="log-success log-entry" ${tagDataAttr}>${formattedLine}</div>`;
+                } else if (line.startsWith('⚠️')) {
+                    return `<div class="log-repeated log-entry" ${tagDataAttr}>${formattedLine}</div>`;
+                } else if (line.startsWith('ℹ️')) {
+                    return `<div class="log-info log-entry" ${tagDataAttr}>${formattedLine}</div>`;
+                } else {
+                    return `<div class="log-normal log-entry" ${tagDataAttr}>${formattedLine}</div>`;
+                }
+            });
+            
+            return formattedLines.join('');
+        }
+
+        function formatPlainLogOutput(logText) {
+            // Split into lines and format with minimal styling (PLAIN MODE)
+            const lines = logText.split('\n');
+            const formattedLines = lines.map((line, index) => {
+                if (!line.trim()) return '';
+                
+                // Determine which tags this line relates to (for tag highlighting to still work)
+                const lineTags = getLineTagMapping(line);
+                const tagDataAttr = lineTags.length > 0 ? `data-tags="${lineTags.join(',')}"` : '';
+                
+                // Simple escaped HTML - no fancy colors or styling
+                let plainLine = escapeHtml(line);
+                
+                // Just basic line formatting without colors
+                return `<div class="log-plain log-entry" ${tagDataAttr}>${plainLine}</div>`;
+            });
+            
+            return formattedLines.join('');
+        }
+
+        function getLineTagMapping(line) {
+            const tags = [];
+            const lowerLine = line.toLowerCase();
+            
+            // Map line content to tags
+            if (line.startsWith('❌') && (lowerLine.includes('connection') || lowerLine.includes('connect'))) {
+                tags.push('Connection Problems');
+            }
+            if (line.startsWith('🔒') && (lowerLine.includes('password') || lowerLine.includes('login'))) {
+                tags.push('Login Issues');
+            }
+            if (line.startsWith('📁') && lowerLine.includes('file')) {
+                tags.push('File Problems');
+            }
+            if (line.startsWith('📧') && lowerLine.includes('email')) {
+                tags.push('Email Issues');
+            }
+            if (lowerLine.includes('timeout') || lowerLine.includes('took too long')) {
+                tags.push('Slow Response');
+            }
+            if (lowerLine.includes('database')) {
+                tags.push('Database');
+            }
+            if (lowerLine.includes('cache') || lowerLine.includes('saved information')) {
+                tags.push('Memory Storage');
+            }
+            if (lowerLine.includes('scheduled') || lowerLine.includes('job')) {
+                tags.push('Scheduled Jobs');
+            }
+            if (lowerLine.includes('box that isn\'t there') || line.startsWith('🐛')) {
+                tags.push('Programming Bug');
+            }
+            if (lowerLine.includes('stuck waiting')) {
+                tags.push('System Conflict');
+            }
+            if (line.startsWith('❌') || line.startsWith('🐛')) {
+                tags.push('Serious Problems');
+            }
+            if (line.startsWith('⚠️') || line.startsWith('📁') || line.startsWith('📧')) {
+                tags.push('Minor Warnings');
+            }
+            if (line.startsWith('✅')) {
+                tags.push('Some Things Working');
+            }
+            
+            return tags;
+        }
+
+        let activeTagFilter = null;
+
+        function toggleTagHighlight(tagName, tagElement) {
+            // Remove existing highlights
+            document.querySelectorAll('.log-entry.highlighted').forEach(entry => {
+                entry.classList.remove('highlighted');
+            });
+            
+            // Remove active state from all tags
+            document.querySelectorAll('.tag.active').forEach(tag => {
+                tag.classList.remove('active');
+            });
+            
+            // If clicking the same tag, clear the filter
+            if (activeTagFilter === tagName) {
+                activeTagFilter = null;
+                return;
+            }
+            
+            // Set new active tag
+            activeTagFilter = tagName;
+            tagElement.classList.add('active');
+            
+            // Highlight matching log entries
+            document.querySelectorAll('.log-entry').forEach(entry => {
+                const entryTags = entry.getAttribute('data-tags');
+                if (entryTags && entryTags.split(',').includes(tagName)) {
+                    entry.classList.add('highlighted');
+                    // Scroll first match into view
+                    if (!document.querySelector('.log-entry.highlighted:not(' + entry.tagName + ')')) {
+                        entry.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                }
+            });
+        }
+
+        function liveReprocess() {
+            if (!lastProcessedData) return;
+            
+            // Add visual feedback
+            showLiveProcessingIndicator();
+            
+            // Small delay to show the processing indicator
+            setTimeout(() => {
+                if (lastProcessedData.type === 'multiple') {
+                    displayMultipleResults(lastProcessedData.results);
+                } else {
+                    displayResults(lastProcessedData);
+                }
+                hideLiveProcessingIndicator();
+            }, 200);
+        }
+
+        function stripFormatting(text) {
+            // Remove any formatting/styling from the text for plain display
+            return text.replace(/\033\[[0-9;]*m/g, ''); // Remove ANSI codes if any
+        }
+
+        function showLiveProcessingIndicator() {
+            // Add a subtle processing overlay
+            resultsContent.style.opacity = '0.6';
+            resultsContent.style.transition = 'opacity 0.2s ease';
+            
+            // Update metadata to show live processing
+            const lastMetadataItem = metadataSection.querySelector('.metadata-item:last-child');
+            if (lastMetadataItem) {
+                const valueDiv = lastMetadataItem.querySelector('.metadata-value');
+                if (valueDiv) {
+                    valueDiv.textContent = 'Live Processing...';
+                    valueDiv.style.color = '#ff6b35';
+                }
+            }
+        }
+
+        function hideLiveProcessingIndicator() {
+            // Remove processing overlay
+            resultsContent.style.opacity = '1';
+            
+            // Reset metadata styling
+            const lastMetadataItem = metadataSection.querySelector('.metadata-item:last-child');
+            if (lastMetadataItem) {
+                const valueDiv = lastMetadataItem.querySelector('.metadata-value');
+                if (valueDiv) {
+                    valueDiv.textContent = 'Live Filtered';
+                    valueDiv.style.color = '#2a5298';
+                }
+            }
+        }
+
+        function processSingleFileFromQueue(fileId) {
+            const fileItem = fileQueue.find(item => item.id === fileId);
+            if (!fileItem) return;
+            
+            // Update status
+            fileItem.status = 'processing';
+            updateFileItemDisplay(fileItem);
+            
+            // Create form data
+            const formData = new FormData();
+            formData.append('file', fileItem.file);
+            formData.append('language', 'auto');
+            formData.append('highlight', document.getElementById('highlight').checked);
+            formData.append('summarize', document.getElementById('summarize').checked);
+            formData.append('tags', document.getElementById('tags').checked);
+            formData.append('max_lines', '1000');
+
+            fetch('/api/v1/upload-log', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(err => Promise.reject(err));
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Store results
+                fileItem.data = data;
+                fileItem.status = 'completed';
+                updateFileItemDisplay(fileItem);
+                
+                // Create tab for this file
+                createFileTab(fileItem);
+            })
+            .catch(error => {
+                console.error('Error processing', fileItem.file.name, ':', error);
+                fileItem.error = error.detail?.error || 'Processing failed';
+                fileItem.status = 'error';
+                updateFileItemDisplay(fileItem);
+            });
+        }
+
+        function processAllFiles() {
+            const pendingFiles = fileQueue.filter(item => item.status === 'pending');
+            const processAllBtn = document.getElementById('processAllBtn');
+            
+            if (pendingFiles.length === 0) return;
+            
+            processAllBtn.textContent = `Processing ${pendingFiles.length} files...`;
+            processAllBtn.disabled = true;
+            
+            // Process files sequentially
+            let currentIndex = 0;
+            
+            function processNext() {
+                if (currentIndex >= pendingFiles.length) {
+                    processAllBtn.textContent = 'All Files Processed!';
+                    setTimeout(() => {
+                        processAllBtn.textContent = `🚀 Process All ${fileQueue.filter(f => f.status === 'pending').length} Files`;
+                        processAllBtn.disabled = false;
+                    }, 2000);
+                    return;
+                }
+                
+                const fileItem = pendingFiles[currentIndex];
+                processSingleFileFromQueue(fileItem.id);
+                
+                // Wait a bit then process next
+                setTimeout(() => {
+                    currentIndex++;
+                    processNext();
+                }, 1000);
+            }
+            
+            processNext();
+        }
+
+        function updateFileItemDisplay(fileItem) {
+            const element = document.getElementById(fileItem.id);
+            if (!element) return;
+            
+            element.className = `file-item ${fileItem.status}`;
+            element.innerHTML = createFileItemHTML(fileItem).replace(/^<div[^>]*>|<\/div>$/g, '');
+        }
+
+        function removeFileFromQueue(fileId) {
+            const index = fileQueue.findIndex(item => item.id === fileId);
+            if (index > -1) {
+                // Remove tab if exists
+                const tab = document.getElementById(`tab_${fileId}`);
+                if (tab) {
+                    if (tab.classList.contains('active')) {
+                        // Switch to another tab or hide results
+                        const otherTabs = document.querySelectorAll('.file-tab');
+                        if (otherTabs.length > 1) {
+                            const nextTab = Array.from(otherTabs).find(t => t.id !== `tab_${fileId}`);
+                            if (nextTab) {
+                                switchToTab(nextTab.id.replace('tab_', ''));
+                            }
+                        } else {
+                            hideResults();
+                        }
+                    }
+                    tab.remove();
+                    document.getElementById(`content_${fileId}`).remove();
+                }
+                
+                fileQueue.splice(index, 1);
+                document.getElementById(fileId).remove();
+                
+                // Update process all button
+                const processAllBtn = document.getElementById('processAllBtn');
+                if (processAllBtn) {
+                    const pendingCount = fileQueue.filter(f => f.status === 'pending').length;
+                    processAllBtn.textContent = `🚀 Process All ${pendingCount} Files`;
+                }
+                
+                // Hide queue if empty
+                if (fileQueue.length === 0) {
+                    document.getElementById('fileQueue').remove();
+                    removeFile(); // Reset to initial state
+                }
+            }
+        }
+
+        function createFileTab(fileItem) {
+            const tabsContainer = document.getElementById('fileTabs');
+            const tabContents = document.getElementById('tabContents');
+            
+            // Show tabs if hidden
+            tabsContainer.style.display = 'flex';
+            
+            // Create tab
+            const tab = document.createElement('button');
+            tab.className = 'file-tab';
+            tab.id = `tab_${fileItem.id}`;
+            tab.textContent = fileItem.file.name;
+            tab.onclick = () => switchToTab(fileItem.id);
+            tabsContainer.appendChild(tab);
+            
+            // Create tab content
+            const tabContent = document.createElement('div');
+            tabContent.className = 'tab-content';
+            tabContent.id = `content_${fileItem.id}`;
+            tabContents.appendChild(tabContent);
+            
+            // Populate content
+            populateTabContent(fileItem, tabContent);
+            
+            // Switch to this tab
+            switchToTab(fileItem.id);
+        }
+
+        function switchToTab(fileId) {
+            // Remove active class from all tabs and contents
+            document.querySelectorAll('.file-tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            // Activate selected tab and content
+            const tab = document.getElementById(`tab_${fileId}`);
+            const content = document.getElementById(`content_${fileId}`);
+            
+            if (tab && content) {
+                tab.classList.add('active');
+                content.classList.add('active');
+                activeTab = fileId;
+                
+                // Update live filtering for this tab's content
+                const fileItem = fileQueue.find(item => item.id === fileId);
+                if (fileItem && fileItem.data) {
+                    lastProcessedData = fileItem.data;
+                }
+            }
+        }
+
+        function populateTabContent(fileItem, tabElement) {
+            // Create individual results section for this file
+            tabElement.innerHTML = `
+                <div class="results-section" style="display: block; margin: 0;">
+                    <div class="summary-section" id="summarySection_${fileItem.id}" style="display: none;">
+                        <div class="summary-header">🧠 Smart Analysis</div>
+                        <div id="summaryContent_${fileItem.id}"></div>
+                    </div>
+                    
+                    <div class="tags-section" id="tagsSection_${fileItem.id}" style="display: none;">
+                        <strong>Tags:</strong>
+                        <div id="tagsContent_${fileItem.id}"></div>
+                    </div>
+                    
+                    <div class="results-header">
+                        <strong>🎨 Beautified Log Output</strong>
+                    </div>
+                    <div class="results-content" id="resultsContent_${fileItem.id}"></div>
+                    
+                    <div class="metadata-section" id="metadataSection_${fileItem.id}"></div>
+                </div>
+            `;
+            
+            // Populate with data
+            displayResultsInTab(fileItem);
+        }
+
+        function displayResultsInTab(fileItem) {
+            const data = fileItem.data;
+            if (!data) return;
+            
+            const showSummary = document.getElementById('summarize').checked;
+            const showTags = document.getElementById('tags').checked;
+            const showFormatting = document.getElementById('highlight').checked;
+            
+            const resultsContent = document.getElementById(`resultsContent_${fileItem.id}`);
+            const summarySection = document.getElementById(`summarySection_${fileItem.id}`);
+            const summaryContent = document.getElementById(`summaryContent_${fileItem.id}`);
+            const tagsSection = document.getElementById(`tagsSection_${fileItem.id}`);
+            const tagsContent = document.getElementById(`tagsContent_${fileItem.id}`);
+            const metadataSection = document.getElementById(`metadataSection_${fileItem.id}`);
+            
+            // Display formatted log
+            if (showFormatting) {
+                const formattedLog = formatLogOutput(data.cleaned_log);
+                resultsContent.innerHTML = formattedLog;
+                resultsContent.classList.remove('plain-mode');
+            } else {
+                const plainLog = formatPlainLogOutput(data.cleaned_log);
+                resultsContent.innerHTML = plainLog;
+                resultsContent.classList.add('plain-mode');
+            }
+            
+            // Display summary conditionally
+            if (showSummary && data.summary) {
+                summarySection.style.display = 'block';
+                summaryContent.textContent = data.summary;
+            } else {
+                summarySection.style.display = 'none';
+            }
+            
+            // Display tags conditionally
+            if (showTags && data.tags && data.tags.length > 0) {
+                tagsSection.style.display = 'block';
+                tagsContent.innerHTML = data.tags.map((tag, index) => 
+                    `<span class="tag" onclick="toggleTagHighlight('${escapeHtml(tag)}', this)" data-tag="${escapeHtml(tag)}">${escapeHtml(tag)}</span>`
+                ).join('');
+            } else {
+                tagsSection.style.display = 'none';
+            }
+            
+            // Display metadata
+            const metadata = data.metadata;
+            metadataSection.innerHTML = `
+                <div class="metadata-item">
+                    <div class="metadata-value">${metadata.filename}</div>
+                    <div class="metadata-label">Filename</div>
+                </div>
+                <div class="metadata-item">
+                    <div class="metadata-value">${formatFileSize(metadata.file_size)}</div>
+                    <div class="metadata-label">File Size</div>
+                </div>
+                <div class="metadata-item">
+                    <div class="metadata-value">${metadata.lines}</div>
+                    <div class="metadata-label">Lines</div>
+                </div>
+                <div class="metadata-item">
+                    <div class="metadata-value">${metadata.language_detected}</div>
+                    <div class="metadata-label">Language</div>
+                </div>
+                <div class="metadata-item">
+                    <div class="metadata-value">${metadata.processing_time_ms}ms</div>
+                    <div class="metadata-label">Processing Time</div>
+                </div>
+                <div class="metadata-item">
+                    <div class="metadata-value">Individual</div>
+                    <div class="metadata-label">Processing Mode</div>
+                </div>
+            `;
+        }
+
+        function viewFileResults(fileId) {
+            const fileItem = fileQueue.find(item => item.id === fileId);
+            if (fileItem && fileItem.data) {
+                // Create tab if it doesn't exist
+                if (!document.getElementById(`tab_${fileId}`)) {
+                    createFileTab(fileItem);
+                } else {
+                    switchToTab(fileId);
+                }
+            }
+        }
+
+        function hideResults() {
+            resultsSection.style.display = 'none';
+            // Hide tabs as well
+            const fileTabs = document.getElementById('fileTabs');
+            if (fileTabs) {
+                fileTabs.style.display = 'none';
+            }
+        }
+
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.style.display = 'block';
+        }
+
+        function hideError() {
+            errorMessage.style.display = 'none';
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        function toggleOption(optionId, buttonElement) {
+            const checkbox = document.getElementById(optionId);
+            const isCurrentlyChecked = checkbox.checked;
+            
+            // Toggle the checkbox state
+            checkbox.checked = !isCurrentlyChecked;
+            
+            // Update button appearance
+            if (checkbox.checked) {
+                buttonElement.classList.add('active');
+            } else {
+                buttonElement.classList.remove('active');
+            }
+            
+            // Trigger live reprocessing if we have processed data
+            if (lastProcessedData) {
+                liveReprocess();
+            }
+        }
+    </script>
+</body>
+</html>

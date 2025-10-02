@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator
 from typing import Optional, List, Dict, Any
 from enum import Enum
 
@@ -29,7 +29,8 @@ class BeautifyRequest(BaseModel):
     language: LanguageEnum = Field(default=LanguageEnum.AUTO, description="Programming language")
     options: BeautifyOptions = Field(default_factory=BeautifyOptions, description="Processing options")
     
-    @validator('log_input')
+    @field_validator('log_input')
+    @classmethod
     def validate_log_input(cls, v):
         if not v.strip():
             raise ValueError('log_input cannot be empty or whitespace only')
@@ -69,6 +70,24 @@ class TierFeature(BaseModel):
 class TiersResponse(BaseModel):
     """Available tiers response."""
     tiers: List[TierFeature] = Field(..., description="Available service tiers")
+
+
+class FileUploadMetadata(BaseModel):
+    """Metadata about uploaded file processing."""
+    filename: str = Field(..., description="Original filename")
+    file_size: int = Field(..., description="File size in bytes")
+    lines: int = Field(..., description="Number of lines processed")
+    language_detected: str = Field(..., description="Detected or specified language")
+    processing_time_ms: int = Field(..., description="Processing time in milliseconds")
+    truncated: bool = Field(default=False, description="Whether input was truncated")
+
+
+class FileUploadResponse(BaseModel):
+    """Response model for file upload processing."""
+    cleaned_log: str = Field(..., description="Beautified and formatted log")
+    summary: Optional[str] = Field(None, description="Plain English error explanation")
+    tags: List[str] = Field(default_factory=list, description="Error category tags")
+    metadata: FileUploadMetadata = Field(..., description="File processing metadata")
 
 
 class ErrorResponse(BaseModel):

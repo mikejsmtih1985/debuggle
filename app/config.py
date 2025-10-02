@@ -1,33 +1,34 @@
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict  
 from typing import Optional
 
 
 class Settings(BaseSettings):
-    """Application settings with environment variable support."""
+    """Application settings loaded from environment variables."""
     
-    # API Configuration
-    app_name: str = "Debuggle Trace Level"
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_prefix="DEBUGGLE_"
+    )
+    
+    # Application metadata
+    app_name: str = "Debuggle Core"
     app_version: str = "1.0.0"
     debug: bool = False
     
     # Processing limits
-    max_log_size: int = 50000  # 50KB max log size
-    max_lines: int = 1000      # Default max lines to process
-    max_lines_limit: int = 5000 # Hard limit for max_lines parameter
+    max_log_size: int = 50000
+    max_lines: int = 1000
+    max_lines_limit: int = 5000
     
-    # Features
+    # Feature flags
     enable_summarization: bool = True
     enable_language_detection: bool = True
     
-    # Rate limiting (requests per minute)
+    # Rate limiting
     rate_limit_per_minute: int = 100
     
     # Optional API key for future monetization
     api_key: Optional[str] = None
-    
-    class Config:
-        env_file = ".env"
-        env_prefix = "DEBUGGLE_"
 
 
 # Global settings instance

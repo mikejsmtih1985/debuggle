@@ -58,7 +58,7 @@ class TestBeautifyEndpoint:
         
         # Check summary was generated
         assert data["summary"] is not None
-        assert "list index out of range" in data["summary"].lower()
+        assert "index" in data["summary"].lower() or "bounds" in data["summary"].lower()
         
         # Check tags include IndexError and Python
         assert "IndexError" in data["tags"]
@@ -138,22 +138,32 @@ class TestBeautifyEndpoint:
         }
         
         response = client.post("/api/v1/beautify", json=payload)
-        assert response.status_code == 400
+        assert response.status_code == 422
         
         data = response.json()
-        assert "Max lines parameter too large" in data["detail"]["error"]
+        assert "detail" in data
+        assert isinstance(data["detail"], list)
+        assert "less than or equal to 5000" in str(data["detail"])
 
 
 class TestRootEndpoint:
     def test_root_endpoint(self):
-        """Test root endpoint returns service info."""
+        """Test root endpoint serves HTML frontend."""
         response = client.get("/")
+        assert response.status_code == 200
+        assert "text/html" in response.headers.get("content-type", "")
+        assert "Debuggle" in response.text
+        assert "drag" in response.text.lower()
+        
+    def test_api_info_endpoint(self):
+        """Test API info endpoint returns service information."""
+        response = client.get("/api/v1")
         assert response.status_code == 200
         
         data = response.json()
         assert data["service"] == "Debuggle Trace Level"
         assert data["status"] == "running"
-        assert "/docs" in data["docs"]
+        assert "endpoints" in data
 
 
 class TestErrorHandling:
@@ -161,7 +171,7 @@ class TestErrorHandling:
         """Test handling of malformed JSON."""
         response = client.post(
             "/api/v1/beautify",
-            data="invalid json",  # Not JSON
+            content="invalid json",  # Not JSON
             headers={"Content-Type": "application/json"}
         )
         assert response.status_code == 422

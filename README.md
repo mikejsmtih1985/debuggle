@@ -17,7 +17,13 @@ Debuggle Trace Level is the first tier of the Debuggle ecosystem - a powerful mi
 - **Smart tagging** system for error categorization
 - **Pattern recognition** for known error types across multiple languages
 
-### 🚀 **Production Ready**
+### � **File Upload & Web Interface**
+- **Drag & drop file upload** for log files (.log, .txt, .out, .err files)
+- **Beautiful web interface** with real-time processing
+- **Large file support** (up to 50KB) with encoding detection
+- **Both API and web interface** for maximum flexibility
+
+### �🚀 **Production Ready**
 - **FastAPI-powered** REST API with automatic OpenAPI documentation
 - **Rate limiting** and input validation for production use
 - **Docker containerization** with health checks
@@ -73,12 +79,15 @@ docker run -p 8000:8000 debuggle-trace:latest
 
 ## 📡 API Usage
 
+### 🌐 Web Interface (Recommended)
+Simply visit `http://localhost:8000` to use the drag & drop file upload interface!
+
 ### Health Check
 ```bash
 curl http://localhost:8000/health
 ```
 
-### Beautify Log
+### Beautify Log (JSON API)
 ```bash
 curl -X POST "http://localhost:8000/api/v1/beautify" \
   -H "Content-Type: application/json" \
@@ -91,6 +100,17 @@ curl -X POST "http://localhost:8000/api/v1/beautify" \
       "tags": true
     }
   }'
+```
+
+### Upload Log File
+```bash
+curl -X POST "http://localhost:8000/api/v1/upload-log" \
+  -F "file=@error.log" \
+  -F "language=auto" \
+  -F "highlight=true" \
+  -F "summarize=true" \
+  -F "tags=true" \
+  -F "max_lines=1000"
 ```
 
 **Response:**
