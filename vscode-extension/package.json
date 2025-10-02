@@ -1,0 +1,138 @@
+{
+  "name": "debuggle-monitor",
+  "displayName": "Debuggle Monitor",
+  "description": "Real-time error monitoring and debugging assistance with Debuggle integration",
+  "version": "1.0.0",
+  "publisher": "debuggle",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mikejsmtih1985/debuggle.git"
+  },
+  "engines": {
+    "vscode": "^1.74.0"
+  },
+  "categories": [
+    "Debuggers",
+    "Other"
+  ],
+  "keywords": [
+    "debugging",
+    "error monitoring",
+    "real-time",
+    "diagnostics",
+    "development tools"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "debuggle.startMonitoring",
+        "title": "Start Debuggle Monitoring",
+        "category": "Debuggle"
+      },
+      {
+        "command": "debuggle.stopMonitoring",
+        "title": "Stop Debuggle Monitoring",
+        "category": "Debuggle"
+      },
+      {
+        "command": "debuggle.showDashboard",
+        "title": "Show Monitoring Dashboard",
+        "category": "Debuggle"
+      },
+      {
+        "command": "debuggle.clearErrors",
+        "title": "Clear All Errors",
+        "category": "Debuggle"
+      },
+      {
+        "command": "debuggle.connectToServer",
+        "title": "Connect to Debuggle Server",
+        "category": "Debuggle"
+      },
+      {
+        "command": "debuggle.testConnection",
+        "title": "Test Connection",
+        "category": "Debuggle"
+      }
+    ],
+    "configuration": {
+      "title": "Debuggle Monitor",
+      "properties": {
+        "debuggle.serverUrl": {
+          "type": "string",
+          "default": "http://localhost:8000",
+          "description": "Debuggle server URL"
+        },
+        "debuggle.websocketUrl": {
+          "type": "string",
+          "default": "ws://localhost:8000/ws",
+          "description": "Debuggle WebSocket URL for real-time updates"
+        },
+        "debuggle.autoConnect": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically connect to Debuggle server on startup"
+        },
+        "debuggle.showInStatusBar": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show monitoring status in status bar"
+        },
+        "debuggle.maxDiagnostics": {
+          "type": "number",
+          "default": 100,
+          "description": "Maximum number of diagnostics to show in Problems panel"
+        },
+        "debuggle.enableNotifications": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show notifications for critical errors"
+        }
+      }
+    },
+    "views": {
+      "explorer": [
+        {
+          "id": "debuggleMonitor",
+          "name": "Debuggle Monitor",
+          "when": "debuggle.monitoring.active",
+          "icon": "$(debug-alt)"
+        }
+      ]
+    },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "debuggle",
+          "title": "Debuggle",
+          "icon": "$(debug-alt)"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src --ext ts",
+    "test": "node ./out/test/runTest.js"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.74.0",
+    "@types/node": "16.x",
+    "@types/ws": "^8.5.4",
+    "@typescript-eslint/eslint-plugin": "^5.45.0",
+    "@typescript-eslint/parser": "^5.45.0",
+    "eslint": "^8.28.0",
+    "typescript": "^4.9.4"
+  },
+  "dependencies": {
+    "ws": "^8.13.0",
+    "axios": "^1.4.0"
+  }
+}

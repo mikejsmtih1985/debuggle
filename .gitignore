@@ -110,3 +110,5 @@ tag_test.log
 PATH_TO_*.md
 WORKSPACE_ANALYSIS*.md
 FIXES_IMPLEMENTATION*.md
+vscode-extension/node_modules/
+vscode-extension/out/

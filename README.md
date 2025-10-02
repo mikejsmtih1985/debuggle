@@ -267,6 +267,27 @@ curl http://localhost:8000/api/v1/errors/stats
 - **Connection monitoring** - Automatic reconnection handling
 - **Multi-client support** - Multiple browsers can monitor simultaneously
 
+### VS Code Extension Integration 🆕
+```bash
+# Start the Debuggle server
+python entry_point.py serve
+
+# In VS Code:
+# 1. Install the Debuggle Monitor extension from vscode-extension/
+# 2. Press Ctrl+Shift+P and search "Debuggle"
+# 3. Run "Debuggle: Show Monitoring Dashboard"
+```
+
+**Features:**
+- **Real-time error monitoring** directly in VS Code
+- **Problems panel integration** - Debuggle errors appear alongside your code issues
+- **Status bar monitoring** - See error count and monitoring status at a glance
+- **Rich dashboard** - Comprehensive error analysis within your editor
+- **Automatic connection** - Seamlessly connects to your local Debuggle server
+- **Live diagnostics** - Errors mapped to files and line numbers when available
+
+*See [VS Code Integration Guide](docs/VSCODE_INTEGRATION.md) for setup and usage details*
+
 ### API Integration (For Tools/IDEs)
 ```bash
 # Health check
