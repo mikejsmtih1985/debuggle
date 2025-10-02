@@ -94,3 +94,7 @@ Thumbs.db
 tmp/
 temp/
 *.tmp
+
+# Build artifacts
+build_standalone/
+*.spec

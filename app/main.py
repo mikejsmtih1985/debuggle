@@ -45,7 +45,28 @@ app.add_middleware(
 )
 
 # Mount static files (HTML frontend)
-app.mount("/static", StaticFiles(directory="assets/static"), name="static")
+# Handle both development and PyInstaller bundled modes
+import sys
+from pathlib import Path
+
+if getattr(sys, 'frozen', False):
+    # PyInstaller bundle
+    bundle_dir = getattr(sys, '_MEIPASS', Path.cwd())
+    static_dir = Path(bundle_dir) / "assets" / "static"
+    if not static_dir.exists():
+        # Fallback paths
+        for fallback in [Path(bundle_dir) / "assets", Path(bundle_dir)]:
+            if (fallback / "index.html").exists():
+                static_dir = fallback
+                break
+else:
+    # Development mode
+    static_dir = Path("assets/static")
+
+if static_dir.exists():
+    app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
+else:
+    print(f"Warning: Static directory not found at {static_dir}")
 
 # Initialize log processor
 processor = LogProcessor()
@@ -309,8 +330,48 @@ async def upload_log_file(
 @app.get("/", response_class=HTMLResponse)
 async def root():
     """Serve the main HTML frontend."""
-    with open("assets/static/index.html", "r") as f:
-        return HTMLResponse(content=f.read())
+    try:
+        # Use the same static_dir logic from above
+        index_file = static_dir / "index.html"
+        if index_file.exists():
+            with open(index_file, "r") as f:
+                return HTMLResponse(content=f.read())
+        else:
+            # Fallback UI when static files aren't found
+            fallback_html = '''
+<!DOCTYPE html>
+<html>
+<head>
+    <title>🐞 Debuggle</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; background: #f5f5f5; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 40px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h1 { color: #333; }
+        .api-link { background: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block; margin: 20px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🐞 Debuggle is Running!</h1>
+        <p>The Debuggle server is running successfully.</p>
+        <p>You can use the API endpoints:</p>
+        <a href="/docs" class="api-link">📚 API Documentation</a>
+        <a href="/health" class="api-link">🏥 Health Check</a>
+        <p><strong>API Usage:</strong></p>
+        <pre>
+# Upload and analyze a log file
+curl -X POST "http://localhost:8000/api/v1/upload-log" \\
+     -H "accept: application/json" \\
+     -H "Content-Type: multipart/form-data" \\
+     -F "file=@your_log_file.txt"
+        </pre>
+    </div>
+</body>
+</html>
+            '''
+            return HTMLResponse(content=fallback_html)
+    except Exception as e:
+        return HTMLResponse(content=f"<h1>Error serving UI</h1><p>{str(e)}</p>")
 
 
 @app.get("/api/v1", response_class=JSONResponse)
