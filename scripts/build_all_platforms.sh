@@ -1,30 +1,87 @@
 #!/bin/bash
 
-# Cross-platform build script for Debuggle
-# Builds standalone executables for Windows, Linux, and macOS
+#
+# 🏭 DEBUGGLE MULTI-PLATFORM FACTORY - The Universal Assembly Line
+# =================================================================
+#
+# This shell script is like having a sophisticated manufacturing facility
+# that can produce the same product (Debuggle) for different markets
+# (Windows, Linux, macOS) using automated assembly lines.
+#
+# 🏆 HIGH SCHOOL EXPLANATION:
+# Think of this like a car factory that can build the same car model
+# but configure it for different countries:
+# - Left-hand drive vs right-hand drive
+# - Different electrical systems (110V vs 220V) 
+# - Different safety standards and regulations
+# - Different languages for the dashboard
+#
+# This script automates the entire "manufacturing process" so that with
+# one command, we can produce ready-to-ship software packages for
+# customers using Windows, Mac, or Linux computers.
+#
+# EDUCATIONAL METAPHORS USED:
+# 🏭 Manufacturing & Factory Automation - Build processes like assembly lines
+# 🔧 Industrial Engineering - Optimization and quality control
+# 📦 Shipping & Logistics - Packaging and distribution
+# 🏗️ Construction Management - Project coordination and sequencing
+#
 
+# 📢 FACTORY STARTUP ANNOUNCEMENT - Welcome message for operators
 echo "🚀 Debuggle Multi-Platform Build System"
 echo "======================================"
 
-# Function to build for a specific platform
+#
+# 🎯 SPECIALIZED ASSEMBLY LINE FUNCTION - Platform-specific manufacturing
+# =======================================================================
+#
+# This function is like having a flexible manufacturing station that can
+# reconfigure itself to produce the same product for different markets.
+# It's the core "assembly line worker" that knows how to build our software
+# for specific operating systems.
+#
+# 🏆 HIGH SCHOOL EXPLANATION:
+# Think of this like a skilled technician at a electronics factory who can
+# assemble the same smartphone but configure it for different regions:
+# - Different power adapters (US vs EU vs UK plugs)
+# - Different cellular radio bands for local carriers  
+# - Different languages pre-installed
+# - Different safety certifications and stickers
+#
+# The technician follows different procedures depending on which market
+# the product is destined for, but the core device is the same.
+#
 build_for_platform() {
-    local platform=$1
-    local arch=$2
+    # 📋 WORK ORDER PARAMETERS - receiving instructions for this build job
+    local platform=$1    # 🌍 Target operating system (windows, linux, macos)
+    local arch=$2        # 🏗️ Processor architecture (x64, arm64, etc.)
     
     echo ""
     echo "🔨 Building for $platform-$arch..."
     
+    # 🔀 PRODUCTION LINE ROUTING - choosing the right assembly process
     if [ "$platform" = "windows" ]; then
-        # Cross-compile for Windows (requires wine on Linux/Mac)
+        #
+        # 🍷 CROSS-PLATFORM MANUFACTURING - Building Windows software on non-Windows
+        # ========================================================================
+        #
+        # This is like having a specialized workstation that can manufacture
+        # products for a different market than where the factory is located.
+        # Wine is a compatibility layer that lets Linux/Mac systems run
+        # Windows programs, like having translation equipment in the factory.
+        #
         if command -v wine &> /dev/null; then
             echo "🍷 Using Wine for Windows cross-compilation"
+            # 🏭 Execute the build process through the compatibility layer
             wine python scripts/build_standalone.py
         else
+            # 🚨 MISSING EQUIPMENT ALERT - can't complete this type of build
             echo "⚠️  Wine not found - skipping Windows build"
             echo "   Install wine to enable Windows cross-compilation"
         fi
     else
-        # Native build
+        # 🏠 NATIVE MANUFACTURING - building for the same system we're running on
+        # Like having a local factory that produces goods for the local market
         python3 scripts/build_standalone.py
     fi
 }

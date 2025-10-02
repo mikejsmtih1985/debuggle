@@ -1,24 +1,77 @@
+#
+# 🏗️ DEBUGGLE SERVICE ORCHESTRATION - Multi-Container System Coordinator
+# =======================================================================
+#
+# This docker-compose.yml file is like the master plan for a complex facility
+# that coordinates multiple specialized buildings, utilities, and services
+# to work together as a unified system.
+#
+# 🏆 HIGH SCHOOL EXPLANATION:
+# Think of this like planning a shopping mall or campus:
+# 1. You need different specialized buildings (containers/services)
+# 2. Each building needs utilities (ports, volumes, networks)
+# 3. Buildings need to communicate with each other (networking)
+# 4. You need backup plans if something breaks (restart policies)
+# 5. You need to monitor that everything is working (health checks)
+#
+# Docker Compose orchestrates all these pieces so they work together
+# seamlessly, like having a master facility manager who coordinates
+# all the different departments and services.
+#
+# EDUCATIONAL METAPHORS USED:
+# 🏗️ Urban Planning - Coordinating multiple buildings and services
+# 🏭 Industrial Systems - Managing interconnected manufacturing processes
+# 🎭 Theater Production - Coordinating different crews and technical systems
+# 📡 Communication Networks - Managing data flow between components
+#
+
+# 📋 ORCHESTRATION VERSION - Which Docker Compose features to use
 version: '3.8'
 
+#
+# 🏢 SERVICE DIRECTORY - All the different components of our system
+# ================================================================
+#
+# This section defines each "building" in our facility and how it should
+# be constructed, configured, and maintained.
+#
 services:
+  #
+  # 🎯 MAIN APPLICATION SERVICE - The core Debuggle error analysis system
+  # ====================================================================
+  #
+  # This is like the main office building in our facility - it houses the
+  # primary business logic and serves customers (handles error analysis requests).
+  #
   debuggle-core:
+    # 🏗️ CONSTRUCTION INSTRUCTIONS - How to build this service
     build: 
-      context: ..
-      dockerfile: docker/Dockerfile
+      context: ..                    # 📁 Build from parent directory (includes all source code)
+      dockerfile: docker/Dockerfile  # 📋 Use our custom construction instructions
+    
+    # 🚪 ACCESS POINTS - How external systems can reach this service
     ports:
-      - "8000:8000"
+      - "8000:8000"                 # 🌐 Map external port 8000 to internal port 8000
+    
+    # ⚙️ OPERATIONAL SETTINGS - Configuration for how this service runs
     environment:
-      - DEBUG=false
-      - RATE_LIMIT_PER_MINUTE=100
+      - DEBUG=false                     # 🎭 Production mode (optimized, less verbose logging)
+      - RATE_LIMIT_PER_MINUTE=100      # 🚦 Traffic control (max 100 requests per minute)
+    
+    # 📁 SHARED RESOURCES - External files this service needs access to
     volumes:
-      - ../config/.env:/app/.env:ro
-    restart: unless-stopped
+      - ../config/.env:/app/.env:ro    # 🔐 Mount configuration file (read-only for security)
+    
+    # 🔄 RESILIENCE POLICY - What to do if this service crashes
+    restart: unless-stopped            # 🛡️ Auto-restart if it crashes, but not if manually stopped
+    
+    # 🏥 HEALTH MONITORING - How to check if this service is working properly
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]  # 🩺 Health check command
+      interval: 30s                    # ⏰ Check every 30 seconds
+      timeout: 10s                     # ⏳ Wait up to 10 seconds for response
+      retries: 3                       # 🔄 Try 3 times before declaring unhealthy
+      start_period: 40s                # 🚀 Wait 40 seconds after startup before first check
 
   # Optional: Add nginx proxy for production
   # nginx:

@@ -1,42 +1,145 @@
-[build-system]
-requires = ["setuptools>=61.0", "wheel"]
-build-backend = "setuptools.build_meta"
+#
+# 📋 DEBUGGLE PROJECT BLUEPRINT - The Master Configuration Document
+# =================================================================
+#
+# This pyproject.toml file is like the "birth certificate" and "building permit"
+# for our Python project all rolled into one official document. It tells the
+# Python ecosystem everything it needs to know about our software package.
+#
+# 🏆 HIGH SCHOOL EXPLANATION:
+# Think of this like the comprehensive information packet you need when:
+# - Registering for college (personal info, requirements, what you're studying)
+# - Getting a business license (company name, what you do, who you are)  
+# - Publishing a book (title, author, description, ISBN, what stores can sell it)
+#
+# This file serves all those purposes for our Python software:
+# - Identity (name, version, author)
+# - Requirements (what Python versions, what libraries)
+# - Capabilities (what it does, who should use it)
+# - Distribution (how to package and install it)
+#
+# EDUCATIONAL METAPHORS USED:
+# 📋 Official Documentation - Birth certificates, business licenses, permits
+# 🏗️ Construction Planning - Blueprints, building codes, material specifications
+# 📚 Publishing - Book metadata, ISBN systems, library cataloging
+# 🏪 Product Packaging - Nutrition labels, ingredient lists, safety information
+#
 
+#
+# 🏭 BUILD SYSTEM SPECIFICATION - The manufacturing instructions
+# =============================================================
+#
+# This section tells Python's packaging system which tools to use when
+# building our software for distribution, like specifying which factory
+# equipment and assembly line process to use for manufacturing.
+#
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]    # 🔧 Required factory equipment (build tools)
+build-backend = "setuptools.build_meta"     # 🏭 Which assembly line process to use
+
+#
+# 🆔 PROJECT IDENTITY - The official product information
+# ======================================================
+#
+# This section is like the product label on a consumer good - it contains
+# all the essential information that identifies our software and tells
+# people what it is, who made it, and what it does.
+#
 [project]
-name = "debuggle-core"
-version = "1.0.0"
+# 🏷️ PRODUCT IDENTIFICATION - Official name and version
+name = "debuggle-core"                       # 📦 Official package name (like product SKU)
+version = "1.0.0"                           # 🔢 Version number (like model year)
+
+# 👥 CREATOR INFORMATION - Who built this software
 authors = [
     {name = "Mike Smith", email = "mike@debuggle.com"},
 ]
+
+# 📝 PRODUCT DESCRIPTION - What this software does
 description = "Intelligent error analysis that beats copy/pasting into ChatGPT"
-readme = "README.md"
-license = {file = "LICENSE"}
-requires-python = ">=3.9"
+
+# 📚 DOCUMENTATION REFERENCES - Where to find more information
+readme = "README.md"                        # 📖 Main instruction manual
+license = {file = "LICENSE"}                # ⚖️ Legal terms and conditions
+
+# 🐍 SYSTEM REQUIREMENTS - What Python versions this works with
+requires-python = ">=3.9"                   # 🔧 Minimum Python version needed
+#
+# 🏪 PRODUCT CATEGORIZATION - Store shelf placement and target audience
+# =====================================================================
+#
+# Classifiers are like the category tags in an app store or the aisle
+# placement in a supermarket. They help people find our software when
+# they're looking for solutions to specific problems.
+#
 classifiers = [
-    "Development Status :: 4 - Beta",
-    "Intended Audience :: Developers",
-    "License :: OSI Approved :: MIT License",
-    "Operating System :: OS Independent",
-    "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.9",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.12",
-    "Topic :: Software Development :: Debuggers",
-    "Topic :: Software Development :: Quality Assurance",
+    # 🚧 DEVELOPMENT MATURITY - How finished/stable is this software?
+    "Development Status :: 4 - Beta",                    # 🧪 Beta = mostly done, testing phase
+    
+    # 👥 TARGET AUDIENCE - Who should use this?
+    "Intended Audience :: Developers",                   # 💻 Built for programmers and dev teams
+    
+    # ⚖️ LEGAL FRAMEWORK - What are the usage rights?
+    "License :: OSI Approved :: MIT License",            # 📄 MIT = very permissive, business-friendly
+    
+    # 💻 PLATFORM COMPATIBILITY - What systems does this run on?
+    "Operating System :: OS Independent",                # 🌍 Works on Windows, Mac, Linux
+    
+    # 🐍 PROGRAMMING LANGUAGE SUPPORT - Python version compatibility
+    "Programming Language :: Python :: 3",              # 🐍 Python 3.x series
+    "Programming Language :: Python :: 3.9",            # ✅ Supports Python 3.9
+    "Programming Language :: Python :: 3.10",           # ✅ Supports Python 3.10
+    "Programming Language :: Python :: 3.11",           # ✅ Supports Python 3.11
+    "Programming Language :: Python :: 3.12",           # ✅ Supports Python 3.12
+    
+    # 🎯 PROBLEM DOMAIN - What category of problems does this solve?
+    "Topic :: Software Development :: Debuggers",        # 🐛 Debugging and error analysis tools
+    "Topic :: Software Development :: Quality Assurance", # ✅ Code quality and testing tools
 ]
+
+#
+# 🔍 SEARCH KEYWORDS - How people will find our software
+# ======================================================
+#
+# These are like hashtags or SEO keywords that help people discover our
+# software when they search for solutions. Think of them like the tags
+# on a YouTube video or Instagram post.
+#
 keywords = ["debugging", "error-analysis", "logging", "development-tools", "chatgpt-alternative"]
 
+#
+# 📦 DEPENDENCY MANIFEST - What other software packages we need
+# ============================================================
+#
+# This is like the ingredients list on a recipe or the parts list for
+# building a complex machine. Our software depends on these other
+# packages to function properly.
+#
+# 🏆 HIGH SCHOOL EXPLANATION:
+# Think of this like planning a complex school project:
+# - You need specific supplies (libraries) to complete different parts
+# - Some supplies have minimum quality requirements (version numbers)
+# - If you're missing any supply, the project won't work properly
+#
 dependencies = [
-    "fastapi>=0.68.0",
-    "uvicorn[standard]>=0.15.0",
-    "pydantic>=2.0.0",
-    "pydantic-settings>=2.0.0",
-    "pygments>=2.9.0",
-    "rich>=12.0.0",
-    "slowapi>=0.1.7",
-    "python-multipart>=0.0.5",
-    "langdetect>=1.0.9",
+    # 🌐 WEB SERVER FOUNDATION - The core web service framework
+    "fastapi>=0.68.0",              # 🚀 Modern, fast web API framework (like Express.js for Python)
+    "uvicorn[standard]>=0.15.0",     # ⚡ High-performance web server (runs our FastAPI app)
+    
+    # 📋 DATA VALIDATION & SETTINGS - Ensuring data quality and configuration
+    "pydantic>=2.0.0",              # ✅ Data validation and serialization (like form validation)
+    "pydantic-settings>=2.0.0",     # ⚙️ Configuration management (reading settings files)
+    
+    # 🎨 TEXT PROCESSING & DISPLAY - Making code and errors look good
+    "pygments>=2.9.0",              # 🌈 Syntax highlighting for code (like VS Code colors)
+    "rich>=12.0.0",                 # 📺 Beautiful terminal output with colors and formatting
+    
+    # 🚦 TRAFFIC CONTROL & FILE HANDLING - Managing requests and uploads
+    "slowapi>=0.1.7",               # 🛡️ Rate limiting (prevents server overload)
+    "python-multipart>=0.0.5",      # 📁 File upload handling (processes uploaded log files)
+    
+    # 🌍 LANGUAGE DETECTION - Identifying programming languages in logs
+    "langdetect>=1.0.9",            # 🔍 Automatic language detection (Python vs Java vs etc.)
 ]
 
 [project.optional-dependencies]
