@@ -701,6 +701,117 @@
             }
         }
 
+        /* Self-monitoring panel styles */
+        .self-monitoring-section {
+            margin-top: 40px;
+            background: linear-gradient(135deg, #fff3e0 0%, #fce4ec 100%);
+            border-radius: 15px;
+            border: 2px solid #ff6b35;
+            overflow: hidden;
+        }
+
+        .self-monitoring-section .section-header {
+            background: linear-gradient(135deg, #ff6b35 0%, #c44569 100%);
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .self-monitoring-section h3 {
+            margin: 0;
+            font-size: 1.4em;
+        }
+
+        .self-monitoring-section .controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: all 0.3s ease;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-1px);
+        }
+
+        .self-monitoring-status {
+            padding: 20px;
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+
+        .self-monitoring-status p {
+            margin: 0;
+            font-weight: 600;
+        }
+
+        .self-monitoring-status span {
+            color: #c44569;
+            font-weight: 700;
+        }
+
+        .self-monitoring-errors {
+            padding: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .self-error-item {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-left: 4px solid #ff6b35;
+            box-shadow: 0 2px 8px rgba(255, 107, 53, 0.1);
+        }
+
+        .self-error-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .self-error-type {
+            font-weight: 700;
+            color: #c44569;
+        }
+
+        .self-error-time {
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        .self-error-message {
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        .self-error-context {
+            font-size: 0.9em;
+            color: #666;
+            padding: 8px 12px;
+            background: #f8f9fa;
+            border-radius: 6px;
+        }
+
         @media (max-width: 768px) {
             .container {
                 margin: 10px;
@@ -722,6 +833,11 @@
         <div class="header">
             <h1>🐞 Debuggle</h1>
             <p>Transform chaotic logs into clear, understandable insights</p>
+            <div style="margin-top: 15px;">
+                <button class="btn-secondary" onclick="toggleSelfMonitoringPanel()" id="showSelfMonitoring">
+                    🔧 Developer Tools
+                </button>
+            </div>
         </div>
 
         <div class="main-content">
@@ -805,6 +921,34 @@
 
                 <div class="metadata-section" id="metadataSection">
                     <!-- Metadata will be populated here -->
+                </div>
+            </div>
+
+            <!-- Self-monitoring panel -->
+            <div class="self-monitoring-section" id="selfMonitoringSection" style="display: none;">
+                <div class="section-header">
+                    <h3>🐞 Debuggle Self-Monitoring</h3>
+                    <div class="controls">
+                        <button class="btn-secondary" onclick="toggleSelfMonitoring()" id="selfMonitoringToggle">
+                            Enable Monitoring
+                        </button>
+                        <button class="btn-secondary" onclick="clearSelfMonitoringErrors()">
+                            Clear Errors
+                        </button>
+                        <button class="btn-secondary" onclick="testSelfMonitoring()">
+                            Test Error
+                        </button>
+                        <button class="btn-secondary" onclick="toggleSelfMonitoringPanel()">
+                            Hide Panel
+                        </button>
+                    </div>
+                </div>
+                <div class="self-monitoring-status" id="selfMonitoringStatus">
+                    <p>Status: <span id="monitoringStatusText">Checking...</span></p>
+                    <p>Internal Errors: <span id="errorCountText">0</span></p>
+                </div>
+                <div class="self-monitoring-errors" id="selfMonitoringErrors">
+                    <!-- Recent errors will appear here -->
                 </div>
             </div>
 
@@ -918,6 +1062,12 @@
                     showRealtimeErrorNotification(errorEvent);
                     break;
                     
+                case 'self_monitoring_error':
+                    // Debuggle's own internal error
+                    console.warn('🐞 Debuggle Internal Error:', data.error);
+                    showSelfMonitoringError(data.error);
+                    break;
+                    
                 case 'stats_update':
                     console.log('Error stats updated:', data.error_stats);
                     break;
@@ -988,9 +1138,217 @@
             }, 5000);
         }
         
+        function showSelfMonitoringError(error) {
+            // Create a special notification for Debuggle's own errors
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 80px;
+                right: 20px;
+                background: linear-gradient(135deg, #ff4757 0%, #c44569 100%);
+                color: white;
+                padding: 20px;
+                border-radius: 15px;
+                box-shadow: 0 8px 24px rgba(255, 71, 87, 0.4);
+                z-index: 1001;
+                max-width: 400px;
+                border-left: 5px solid #fff;
+                animation: slideInRight 0.3s ease-out;
+            `;
+            
+            const timestamp = new Date(error.timestamp).toLocaleTimeString();
+            const contextInfo = error.context ? ` (${error.context})` : '';
+            const endpointInfo = error.endpoint ? ` at ${error.endpoint}` : '';
+            
+            notification.innerHTML = `
+                <div style="display: flex; align-items: center; margin-bottom: 10px;">
+                    <span style="font-size: 1.5em; margin-right: 10px;">🐞</span>
+                    <strong>Debuggle Internal Error</strong>
+                </div>
+                <div style="margin-bottom: 8px;">
+                    <strong>${error.error_type}</strong>${contextInfo}${endpointInfo}
+                </div>
+                <div style="font-size: 0.9em; margin-bottom: 8px; opacity: 0.9;">
+                    ${error.message.substring(0, 150)}${error.message.length > 150 ? '...' : ''}
+                </div>
+                <div style="font-size: 0.8em; opacity: 0.7;">
+                    ${timestamp} • Source: ${error.source}
+                </div>
+                ${error.traceback ? `
+                    <details style="margin-top: 10px; font-size: 0.8em;">
+                        <summary style="cursor: pointer; opacity: 0.8;">View Traceback</summary>
+                        <pre style="margin-top: 8px; padding: 8px; background: rgba(0,0,0,0.2); border-radius: 5px; font-size: 0.7em; white-space: pre-wrap; max-height: 200px; overflow-y: auto;">${error.traceback}</pre>
+                    </details>
+                ` : ''}
+            `;
+            
+            document.body.appendChild(notification);
+            
+            // Add click to dismiss
+            notification.style.cursor = 'pointer';
+            notification.onclick = () => {
+                notification.style.animation = 'slideOutRight 0.3s ease-in';
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.parentNode.removeChild(notification);
+                    }
+                }, 300);
+            };
+            
+            // Auto-remove after 10 seconds (longer for self-monitoring errors)
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.style.animation = 'slideOutRight 0.3s ease-in';
+                    setTimeout(() => {
+                        if (notification.parentNode) {
+                            notification.parentNode.removeChild(notification);
+                        }
+                    }, 300);
+                }
+            }, 10000);
+        }
+        
         function sendWebSocketMessage(message) {
             if (websocket && websocket.readyState === WebSocket.OPEN) {
                 websocket.send(JSON.stringify(message));
+            }
+        }
+        
+        // Self-monitoring functionality
+        let selfMonitoringEnabled = false;
+        
+        function toggleSelfMonitoringPanel() {
+            const panel = document.getElementById('selfMonitoringSection');
+            const button = document.getElementById('showSelfMonitoring');
+            
+            if (panel.style.display === 'none' || !panel.style.display) {
+                panel.style.display = 'block';
+                button.textContent = '🔧 Hide Developer Tools';
+                // Load initial status
+                refreshSelfMonitoringStatus();
+            } else {
+                panel.style.display = 'none';
+                button.textContent = '🔧 Developer Tools';
+            }
+        }
+        
+        async function toggleSelfMonitoring() {
+            const newState = !selfMonitoringEnabled;
+            
+            try {
+                const response = await fetch('/api/v1/self-monitor/toggle', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ enabled: newState })
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    selfMonitoringEnabled = result.enabled;
+                    updateSelfMonitoringToggleButton();
+                    refreshSelfMonitoringStatus();
+                } else {
+                    console.error('Failed to toggle self-monitoring');
+                }
+            } catch (error) {
+                console.error('Error toggling self-monitoring:', error);
+            }
+        }
+        
+        function updateSelfMonitoringToggleButton() {
+            const button = document.getElementById('selfMonitoringToggle');
+            button.textContent = selfMonitoringEnabled ? 'Disable Monitoring' : 'Enable Monitoring';
+            button.style.background = selfMonitoringEnabled ? 
+                'rgba(244, 67, 54, 0.2)' : 'rgba(76, 175, 80, 0.2)';
+        }
+        
+        async function refreshSelfMonitoringStatus() {
+            try {
+                const response = await fetch('/api/v1/self-monitor/status');
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    document.getElementById('monitoringStatusText').textContent = 
+                        data.monitoring_enabled ? 'Active' : 'Inactive';
+                    document.getElementById('errorCountText').textContent = 
+                        data.total_errors;
+                    
+                    selfMonitoringEnabled = data.monitoring_enabled;
+                    updateSelfMonitoringToggleButton();
+                    
+                    // Display recent errors
+                    displaySelfMonitoringErrors(data.recent_errors);
+                }
+            } catch (error) {
+                console.error('Error refreshing self-monitoring status:', error);
+            }
+        }
+        
+        function displaySelfMonitoringErrors(errors) {
+            const container = document.getElementById('selfMonitoringErrors');
+            
+            if (!errors || errors.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #666; padding: 20px;">No recent errors</p>';
+                return;
+            }
+            
+            container.innerHTML = errors.map(error => {
+                const timestamp = new Date(error.timestamp).toLocaleString();
+                const contextInfo = error.context ? ` (${error.context})` : '';
+                const endpointInfo = error.endpoint ? ` at ${error.endpoint}` : '';
+                
+                return `
+                    <div class="self-error-item">
+                        <div class="self-error-header">
+                            <span class="self-error-type">${error.error_type}${contextInfo}${endpointInfo}</span>
+                            <span class="self-error-time">${timestamp}</span>
+                        </div>
+                        <div class="self-error-message">${error.message}</div>
+                        ${error.source ? `<div class="self-error-context">Source: ${error.source}</div>` : ''}
+                        ${error.traceback ? `
+                            <details style="margin-top: 10px;">
+                                <summary style="cursor: pointer; color: #c44569;">View Traceback</summary>
+                                <pre style="margin-top: 8px; padding: 12px; background: #f8f9fa; border-radius: 6px; font-size: 0.8em; white-space: pre-wrap; max-height: 200px; overflow-y: auto;">${error.traceback}</pre>
+                            </details>
+                        ` : ''}
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        async function clearSelfMonitoringErrors() {
+            try {
+                const response = await fetch('/api/v1/self-monitor/clear', {
+                    method: 'POST'
+                });
+                
+                if (response.ok) {
+                    refreshSelfMonitoringStatus();
+                } else {
+                    console.error('Failed to clear self-monitoring errors');
+                }
+            } catch (error) {
+                console.error('Error clearing self-monitoring errors:', error);
+            }
+        }
+        
+        async function testSelfMonitoring() {
+            try {
+                const response = await fetch('/api/v1/self-monitor/test-error', {
+                    method: 'POST'
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    // Refresh status to show the new test error
+                    setTimeout(() => refreshSelfMonitoringStatus(), 500);
+                } else {
+                    console.error('Failed to generate test error');
+                }
+            } catch (error) {
+                console.error('Error generating test error:', error);
             }
         }
         

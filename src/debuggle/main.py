@@ -30,6 +30,7 @@ from .models import (
 from .processor import LogProcessor
 from .config_v2 import settings
 from .realtime import connection_manager, error_monitor
+from .self_monitor import setup_self_monitoring
 
 # Initialize rate limiter
 limiter = Limiter(key_func=get_remote_address)
@@ -56,6 +57,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Set up self-monitoring system
+self_monitor = setup_self_monitoring(app, connection_manager)
+
 # Mount static files (HTML frontend) - only if directory exists
 import os
 static_dir = "assets/static"
@@ -69,6 +73,9 @@ processor = LogProcessor()
 @app.exception_handler(Exception)
 async def general_exception_handler(request: Request, exc: Exception):
     """Handle unexpected exceptions."""
+    # Capture the exception in self-monitoring
+    self_monitor.capture_exception(exc, "global_exception_handler", request)
+    
     return JSONResponse(
         status_code=500,
         content=ErrorResponse(
@@ -565,7 +572,7 @@ async def log_requests(request: Request, call_next):
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(
-        "app.main:app",
+        app,
         host="0.0.0.0",
         port=8000,
         reload=settings.debug
