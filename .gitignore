@@ -98,6 +98,11 @@ temp/
 # Build artifacts
 build_standalone/
 *.spec
+debuggle-*-x64/
+debuggle-*-x64.tar.gz
+
+# Tag test artifacts
+tag_test.log
 
 # Temporary analysis and documentation files
 *_ANALYSIS_REPORT.md
