@@ -6,6 +6,7 @@ from pygments.lexers import get_lexer_by_name, guess_lexer
 from pygments.formatters import TerminalFormatter
 from pygments.util import ClassNotFound
 from langdetect import detect, DetectorFactory
+from .error_fixes import ERROR_FIX_PATTERNS, generate_enhanced_error_summary
 
 # Set seed for consistent language detection
 DetectorFactory.seed = 0
@@ -214,7 +215,12 @@ class LogProcessor:
         return sorted(list(tags))
     
     def generate_summary(self, text: str) -> Optional[str]:
-        """Generate a simple, easy-to-understand summary."""
+        """Generate enhanced summary with actionable fix suggestions."""
+        # Check for specific error patterns first and provide detailed help
+        enhanced_summary = generate_enhanced_error_summary(text)
+        if enhanced_summary:
+            return enhanced_summary
+            
         # Special handling for stack traces
         if self._is_stack_trace(text):
             return self._generate_stack_trace_summary(text)
