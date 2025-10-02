@@ -65,6 +65,7 @@ debuggle = "cli.debuggle_cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
+include = ["debuggle*"]
 
 [tool.setuptools.package-data]
 debuggle = ["py.typed"]

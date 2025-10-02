@@ -9,7 +9,7 @@ import os
 from functools import lru_cache
 from pathlib import Path
 from typing import List, Optional, Dict, Any, Union
-from pydantic import Field, validator
+from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings
 from pydantic_settings import SettingsConfigDict
 from enum import Enum
@@ -152,37 +152,34 @@ class Settings(BaseSettings):
     security: SecuritySettings = Field(default_factory=SecuritySettings)
     database: DatabaseSettings = Field(default_factory=DatabaseSettings)
     
-    @validator('environment', pre=True)
+    @field_validator('environment', mode='before')
+    @classmethod
     def validate_environment(cls, v):
-        """Validate and normalize environment."""
+        """Validate and normalize environment value."""
         if isinstance(v, str):
-            return Environment(v.lower())
+            return v.lower()
         return v
-    
-    @validator('debug', pre=True, always=True)
-    def set_debug_from_environment(cls, v, values):
-        """Auto-set debug mode based on environment."""
-        env = values.get('environment', Environment.DEVELOPMENT)
-        if env == Environment.DEVELOPMENT:
-            return True
+
+    @field_validator('debug', mode='before')
+    @classmethod 
+    def validate_debug(cls, v, info):
+        """Set debug based on environment if not explicitly set."""
+        if v is None:
+            env = info.data.get('environment', Environment.DEVELOPMENT)
+            return env in [Environment.DEVELOPMENT, Environment.TESTING]
         return v
-    
-    @validator('log_level', pre=True, always=True)
-    def set_log_level_from_environment(cls, v, values):
-        """Auto-set log level based on environment."""
-        env = values.get('environment', Environment.DEVELOPMENT)
-        debug = values.get('debug', False)
-        
-        if debug or env == Environment.DEVELOPMENT:
-            return LogLevel.DEBUG
-        elif env == Environment.TESTING:
-            return LogLevel.ERROR
-        elif env in [Environment.STAGING, Environment.PRODUCTION]:
-            return LogLevel.INFO
-        
-        return v
-    
-    @property
+
+    @field_validator('log_level', mode='before')
+    @classmethod
+    def validate_log_level(cls, v, info):
+        """Set log level based on debug flag if not explicitly set."""
+        if v is None:
+            debug = info.data.get('debug', False)
+            if debug is None:
+                env = info.data.get('environment', Environment.DEVELOPMENT)
+                debug = env in [Environment.DEVELOPMENT, Environment.TESTING]
+            return LogLevel.DEBUG if debug else LogLevel.INFO
+        return v.upper() if isinstance(v, str) else v    @property
     def is_development(self) -> bool:
         """Check if running in development mode."""
         return self.environment == Environment.DEVELOPMENT
@@ -300,7 +297,7 @@ def get_settings() -> Settings:
     elif env == 'testing':
         return TestingSettings()
     else:
-        return Settings(environment=env)
+        return Settings(environment=Environment.DEVELOPMENT)
 
 
 def get_settings_for_env(environment: str) -> Settings:
@@ -314,7 +311,7 @@ def get_settings_for_env(environment: str) -> Settings:
     elif env == 'testing':
         return TestingSettings()
     else:
-        return Settings(environment=env)
+        return Settings(environment=Environment.DEVELOPMENT)
 
 
 # Global settings instance
