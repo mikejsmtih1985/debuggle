@@ -5,6 +5,7 @@ Comparison script: Shows what you'd paste to ChatGPT vs. what Debuggle Core anal
 
 import subprocess
 import sys
+import os
 
 def show_chatgpt_vs_debuggle(demo_num):
     """Show side-by-side comparison."""
@@ -12,10 +13,14 @@ def show_chatgpt_vs_debuggle(demo_num):
     print("🔥 CHATGPT vs DEBUGGLE CORE COMPARISON")
     print("=" * 60)
     
+    # Get the directory where this script is located
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    project_root = os.path.dirname(script_dir)
+    
     # Run the demo and capture output
     result = subprocess.run([
         sys.executable, "demo_errors.py", str(demo_num)
-    ], capture_output=True, text=True, cwd="/home/mikej/debuggle/examples")
+    ], capture_output=True, text=True, cwd=script_dir)
     
     error_output = result.stderr + result.stdout
     
@@ -41,9 +46,12 @@ def show_chatgpt_vs_debuggle(demo_num):
     print("-" * 40)
     
     # Run through Debuggle Core
+    venv_python = os.path.join(project_root, ".venv", "bin", "python")
+    cli_path = os.path.join(project_root, "cli", "debuggle_cli.py")
+    
     debuggle_result = subprocess.run([
-        "/home/mikej/debuggle/.venv/bin/python", "/home/mikej/debuggle/cli/debuggle_cli.py"
-    ], input=error_output, capture_output=True, text=True)
+        venv_python, cli_path
+    ], input=error_output, capture_output=True, text=True, cwd=project_root)
     
     print(debuggle_result.stdout)
     

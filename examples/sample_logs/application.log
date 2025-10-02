@@ -1,0 +1,32 @@
+2025-10-02 10:00:00 INFO: Application started successfully
+2025-10-02 10:00:01 DEBUG: Loading configuration from /etc/myapp/config.yml
+2025-10-02 10:00:02 INFO: Database connection established: postgresql://localhost:5432/myapp
+2025-10-02 10:00:03 INFO: Redis cache connection established: redis://localhost:6379
+2025-10-02 10:00:05 INFO: Starting web server on port 8000
+2025-10-02 10:05:12 INFO: Processing user request: GET /api/users
+2025-10-02 10:05:13 DEBUG: Query executed: SELECT * FROM users WHERE active = true
+2025-10-02 10:05:14 INFO: Returned 42 users
+2025-10-02 10:08:23 WARN: High memory usage detected: 85% of 8GB used
+2025-10-02 10:10:45 ERROR: Database connection lost: connection timeout after 30s
+2025-10-02 10:10:46 INFO: Attempting database reconnection...
+2025-10-02 10:10:47 ERROR: Reconnection failed: max retries exceeded
+2025-10-02 10:10:48 CRITICAL: Service degraded: operating in cache-only mode
+2025-10-02 10:15:22 INFO: Database connection restored
+2025-10-02 10:15:23 INFO: Service restored: full functionality available
+2025-10-02 10:20:11 ERROR: Failed to process payment for user 12345
+Traceback (most recent call last):
+  File "/app/payment/processor.py", line 45, in process_payment
+    result = payment_gateway.charge(amount, card_token)
+  File "/app/payment/gateway.py", line 78, in charge
+    response = self.api_client.post('/charges', data)
+  File "/app/http/client.py", line 23, in post
+    return self._request('POST', url, json=data)
+  File "/app/http/client.py", line 15, in _request
+    response.raise_for_status()
+  File "/usr/local/lib/python3.11/site-packages/requests/models.py", line 1021, in raise_for_status
+    raise HTTPError(f'{response.status_code} Server Error: {response.reason} for url: {response.url}')
+requests.exceptions.HTTPError: 402 Payment Required: Insufficient funds for url: https://api.payment.com/charges
+2025-10-02 10:25:33 WARN: Rate limit approaching for API key: api_key_***456
+2025-10-02 10:30:15 INFO: Scheduled backup completed: 2.3GB backed up to S3
+2025-10-02 10:35:42 DEBUG: Cache cleanup: removed 1,234 expired entries
+2025-10-02 10:40:18 INFO: Health check passed: all systems operational

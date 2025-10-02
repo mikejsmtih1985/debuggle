@@ -17,43 +17,59 @@ This directory contains demonstrations showing how Debuggle Core beats ChatGPT f
 
 ## � **Quick Start**
 
-### **1. Basic Comparison**
+### **🚀 Easy Way (Recommended): Use Demo Wrapper**
 ```bash
-# See what ChatGPT gets vs. what Debuggle Core analyzes:
-python compare_chatgpt.py 1
+# From anywhere in the project:
+./scripts/demo.sh health              # Check if everything works
+./scripts/demo.sh demo 1              # Run IndexError demo  
+./scripts/demo.sh compare 2           # Compare KeyError with ChatGPT
+./scripts/demo.sh flask-demo          # Start Flask app with bugs
 ```
 
-### **2. Try Different Error Types**
+### **📋 Available Demo Commands**
 ```bash
-python compare_chatgpt.py 2    # KeyError
-python compare_chatgpt.py 3    # AttributeError  
-python compare_chatgpt.py 4    # ImportError
-python compare_chatgpt.py 5    # TypeError
-python compare_chatgpt.py 6    # FileNotFoundError
-python compare_chatgpt.py 7    # ZeroDivisionError
+./scripts/demo.sh demo 1        # IndexError Demo
+./scripts/demo.sh demo 2        # KeyError Demo  
+./scripts/demo.sh demo 3        # AttributeError Demo
+./scripts/demo.sh demo 4        # ImportError Demo
+./scripts/demo.sh demo 5        # TypeError Demo
+./scripts/demo.sh demo 6        # FileNotFoundError Demo
+./scripts/demo.sh demo 7        # ZeroDivisionError Demo
 ```
 
-### **3. Direct CLI Usage**
+### **🔍 ChatGPT Comparisons**
 ```bash
-# Generate error and pipe to Debuggle Core:
-python demo_errors.py 1 2>&1 | ../cli/debuggle_cli.py
-
-# Or save to file first:
-python demo_errors.py 2 > error.log 2>&1
-../cli/debuggle_cli.py error.log
+./scripts/demo.sh compare 1     # See what ChatGPT misses vs Debuggle
+./scripts/demo.sh compare 2     # KeyError comparison
+./scripts/demo.sh compare 3     # AttributeError comparison
+# ... etc for all 7 demos
 ```
 
-### **4. Web Application Demo**
+### **🌐 Web Application Demo**
 ```bash
-# Install demo dependencies:
-pip install -r requirements.demo.txt
-
 # Start the buggy Flask app:
-cd demo_app && python app.py
+./scripts/demo.sh flask-demo
 
 # In another terminal, trigger errors:
-curl http://localhost:5000/users/5  # IndexError
-curl http://localhost:5000/calculate/conversion  # ZeroDivisionError
+curl http://localhost:5000/users/5                  # IndexError
+curl http://localhost:5000/users/1/profile          # KeyError  
+curl http://localhost:5000/calculate/conversion     # ZeroDivisionError
+curl http://localhost:5000/process_data             # TypeError
+curl http://localhost:5000/load_config              # AttributeError
+```
+
+### **🔧 Manual Usage (Advanced)**
+```bash
+# Activate environment first:
+cd /path/to/debuggle && source .venv/bin/activate
+
+# Then run demos:
+cd examples
+python3 demo_errors.py 1 2>&1 | python3 ../cli/debuggle_cli.py
+python3 compare_chatgpt.py 2
+
+# Test with log files:
+python3 ../cli/debuggle_cli.py sample_logs/application.log
 ```
 
 ## 🎯 **What You'll See**
@@ -96,26 +112,32 @@ IndexError: list index out of range
 
 ### **Terminal Integration**
 ```bash
-# Any command that might error:
-python your_script.py 2>&1 | debuggle
+# From project root with environment activated:
+cd /path/to/debuggle && source .venv/bin/activate
 
-# Watch log files:
-debuggle --watch server.log
+# Any command that might error:
+python your_script.py 2>&1 | python cli/debuggle_cli.py
+
+# Process log files:
+python cli/debuggle_cli.py server.log
+python cli/debuggle_cli.py error.log
 ```
 
 ### **Development Workflow**
 ```bash
 # Pre-commit hook example:
-python -m pytest 2>&1 | debuggle
+cd /path/to/debuggle && source .venv/bin/activate
+python -m pytest 2>&1 | python cli/debuggle_cli.py
 ```
 
 ### **CI/CD Pipeline**
 ```bash
 # GitHub Actions example:
 run: |
+  cd debuggle && source .venv/bin/activate
   pytest 2>&1 | tee test_output.log
   if [ $? -ne 0 ]; then
-    debuggle test_output.log > analysis.md
+    python cli/debuggle_cli.py test_output.log > analysis.md
   fi
 ```
 
