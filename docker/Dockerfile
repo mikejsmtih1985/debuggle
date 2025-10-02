@@ -127,14 +127,72 @@ RUN pip install --no-cache-dir -e .
 # Create non-root user for security
 RUN adduser --disabled-password --gecos '' appuser \
     && chown -R appuser:appuser /app
+
+#
+# 👤 SECURITY CHECKPOINT - Switching to non-privileged crew member
+# ==============================================================
+#
+# 🏆 HIGH SCHOOL EXPLANATION:
+# This is like switching from the ship captain to a regular crew member
+# before the ship starts its journey. In computing, we don't want our
+# application running with "superuser" powers (like being the captain)
+# because if something goes wrong, it could take over the whole system.
+# 
+# Instead, we switch to a regular user account that can only do what
+# it needs to do - like a crew member who can work on the ship but
+# can't change the navigation or engine settings.
+#
 USER appuser
 
-# Expose port
+#
+# 🚪 PORT ANNOUNCEMENT - Opening the shipping dock for deliveries  
+# =============================================================
+#
+# 🏆 HIGH SCHOOL EXPLANATION:
+# This tells Docker "our application will be listening on port 8000"
+# like putting up a sign that says "Deliveries accepted at Dock 8000".
+#
+# Think of ports like numbered docks at a shipping port. When other
+# services want to talk to our application, they know to send their
+# messages to "dock 8000" on our container ship.
+#
 EXPOSE 8000
 
-# Health check using Python instead of curl
+#
+# 🏥 HEALTH MONITORING - Installing the ship's medical system
+# =========================================================
+#
+# 🏆 HIGH SCHOOL EXPLANATION:
+# This sets up an automatic health check system, like having a ship's
+# doctor who checks on the crew every 30 seconds. If our application
+# stops responding (like if the crew gets sick), Docker will know
+# something is wrong and can take action.
+#
+# The health check works by:
+# 1. Every 30 seconds, send a "ping" to our application
+# 2. Wait up to 30 seconds for a response  
+# 3. If it fails 3 times in a row, mark the container as "unhealthy"
+# 4. This allows Docker to restart the container or alert monitoring systems
+#
 HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
     CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')" || exit 1
 
-# Run the application
+#
+# 🚀 LAUNCH SEQUENCE - Starting the application engines
+# ====================================================
+#
+# 🏆 HIGH SCHOOL EXPLANATION:
+# This is the final command that actually starts our application, like
+# turning the key to start a ship's engines. When Docker runs our container,
+# this is the command it will execute.
+#
+# Breaking down the command:
+# • uvicorn = The web server engine (like the ship's engine)
+# • src.debuggle.main:app = The location of our application (like the ship's bridge)
+# • --host 0.0.0.0 = Listen on all network interfaces (accept visitors from any dock)
+# • --port 8000 = Use port 8000 (the same dock we announced above)
+#
+# This command will keep running until the container is stopped, just like
+# how a ship's engines keep running until the captain orders them to stop.
+#
 CMD ["uvicorn", "src.debuggle.main:app", "--host", "0.0.0.0", "--port", "8000"]

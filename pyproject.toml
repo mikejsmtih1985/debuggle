@@ -173,67 +173,119 @@ include = ["debuggle*"]
 [tool.setuptools.package-data]
 debuggle = ["py.typed"]
 
+# ===================================================================
+# 🎨 CODE STYLE ENFORCEMENT - The Company Dress Code Manual
+# ===================================================================
+#
+# 🏆 HIGH SCHOOL EXPLANATION:
+# This section defines how our Python code should be formatted, like
+# having a dress code at a professional business. Just like a company
+# might say "shirts must be tucked in" or "no sneakers in the office",
+# this tells our code formatter exactly how to make our code look
+# professional and consistent.
+#
 [tool.black]
-line-length = 100
-target-version = ['py39']
-include = '\.pyi?$'
-extend-exclude = '''
+line-length = 100          # Like saying "keep sentences under 100 characters"
+target-version = ['py39']   # The version of Python "language" we're writing in
+include = '\.pyi?$'        # Which files to format (Python files ending in .py)
+extend-exclude = '''       # Which folders to ignore (like "don't dress-code the janitor's closet")
 /(
   # directories
-  \.eggs
-  | \.git
-  | \.hg
-  | \.mypy_cache
-  | \.tox
-  | \.venv
-  | build
-  | dist
+  \.eggs          # Build artifacts (temporary files)
+  | \.git         # Version control system files
+  | \.hg          # Another version control system
+  | \.mypy_cache  # Type checker cache
+  | \.tox         # Testing environment cache
+  | \.venv        # Virtual environment
+  | build         # Build output folder
+  | dist          # Distribution packages
 )/
 '''
 
+# ===================================================================
+# 🧪 TESTING LABORATORY - Quality Control Department Settings
+# ===================================================================
+#
+# 🏆 HIGH SCHOOL EXPLANATION:
+# This section configures our automated testing system, like setting
+# up the rules for a science lab. Just like a chemistry lab has safety
+# protocols and procedures, this defines how our code tests should run
+# to ensure everything works correctly before we ship to customers.
+#
 [tool.pytest.ini_options]
-minversion = "7.0"
-addopts = [
-    "--strict-markers",
-    "--strict-config",
-    "--cov=src/debuggle",
-    "--cov-report=term-missing",
-    "--cov-report=html",
-    "--cov-branch",
+minversion = "7.0"          # Minimum version of our testing equipment required
+addopts = [                 # Standard testing procedures (like lab safety rules)
+    "--strict-markers",     # Be strict about test categories (like "label all chemicals")
+    "--strict-config",      # Be strict about configuration (like "follow safety protocols exactly")
+    "--cov=src/debuggle",   # Measure how much of our code gets tested (like quality control coverage)
+    "--cov-report=term-missing",  # Show what's not tested in the terminal
+    "--cov-report=html",    # Create a web report showing test coverage
+    "--cov-branch",         # Test all code paths, not just lines
 ]
-testpaths = ["tests"]
-python_files = ["test_*.py"]
-python_classes = ["Test*"]
-python_functions = ["test_*"]
+testpaths = ["tests"]       # Where to find our test procedures (like the lab manual location)
+python_files = ["test_*.py"] # Which files contain tests (like "files starting with 'test_'")
+python_classes = ["Test*"]      # Test classes should start with "Test"
+python_functions = ["test_*"]  # Test functions should start with "test_"
 
+# ===================================================================
+# 📊 QUALITY COVERAGE MEASUREMENT - Performance Audit Department
+# ===================================================================
+#
+# 🏆 HIGH SCHOOL EXPLANATION:
+# This section configures how we measure code coverage, like having
+# auditors check what percentage of a business gets inspected during
+# a quality review. We want to make sure our tests actually check
+# most of our code, not just the easy parts.
+#
 [tool.coverage.run]
-source = ["src/debuggle"]
-branch = true
+source = ["src/debuggle"]   # Which parts of our business to audit (like "check the main office")
+branch = true               # Check all decision paths (like "audit both the 'yes' and 'no' choices")
 
 [tool.coverage.report]
-show_missing = true
-skip_covered = false
-fail_under = 89
+show_missing = true         # Point out what wasn't checked (like "highlight missed areas")
+skip_covered = false        # Show everything, even fully-tested parts
+fail_under = 89            # Require at least 89% coverage (like "we need 89% audit completion")
 
+# ===================================================================
+# 🔍 TYPE CHECKING SYSTEM - The Grammar Police Department
+# ===================================================================
+#
+# 🏆 HIGH SCHOOL EXPLANATION:
+# This section configures MyPy, which is like having a grammar checker
+# for our code. Just like how a grammar checker catches when you use
+# "their" instead of "there", MyPy catches when we use the wrong type
+# of data (like trying to add a number to a word).
+#
 [tool.mypy]
-python_version = "3.9"
-warn_return_any = true
-warn_unused_configs = true
-disallow_untyped_defs = true
-disallow_incomplete_defs = true
-check_untyped_defs = true
-disallow_untyped_decorators = true
-no_implicit_optional = true
-warn_redundant_casts = true
-warn_unused_ignores = true
-warn_no_return = true
-warn_unreachable = true
-strict_equality = true
+python_version = "3.9"                # Which version of Python "grammar rules" to follow
+warn_return_any = true              # Warn about vague return types (like "return something")
+warn_unused_configs = true          # Point out unused settings (like unused grammar rules)
+disallow_untyped_defs = true        # Require clear function signatures (like "declare what you do")
+disallow_incomplete_defs = true     # Don't allow half-finished type hints
+check_untyped_defs = true           # Check functions even without type hints
+disallow_untyped_decorators = true  # Require type hints on decorators
+no_implicit_optional = true         # Be explicit about optional parameters
+warn_redundant_casts = true         # Point out unnecessary type conversions
+warn_unused_ignores = true          # Warn about unused "ignore" comments
+warn_no_return = true               # Warn about functions that should return something
+warn_unreachable = true             # Point out code that can never be reached
+strict_equality = true              # Be strict about comparing different types
 
+# ===================================================================
+# 📚 EXTERNAL LIBRARY EXCEPTIONS - Foreign Language Department
+# ===================================================================
+#
+# 🏆 HIGH SCHOOL EXPLANATION:
+# Sometimes we use external libraries (code written by other people)
+# that don't have proper type hints. This is like having foreign
+# exchange students who speak different "grammar rules". Instead of
+# failing our grammar check, we make exceptions for these specific
+# libraries and trust that they work correctly.
+#
 [[tool.mypy.overrides]]
 module = [
-    "langdetect.*",
-    "pygments.*",
-    "slowapi.*",
+    "langdetect.*",         # Language detection library
+    "pygments.*",          # Code syntax highlighting library  
+    "slowapi.*",           # Rate limiting library
 ]
-ignore_missing_imports = true
+ignore_missing_imports = true   # Don't fail if these libraries lack type information
