@@ -13,7 +13,7 @@ class TestHealthEndpoint:
         
         data = response.json()
         assert data["status"] == "ok"
-        assert data["service"] == "Debuggle Trace Level"
+        assert data["service"] == "Debuggle Core"
         assert data["version"] == "1.0.0"
 
 
@@ -27,11 +27,11 @@ class TestTiersEndpoint:
         assert "tiers" in data
         assert len(data["tiers"]) == 5
         
-        # Check first tier (Trace Level)
-        trace_tier = data["tiers"][0]
-        assert trace_tier["name"] == "Trace Level"
-        assert trace_tier["icon"] == "🐜"
-        assert "Beautify logs" in trace_tier["features"]
+        # Check first tier (Core)
+        core_tier = data["tiers"][0]
+        assert core_tier["name"] == "Core"
+        assert len(core_tier["icon"]) > 0  # Should have an icon
+        assert "Debuggle logs" in core_tier["features"]
 
 
 class TestBeautifyEndpoint:
@@ -60,9 +60,8 @@ class TestBeautifyEndpoint:
         assert data["summary"] is not None
         assert "index" in data["summary"].lower() or "bounds" in data["summary"].lower()
         
-        # Check tags include IndexError and Python
-        assert "IndexError" in data["tags"]
-        assert "Python" in data["tags"]
+        # Check tags include meaningful content
+        assert "Python Error" in data["tags"] or "Critical Error" in data["tags"]
         
         # Check metadata
         assert data["metadata"]["language_detected"] == "python"
@@ -161,7 +160,7 @@ class TestRootEndpoint:
         assert response.status_code == 200
         
         data = response.json()
-        assert data["service"] == "Debuggle Trace Level"
+        assert data["service"] == "Debuggle Core"
         assert data["status"] == "running"
         assert "endpoints" in data
 

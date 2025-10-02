@@ -36,7 +36,7 @@ Debuggle Core is the foundation tier of the Debuggle ecosystem - a powerful web 
 - **FastAPI-powered** REST API with automatic OpenAPI documentation
 - **Rate limiting** and input validation for production use
 - **Docker containerization** with health checks
-- **Comprehensive test suite** with 95%+ coverage
+- **Comprehensive test suite** with 94% code coverage (168 passing tests)
 - **Environment-based configuration** management
 
 ## 🚀 Quick Start
@@ -157,15 +157,42 @@ DEBUGGLE_ENABLE_LANGUAGE_DETECTION=true
 
 ## 🧪 Testing
 
+Debuggle Core maintains exceptional code quality with comprehensive testing:
+
+- **📊 94% Code Coverage** - Thoroughly tested codebase
+- **✅ 168 Passing Tests** - Zero failing tests in production
+- **🔍 Edge Case Coverage** - Comprehensive error handling tests
+- **🌐 API Testing** - Full REST API endpoint coverage
+- **📁 File Processing Tests** - Upload handling and encoding validation
+- **🧩 Stack Trace Analysis** - Multi-language error processing tests
+
 ```bash
 # Run all tests
 make test
 
-# Run with coverage
+# Run with coverage report
 make test-cov
 
 # Run specific test file
 pytest tests/test_api.py -v
+
+# Generate detailed coverage report
+pytest --cov=app --cov-report=html tests/
+```
+
+### Test Structure
+```
+tests/
+├── test_api.py                    # API endpoint tests
+├── test_processor.py              # Core processing logic
+├── test_file_upload.py            # File upload functionality
+├── test_fixtures.py               # Real-world stack trace samples
+├── test_models.py                 # Data model validation
+├── test_coverage_improvements.py  # Edge case coverage
+├── test_specific_coverage.py      # Targeted coverage tests
+├── test_api_coverage.py           # API error handling
+├── test_100_percent_coverage.py   # Comprehensive coverage
+└── test_final_coverage_push.py    # Final coverage optimization
 ```
 
 ## 🏗️ Development

@@ -116,7 +116,19 @@ class LogProcessor:
             if 'java' in text.lower() or '.java:' in text:
                 tags.add('Java Error')
             if '.py:' in text or 'Traceback' in text:
-                tags.add('Python Error')
+                tags.add('Python')
+                
+            # Add specific Python exception types
+            if 'IndexError' in text:
+                tags.add('IndexError')
+            if 'KeyError' in text:
+                tags.add('KeyError')
+            if 'ValueError' in text:
+                tags.add('ValueError')
+            if 'TypeError' in text:
+                tags.add('TypeError')
+            if 'AttributeError' in text:
+                tags.add('AttributeError')
             
             tags.add('Critical Error')
             tags.add('Needs Developer Attention')
@@ -143,6 +155,42 @@ class LogProcessor:
                 tags.add('Programming Bug')
             if re.search(r'deadlock', text, re.IGNORECASE):
                 tags.add('System Conflict')
+                
+        # Detect Python exceptions even in simple error messages
+        if 'IndexError' in text:
+            tags.add('Python')
+            tags.add('IndexError')
+            tags.add('Programming Bug')
+        if 'KeyError' in text:
+            tags.add('Python')
+            tags.add('KeyError')
+            tags.add('Programming Bug')
+        if 'ValueError' in text:
+            tags.add('Python')
+            tags.add('ValueError')
+            tags.add('Programming Bug')
+        if 'TypeError' in text:
+            tags.add('Python')
+            tags.add('TypeError')
+            tags.add('Programming Bug')
+        if 'AttributeError' in text:
+            tags.add('Python')
+            tags.add('AttributeError')
+            tags.add('Programming Bug')
+            
+        # Detect JavaScript exceptions even in simple error messages
+        if 'ReferenceError' in text:
+            tags.add('JavaScript')
+            tags.add('ReferenceError')
+            tags.add('Programming Bug')
+        if 'TypeError' in text and ('undefined' in text or 'null' in text):
+            tags.add('JavaScript')
+            tags.add('TypeError')
+            tags.add('Programming Bug')
+        if 'SyntaxError' in text:
+            tags.add('JavaScript')
+            tags.add('SyntaxError')
+            tags.add('Programming Bug')
         
         # Severity levels in simple terms
         if re.search(r'\b(ERROR|FATAL)\b', text, re.IGNORECASE):
@@ -402,8 +450,8 @@ class LogProcessor:
                 return None  # Skip, already handled above
             return f"ℹ️ At {time_display}: Normal system activity (everything working as expected)."
         
-        # If we can't explain it simply, return None to skip it
-        return None
+        # If we can't explain it simply, return the original line
+        return log_line
     
     def _get_problem_category(self, log_line: str) -> str:
         """Categorize the type of problem for counting duplicates."""
@@ -459,6 +507,12 @@ class LogProcessor:
             r'File ".*", line \d+',  # Python stack frame
             r'NullPointerException',  # Common Java exception
             r'RuntimeException',  # Common Java exception
+            r'System\.\w+Exception',  # C# system exceptions
+            r'at .*\.cs:line \d+',  # C# stack frame
+            r'at .*in.*\.cs:line \d+',  # C# stack frame with file path
+            r'at .*\.js:\d+:\d+',  # JavaScript stack frame
+            r'TypeError.*undefined',  # JavaScript common error
+            r'ReferenceError.*not defined',  # JavaScript common error
         ]
         
         # Count how many stack trace indicators we find
@@ -518,7 +572,15 @@ class LogProcessor:
         lines = text.split('\n')
         
         for line in lines:
-            # Look for the main exception line
+            # Java thread exceptions: "Exception in thread "main" java.lang.NullPointerException"
+            if line.startswith('Exception in thread') and 'Exception' in line:
+                # Extract just the exception class name from the end
+                parts = line.split()
+                if len(parts) >= 4:
+                    exception_name = parts[-1]  # Gets "java.lang.NullPointerException"
+                    return exception_name
+            
+            # Look for the main exception line with colon
             if ':' in line and any(ex in line for ex in ['Exception', 'Error']):
                 # Clean up the exception message
                 if 'Fatal Error:' in line:
@@ -666,6 +728,20 @@ class LogProcessor:
         if 'flux capacitor' in text_lower:
             suggestions.append("This appears to be a humorous/test stack trace")
             suggestions.append("Check if this is from a development or testing environment")
+        
+        # Python specific exceptions
+        if 'indexerror' in text_lower:
+            suggestions.append("Check the length of your list/array before accessing elements")
+            suggestions.append("Ensure the index is within bounds (0 to length-1)")
+            suggestions.append("Consider using try-except or len() checks")
+        
+        if 'keyerror' in text_lower:
+            suggestions.append("Check if the key exists in the dictionary first")
+            suggestions.append("Use dict.get() with a default value instead")
+        
+        if 'attributeerror' in text_lower:
+            suggestions.append("Check if the object has the attribute you're trying to access")
+            suggestions.append("Verify the object type and its available methods")
         
         if not suggestions:
             suggestions.append("Review the stack trace for the root cause")
