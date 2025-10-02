@@ -94,7 +94,7 @@ pytest -s
 
 ### Writing Tests
 - Add tests for all new functionality
-- Maintain or improve test coverage
+- Maintain comprehensive test coverage above industry standards
 - Use descriptive test names
 - Follow the existing test patterns
 
