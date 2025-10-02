@@ -98,3 +98,10 @@ temp/
 # Build artifacts
 build_standalone/
 *.spec
+
+# Temporary analysis and documentation files
+*_ANALYSIS_REPORT.md
+*_IMPLEMENTATION_SUMMARY.md
+PATH_TO_*.md
+WORKSPACE_ANALYSIS*.md
+FIXES_IMPLEMENTATION*.md
