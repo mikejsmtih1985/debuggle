@@ -1,18 +1,40 @@
 """
-Development context extraction for enhanced error analysis.
+Context Extraction - The "ChatGPT Killer" Intelligence System! 🕵️‍♂️🧠
 
-This module provides the "ChatGPT killer" feature - extracting rich development
-context that developers never include when copying errors to ChatGPT.
+This is Debuggle's SECRET WEAPON - the system that gathers all the context that
+developers NEVER include when they copy/paste errors to ChatGPT. Think of it as
+a super-detective that investigates the entire "crime scene" of your error.
+
+When you paste an error to ChatGPT, you give it this:
+❌ "My code has an error: NameError: name 'user_id' is not defined"
+
+When Debuggle analyzes the same error, it automatically gathers:
+✅ The exact line of code that failed (with surrounding context)
+✅ What function and class the error occurred in
+✅ Recent git commits that might have caused the issue
+✅ Your project structure and dependencies
+✅ What programming language and framework you're using  
+✅ Your environment setup (Python version, virtual env, etc.)
+✅ Related files and imports that might be involved
+
+This is like the difference between:
+- Calling 911 and saying "something bad happened" (ChatGPT approach)
+- Having a full forensic investigation team with access to security cameras, 
+  witness statements, and complete crime scene analysis (Debuggle approach)
+
+The result? Solutions that are specific to YOUR actual codebase, not generic
+advice that may or may not apply to your situation!
 """
 
-import logging
-import os
-import re
-import subprocess
-import ast
-from dataclasses import dataclass, field
-from pathlib import Path
-from typing import Dict, List, Optional, Any, Tuple, Union
+# Import the Python tools we need - like getting detective equipment
+import logging      # For recording our investigation process
+import os          # For examining file system and environment  
+import re          # For pattern matching in text (like finding clues)
+import subprocess  # For running external commands (like git)
+import ast         # For parsing Python code structure
+from dataclasses import dataclass, field  # For organizing our findings
+from pathlib import Path                   # For handling file paths cleanly
+from typing import Dict, List, Optional, Any, Tuple, Union  # Type hints for clarity
 
 
 logger = logging.getLogger(__name__)
@@ -20,45 +42,101 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class FileContext:
-    """Context information for a specific file."""
-    file_path: str
-    line_number: Optional[int] = None
-    surrounding_code: Optional[str] = None
-    function_name: Optional[str] = None
-    class_name: Optional[str] = None
+    """
+    File Investigation Report - Like a CSI Analysis of the Crime Scene! 🔍📁
+    
+    This contains all the information we can gather about the specific file
+    where the error occurred. It's like a detailed forensic report that includes:
+    - The exact location of the incident (file path and line number)
+    - Witness statements (surrounding code context)
+    - The suspect's identity (function and class names)
+    
+    This is information that humans almost NEVER include when asking ChatGPT
+    for help, but it's crucial for understanding what actually went wrong!
+    """
+    file_path: str                          # The exact file where the error happened
+    line_number: Optional[int] = None       # The specific line that caused trouble
+    surrounding_code: Optional[str] = None  # Code around the error (the "crime scene")
+    function_name: Optional[str] = None     # Which function the error occurred in
+    class_name: Optional[str] = None        # Which class the error occurred in
 
 
 @dataclass
 class GitContext:
-    """Git repository context."""
-    is_git_repo: bool = False
-    current_branch: Optional[str] = None
-    recent_commits: List[str] = field(default_factory=list)
-    modified_files: List[str] = field(default_factory=list)
-    last_commit_hash: Optional[str] = None
+    """
+    Git Investigation Report - The "Recent History" Detective Work! 📚🔄
+    
+    This is like examining the "recent activity log" to see what changes might
+    have caused the current problem. It's similar to checking security camera
+    footage to see what happened in the days leading up to an incident.
+    
+    This is PURE GOLD for debugging because:
+    - Most bugs are caused by recent changes
+    - Knowing what branch you're on helps understand the context
+    - Seeing modified files shows what you were working on
+    
+    ChatGPT will NEVER ask you "what did you change recently?" but we do it
+    automatically - and this often points directly to the solution!
+    """
+    is_git_repo: bool = False                        # Are we even tracking changes?
+    current_branch: Optional[str] = None             # Which branch are we working on?
+    recent_commits: List[str] = field(default_factory=list)   # What changes were made recently?
+    modified_files: List[str] = field(default_factory=list)   # What files have been changed?
+    last_commit_hash: Optional[str] = None           # The ID of the most recent change
 
 
 @dataclass
 class ProjectContext:
-    """Overall project context."""
-    root_path: str
-    project_type: Optional[str] = None
-    language: Optional[str] = None
-    framework: Optional[str] = None
-    dependencies: List[str] = field(default_factory=list)
-    config_files: List[str] = field(default_factory=list)
-    has_tests: bool = False
-    virtual_env: Optional[str] = None
+    """
+    Project Architecture Analysis - Like Studying the Building Plans! 🏗️📋
+    
+    This examines the overall structure and setup of your project to understand
+    the "big picture" context. It's like an architect studying building plans
+    to understand how everything fits together.
+    
+    This helps us provide solutions that:
+    - Match your specific technology stack (Python? Node.js? React?)
+    - Work with your framework (Django? Flask? Express?)
+    - Consider your dependencies (what libraries you're using)
+    - Respect your project structure (where files are organized)
+    
+    This is context that ChatGPT users almost never provide, but it's often
+    essential for giving the right advice!
+    """
+    root_path: str                                    # Where is your project located?
+    project_type: Optional[str] = None               # What kind of project? (web app, CLI tool, etc.)
+    language: Optional[str] = None                   # Primary programming language
+    framework: Optional[str] = None                  # Web framework or major library
+    dependencies: List[str] = field(default_factory=list)     # What packages/libraries you use
+    config_files: List[str] = field(default_factory=list)     # Configuration files we found
+    has_tests: bool = False                          # Does this project have tests?
+    virtual_env: Optional[str] = None                # Are you using a virtual environment?
 
 
-@dataclass
+@dataclass 
 class EnvironmentContext:
-    """Runtime environment context."""
-    python_version: Optional[str] = None
-    node_version: Optional[str] = None
-    java_version: Optional[str] = None
-    working_directory: str = "."
-    environment_variables: Dict[str, str] = field(default_factory=dict)
+    """
+    Environment Investigation - Like Checking the Weather and Air Quality! 🌡️💻
+    
+    This examines the "environmental conditions" where your code is running.
+    Just like how a doctor needs to know about environmental factors (allergies,
+    air quality, temperature) to diagnose an illness, we need to know about
+    your computing environment to diagnose coding problems.
+    
+    Environmental factors that affect code behavior:
+    - Python version (different versions behave differently)
+    - Virtual environment setup (isolated package versions)
+    - System PATH and other environment variables
+    - Working directory (affects relative file paths)
+    
+    This is information that developers rarely think to mention when asking
+    for help, but it's often the key to solving mysterious errors!
+    """
+    python_version: Optional[str] = None             # Which Python version you're running
+    node_version: Optional[str] = None               # Which Node.js version (if applicable)
+    java_version: Optional[str] = None               # Which Java version (if applicable)
+    working_directory: str = "."                     # Where you ran the command from
+    environment_variables: Dict[str, str] = field(default_factory=dict)  # System environment settings
 
 
 @dataclass 
@@ -123,34 +201,74 @@ class DevelopmentContext:
 
 class ContextExtractor:
     """
-    Extracts rich development context for error analysis.
+    The Master Detective - Coordinator of All Context Investigation! 🕵️‍♂️👮‍♀️
     
-    This provides the key differentiator over ChatGPT - we can see the actual
-    development environment, recent changes, project structure, etc.
+    This is the \"Chief Detective\" who coordinates multiple investigation units
+    to build a complete picture of what went wrong. While ChatGPT only sees the
+    error message you copy/paste, this system automatically investigates:
+    
+    🔍 Crime Scene Unit (FileContext): Examines the exact location of the error
+    📚 Historical Unit (GitContext): Investigates recent changes and patterns  
+    🏗️ Architecture Unit (ProjectContext): Studies the overall project structure
+    🌡️ Environmental Unit (EnvironmentContext): Checks system conditions
+    
+    This multi-angle investigation approach is what makes Debuggle's solutions
+    so much more accurate and specific than generic ChatGPT responses!
+    
+    The workflow is like a professional investigation:
+    1. Set up investigation headquarters (initialize with project root)
+    2. Deploy specialized units to gather different types of evidence
+    3. Compile comprehensive case file with all findings  
+    4. Format the results for easy human understanding
     """
     
     def __init__(self, project_root: Optional[str] = None):
         """
-        Initialize context extractor.
+        Set Up Investigation Headquarters - Establish Base of Operations! 🏢🗂️
+        
+        This is like setting up a detective's command center where all the
+        evidence will be collected and analyzed. We establish:
+        - The geographical scope of our investigation (project_root)
+        - Our case documentation system (logger)
+        - Access to all investigation tools and databases
         
         Args:
-            project_root: Root directory of the project, defaults to current directory
+            project_root: The "jurisdiction" of our investigation - which folder
+                         contains the project we're investigating. If not specified,
+                         we investigate the current directory (where the user ran the command)
         """
+        # Establish our investigation jurisdiction - the project folder we'll examine
         self.project_root = Path(project_root) if project_root else Path.cwd()
+        
+        # Set up our case documentation system - like a detective's notebook
         self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
     
     def extract_full_context(self, error_text: str, file_path: Optional[str] = None) -> DevelopmentContext:
         """
-        Extract comprehensive development context.
+        🚀 The Full Investigation - Our ChatGPT-Crushing Comprehensive Analysis! 🔍📊
         
-        This is our "secret sauce" - the context that ChatGPT never sees!
+        This is the main event - where we conduct a COMPLETE investigation that gathers
+        all the context that developers NEVER include when they ask ChatGPT for help.
+        
+        Imagine the difference between:
+        📋 ChatGPT user: "My code has an error: NameError: name 'user_id' is not defined"
+        🕵️ Debuggle investigation: 
+          - Exact file and line where error occurred
+          - Code surrounding the error (function, class context)
+          - Recent git commits that might have caused this
+          - Project structure and dependencies
+          - Environment setup and configuration
+          - Similar patterns from other files
+        
+        This comprehensive approach is why our solutions are so much more accurate
+        and specific than generic ChatGPT responses!
         
         Args:
-            error_text: The error log or stack trace  
-            file_path: Optional specific file path if known
+            error_text: The "initial crime report" - raw error logs or stack traces
+            file_path: Optional "crime scene address" - specific file if already known
             
         Returns:
-            Complete development context
+            Complete investigation file with all findings organized and ready for analysis
         """
         context = DevelopmentContext()
         

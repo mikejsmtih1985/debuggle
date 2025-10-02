@@ -1,98 +1,171 @@
 """
-Debuggle FastAPI Application - Core web service
+Debuggle FastAPI Web Server - The Heart of Our Error Analysis Service! 🏥💻
 
-This module contains the FastAPI web application that provides:
-- REST API endpoints for log analysis
-- File upload functionality
-- Rate limiting and CORS handling
-- Health checks and service metadata
+Think of this file as the "main office" of a hospital where:
+- Patients (errors) come in for diagnosis 
+- Doctors (our analysis functions) examine them
+- Reception (API endpoints) manages the flow
+- Medical records (logs) are processed and analyzed
+- Emergency broadcast system (WebSocket) alerts everyone about critical issues
 
-This is imported by entry_point.py when running in server mode.
-For direct CLI usage, use the debuggle_cli.py module instead.
+This is where the magic happens when you visit Debuggle's website or send API requests!
+
+What this "digital hospital" provides:
+🔬 REST API endpoints - Like different hospital departments for different needs
+📁 File upload functionality - Like bringing in medical records from other hospitals  
+🚦 Rate limiting - Like managing patient flow so the hospital doesn't get overwhelmed
+🌐 CORS handling - Like allowing ambulances from different cities to bring patients
+💓 Health checks - Like the hospital's vital signs monitoring
+📊 Service metadata - Like the hospital's information directory
+
+Key difference from CLI:
+- entry_point.py runs this when you want the "full hospital" (web server mode)
+- debuggle_cli.py is like a "house call doctor" (command-line mode)
+
+This is what makes Debuggle better than ChatGPT - it's a complete, integrated system
+that can handle errors from websites, mobile apps, and direct integrations!
 """
 
+# Import all the tools and libraries we need - like getting medical equipment for our hospital
+
+# FastAPI framework - Our main hospital building framework
 from fastapi import FastAPI, HTTPException, Request, File, UploadFile, Form, WebSocket, WebSocketDisconnect
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse, HTMLResponse
-from fastapi.staticfiles import StaticFiles
+from fastapi.middleware.cors import CORSMiddleware  # Allows websites from different domains to use our service
+from fastapi.responses import JSONResponse, HTMLResponse  # Different ways to send responses back to users
+from fastapi.staticfiles import StaticFiles  # Serves our website files (HTML, CSS, JavaScript)
+
+# Rate limiting tools - Like controlling how many patients can see a doctor per hour
 from slowapi import Limiter, _rate_limit_exceeded_handler
-from slowapi.util import get_remote_address
-from slowapi.errors import RateLimitExceeded
-import time
-import json
-from typing import Optional
+from slowapi.util import get_remote_address  # Identifies who is making requests
+from slowapi.errors import RateLimitExceeded  # What happens when someone makes too many requests
 
+# Python standard library imports - Basic tools that come with Python
+import time  # For measuring how long things take and timestamps
+import json  # For converting data to/from JSON format (the internet's common language)
+from typing import Optional  # Type hints to make our code clearer (Optional = might be None)
+
+# Import our custom Debuggle components - Like specialized medical equipment
 from .models import (
-    AnalyzeRequest, AnalyzeResponse, AnalyzeMetadata,
-    FileUploadResponse, FileUploadMetadata, LanguageEnum,
-    HealthResponse, TiersResponse, TierFeature, ErrorResponse
+    # Data models - Like medical forms that define what information we need
+    AnalyzeRequest, AnalyzeResponse, AnalyzeMetadata,  # For basic error analysis
+    FileUploadResponse, FileUploadMetadata, LanguageEnum,  # For file uploads
+    HealthResponse, TiersResponse, TierFeature, ErrorResponse  # For system info and errors
 )
-from .processor import LogProcessor
-from .config_v2 import settings
-from .realtime import connection_manager, error_monitor
-from .self_monitor import setup_self_monitoring
+from .processor import LogProcessor  # Our main error analysis engine - the "chief medical officer"
+from .config_v2 import settings  # Configuration settings - like hospital policies and procedures
+from .realtime import connection_manager, error_monitor  # Real-time communication system - like hospital intercom
+from .self_monitor import setup_self_monitoring  # System that watches itself for problems - like security cameras
 
-# Initialize rate limiter
-limiter = Limiter(key_func=get_remote_address)
+# Step 1: Set up our "hospital security system" - rate limiting
+# This prevents any single user from overwhelming our service with too many requests
+# Like having a security guard who says "slow down, you can only see the doctor X times per hour"
+limiter = Limiter(key_func=get_remote_address)  # Uses visitor's IP address to track requests
 
-# Create FastAPI app
+# Step 2: Create our main "hospital building" - the FastAPI application
+# This is like constructing the main hospital facility with all its departments
 app = FastAPI(
-    title=settings.app_name,
-    version=settings.app_version,
+    title=settings.app_name,           # Hospital name (from our settings)
+    version=settings.app_version,      # Which version of our hospital we're running
     description="🐞 Debuggle Core - Professional log debuggling and error analysis microservice",
-    docs_url="/docs",
-    redoc_url="/redoc"
+    docs_url="/docs",                  # Where visitors can see all available services (like a hospital directory)
+    redoc_url="/redoc"                 # Alternative documentation format (like a fancy brochure)
 )
 
-# Add rate limiting
-app.state.limiter = limiter
-app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+# Step 3: Install our "security system" in the hospital
+# This actually activates the rate limiting we set up above
+app.state.limiter = limiter  # Attach the limiter to our app
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)  # What to do when someone hits the limit
 
-# Add CORS middleware
+# Step 4: Set up "international access" - CORS middleware
+# CORS = Cross-Origin Resource Sharing (allows websites from different domains to use our API)
+# Like allowing ambulances from different cities to bring patients to our hospital
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Configure appropriately for production
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_origins=["*"],          # "*" means allow from anywhere (like accepting all ambulances)
+    allow_credentials=True,       # Allow sending authentication info (like patient ID cards)
+    allow_methods=["*"],          # Allow all HTTP methods (GET, POST, etc. - like all types of visits)
+    allow_headers=["*"],          # Allow all headers (like all types of medical forms)
 )
 
-# Set up self-monitoring system
+# Step 3: Set up our "internal monitoring system" - self-monitoring
+# This is like having security cameras and health monitors throughout the hospital
+# It watches our own system for problems and reports them in real-time
 self_monitor = setup_self_monitoring(app, connection_manager)
 
-# Mount static files (HTML frontend) - only if directory exists
+# Step 4: Set up our "hospital website and brochures" - static file serving
+# This serves the HTML, CSS, and JavaScript files that make up our web interface
+# Like having a hospital website where patients can learn about services
 import os
-static_dir = "assets/static"
-if os.path.exists(static_dir):
+static_dir = "assets/static"  # Where our website files are stored
+if os.path.exists(static_dir):  # Only if the directory actually exists
+    # Mount the static files so people can access our website
     app.mount("/static", StaticFiles(directory=static_dir), name="static")
 
-# Initialize log processor
-processor = LogProcessor()
+# Step 5: Create our "chief medical officer" - the main error analysis engine
+# This is the core brain that actually analyzes errors and generates insights
+processor = LogProcessor()  # Our main diagnostic tool
 
 
 @app.exception_handler(Exception)
 async def general_exception_handler(request: Request, exc: Exception):
-    """Handle unexpected exceptions."""
-    # Capture the exception in self-monitoring
+    """
+    Global Emergency Response System - When Things Go Wrong in Our Hospital! 🚨🏥
+    
+    This is like having a master emergency protocol that kicks in when ANYTHING
+    unexpected happens in our hospital. Instead of letting the whole system crash,
+    we catch the problem, document it, and give users a helpful response.
+    
+    Think of it as the "Code Blue" system in a hospital - when there's an emergency
+    anywhere in the building, this system coordinates the response.
+    
+    What this does:
+    1. Catches ANY error that wasn't handled elsewhere (like a safety net)
+    2. Reports the error to our self-monitoring system (like calling security)
+    3. Gives users a clean, helpful error message (instead of scary technical details)
+    4. Keeps the service running for other users (doesn't bring down the whole hospital)
+    """
+    # Step 1: Report this incident to our internal monitoring system
+    # Like filling out an incident report and alerting the hospital administration
     self_monitor.capture_exception(exc, "global_exception_handler", request)
     
+    # Step 2: Send a clean, professional response to the user
+    # Instead of showing scary error details, we give a helpful message
     return JSONResponse(
-        status_code=500,
+        status_code=500,  # HTTP 500 = "Internal Server Error" (something went wrong on our end)
         content=ErrorResponse(
-            error="Internal server error",
+            error="Internal server error",  # User-friendly error title
+            # Show technical details only in debug mode (like showing X-rays only to doctors)
             details=str(exc) if settings.debug else "An unexpected error occurred",
-            code="INTERNAL_ERROR"
-        ).model_dump()
+            code="INTERNAL_ERROR"  # Unique code for this type of error
+        ).model_dump()  # Convert to JSON format for sending over the internet
     )
 
 
 @app.get("/health", response_model=HealthResponse)
 async def health_check():
-    """Service health check endpoint."""
+    """
+    Hospital Vital Signs Monitor - "Is Our System Healthy?" 💓🏥
+    
+    This is like a nurse taking the hospital's vital signs every few minutes.
+    Other systems (load balancers, monitoring tools, uptime checkers) can
+    call this endpoint to make sure our service is still running properly.
+    
+    It's the digital equivalent of asking "Are you okay?" and getting back
+    "Yes, I'm healthy and ready to help patients!"
+    
+    Real-world usage:
+    - Kubernetes uses this to know if it should restart our service
+    - Load balancers use this to know if they should send traffic here
+    - Monitoring systems use this to alert if something goes wrong
+    - Developers use this to quickly check if the service is up
+    
+    Simple but CRUCIAL for production systems!
+    """
+    # Return a simple health status - like a thumbs up from the hospital
     return HealthResponse(
-        status="ok",
-        service=settings.app_name,
-        version=settings.app_version
+        status="ok",                    # "We're healthy and ready to serve!"
+        service=settings.app_name,      # Which service this is (Debuggle Core)
+        version=settings.app_version    # Which version we're running
     )
 
 
@@ -131,31 +204,48 @@ async def get_tiers():
 
 
 @app.post("/api/v1/analyze", response_model=AnalyzeResponse)
-@limiter.limit(f"{settings.api.rate_limit_per_minute}/minute")
+@limiter.limit(f"{settings.api.rate_limit_per_minute}/minute")  # Rate limiting - like appointment scheduling
 async def analyze_log(request: Request, analyze_request: AnalyzeRequest):
     """
-    Analyze and process log entries or stack traces.
+    🎯 THE MAIN EVENT - Our Core Error Analysis Service! 🔬🏥
     
-    Takes raw log input and returns:
-    - Analyzed and formatted log with syntax highlighting
-    - Human-readable error summary (if recognizable)
-    - Error category tags
-    - Processing metadata
+    This is the "chief diagnostician" of our digital hospital - the main function
+    that takes a patient's (error's) symptoms and provides a complete diagnosis.
+    
+    Think of it like bringing a sick patient to the emergency room:
+    1. Patient arrives with symptoms (raw error logs)
+    2. Doctors examine and run tests (our analysis algorithms)
+    3. Medical report is generated (cleaned logs, summary, diagnosis)
+    4. Treatment recommendations provided (error tags and solutions)
+    
+    What makes this BETTER than ChatGPT:
+    ✅ Specialized for programming errors (like a specialist vs. general practitioner)
+    ✅ Consistent analysis quality (same diagnosis every time)
+    ✅ No data sent to external services (your code stays private)
+    ✅ Integrated with development tools (works with your workflow)
+    ✅ Fast and always available (no waiting for ChatGPT to respond)
+    
+    Input: Raw error logs/stack traces (like patient symptoms)
+    Output: Complete analysis with insights (like a medical diagnosis report)
     """
     try:
-        # Validate input size
+        # Step 1: Pre-examination checks - Like checking if a patient is too sick for outpatient care
+        # We need to make sure the error log isn't so massive that it would overwhelm our system
         if len(analyze_request.log_input) > settings.api.max_log_size:
+            # This is like saying "this patient needs to go to a specialized trauma center"
             raise HTTPException(
-                status_code=400,
+                status_code=400,  # HTTP 400 = "Bad Request" (problem with what user sent)
                 detail=ErrorResponse(
                     error="Log input too large",
                     details=f"Maximum size is {settings.api.max_log_size} characters",
-                    code="INPUT_TOO_LARGE"
+                    code="INPUT_TOO_LARGE"  # Specific error code for tracking
                 ).model_dump()
             )
         
-        # Validate max_lines parameter
+        # Step 2: Check processing limits - Like making sure we don't overwork our doctors
+        # Some users might ask us to process millions of log lines, which would crash our system
         if analyze_request.options.max_lines > settings.api.max_lines_limit:
+            # This is like saying "we can only see 1000 patients per day, not 10,000"
             raise HTTPException(
                 status_code=400,
                 detail=ErrorResponse(

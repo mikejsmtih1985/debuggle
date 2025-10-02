@@ -1,26 +1,40 @@
 #!/usr/bin/env python3
 """
-Debuggle CLI - Command line interface for error analysis.
+Debuggle CLI - The command-line version of Debuggle (for terminal lovers!)
 
-This demonstrates our competitive advantage over ChatGPT:
-- No copy/paste required
-- Automatic context extraction
-- Privacy-preserving (local processing)
-- Integrates with development workflow
+Think of this as Debuggle's "text mode" - instead of clicking buttons in a web browser,
+you type commands in your terminal. This is especially useful for:
+- Quick error analysis without opening a browser
+- Integrating Debuggle into scripts and automated workflows
+- Piping error output directly from your programs (no copy/paste!)
+
+This shows why Debuggle is better than copying errors to ChatGPT:
+- No copy/paste required - just pipe your errors directly: `python app.py 2>&1 | debuggle`
+- Automatic context extraction - Debuggle sees your project files and structure
+- Privacy-preserving - your code never leaves your computer
+- Integrates with development workflow - works with any terminal or script
+
+Usage examples:
+    debuggle error.log                    # Analyze a saved log file
+    python app.py 2>&1 | debuggle         # Pipe errors directly (the magic way!)
+    debuggle --watch server.log           # Watch a log file for new errors
 """
 
-import argparse
-import sys
-import os
-from pathlib import Path
-from typing import Optional
+# Import the tools we need - like getting the right ingredients for cooking
+import argparse     # Handles command-line arguments (--help, --version, etc.)
+import sys          # System utilities (reading from stdin, exit codes, etc.)
+import os           # Operating system tools (file paths, directories, etc.)
+from pathlib import Path        # Modern way to handle file and directory paths
+from typing import Optional     # Type hints to make code clearer (Optional = might be None)
 
-# Import from app modules
+# Tell Python where to find our Debuggle modules
+# This is like giving directions: "The Debuggle tools are in the folder above this one"
 import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
-from src.debuggle.core.processor import LogProcessor
-from src.debuggle.core.context import ContextExtractor
+# Import the actual Debuggle analysis tools - like getting the right tools from a toolbox
+from src.debuggle.core.processor import LogProcessor    # The main error analysis engine
+from src.debuggle.core.context import ContextExtractor  # Extracts context from your project
 
 
 def analyze_error_from_file(log_file: str, project_root: Optional[str] = None):
