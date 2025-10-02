@@ -77,7 +77,7 @@ async def get_tiers():
     tiers = [
         TierFeature(
             name="Core",
-            icon="�",
+            icon="🔧",
             features=["Debuggle logs", "Syntax highlighting", "Error tags", "Smart summaries"]
         ),
         TierFeature(
