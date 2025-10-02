@@ -49,7 +49,7 @@ LANGUAGE_PATTERNS = {
 
 
 class LogProcessor:
-    """Handles log beautification, syntax highlighting, and analysis."""
+    """Handles log debuggling, syntax highlighting, and analysis."""
     
     def __init__(self):
         self.formatter = TerminalFormatter()

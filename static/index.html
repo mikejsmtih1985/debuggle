@@ -706,7 +706,7 @@
                 <div class="drag-drop-area" id="dragDropArea">
                     <div class="upload-icon">📁</div>
                     <div class="upload-text">Drag & drop your log file(s) here</div>
-                    <div class="upload-subtext">Single files auto-process • Multiple files need manual processing</div>
+                    <div class="upload-subtext">Single files auto-debuggle • Multiple files need manual debuggling</div>
                     <button class="btn" onclick="document.getElementById('fileInput').click()">
                         Choose File
                     </button>
@@ -882,7 +882,7 @@
             
             // Update file details - show it's auto-processing
             fileName.textContent = file.name;
-            fileSize.textContent = `${formatFileSize(file.size)} • ${getFileIcon(file.name)} Auto-processing...`;
+            fileSize.textContent = `${formatFileSize(file.size)} • ${getFileIcon(file.name)} Auto-debuggling...`;
             
             // Show file preview section
             filePreview.classList.add('show');
@@ -926,7 +926,7 @@
             const fileQueueHtml = `
                 <div class="file-queue show" id="fileQueue">
                     <div class="queue-header">
-                        <h3>📁 Multiple Files Ready for Processing</h3>
+                        <h3>📁 Multiple Files Ready for Debuggling</h3>
                         <p>Review your files below and process them individually or all at once.</p>
                     </div>
                     <div class="queue-actions">
@@ -1032,7 +1032,7 @@
             })
             .catch(error => {
                 console.error('Error:', error);
-                showError(error.detail?.error || 'An error occurred while processing the file.');
+                showError(error.detail?.error || 'An error occurred while debuggling the file.');
                 
                 // Reset file size display
                 fileSize.textContent = `${formatFileSize(file.size)} • ${getFileIcon(file.name)} Processing failed`;
@@ -1046,7 +1046,7 @@
             if (selectedFiles.length === 0) return;
             
             // Show processing state
-            processBtn.textContent = 'Processing...';
+            processBtn.textContent = 'Debuggling...';
             processBtn.disabled = true;
             showProgress();
             

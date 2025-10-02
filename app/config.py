@@ -12,7 +12,7 @@ class Settings(BaseSettings):
     
     # Application metadata
     app_name: str = "Debuggle Core"
-    app_version: str = "1.0.0"
+    app_version: str = "1.0.1"
     debug: bool = False
     
     # Processing limits

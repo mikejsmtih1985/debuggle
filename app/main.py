@@ -23,7 +23,7 @@ limiter = Limiter(key_func=get_remote_address)
 app = FastAPI(
     title=settings.app_name,
     version=settings.app_version,
-    description="🐞 Debuggle Core - Professional log beautification and error analysis microservice",
+    description="🐞 Debuggle Core - Professional log debuggling and error analysis microservice",
     docs_url="/docs",
     redoc_url="/redoc"
 )
@@ -78,7 +78,7 @@ async def get_tiers():
         TierFeature(
             name="Core",
             icon="�",
-            features=["Beautify logs", "Syntax highlighting", "Error tags", "Smart summaries"]
+            features=["Debuggle logs", "Syntax highlighting", "Error tags", "Smart summaries"]
         ),
         TierFeature(
             name="Pro",
@@ -109,10 +109,10 @@ async def get_tiers():
 @limiter.limit(f"{settings.rate_limit_per_minute}/minute")
 async def beautify_log(request: Request, beautify_request: BeautifyRequest):
     """
-    Beautify and analyze log entries or stack traces.
+    Debuggle and analyze log entries or stack traces.
     
     Takes raw log input and returns:
-    - Cleaned and formatted log with syntax highlighting
+    - Debuggled and formatted log with syntax highlighting
     - Human-readable error summary (if recognizable)
     - Error category tags
     - Processing metadata

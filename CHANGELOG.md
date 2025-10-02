@@ -8,8 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.0.0] - 2025-10-01
 
 ### Added ✨
-- **Multi-file upload and processing** with tab-based navigation system
-- **Individual file processing** with status tracking (pending/processing/completed/error)
+- **Multi-file upload and debuggling** with tab-based navigation system
+- **Individual file debuggling** with status tracking (pending/debuggling/completed/error)
 - **Professional tier branding**: Core, Pro, Team, Enterprise, Scale
 - **Advanced file queue management** with drag & drop functionality
 - **Tab-based results viewing** with browser-like navigation
@@ -17,7 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Enhanced accessibility** with large toggle buttons and clear visual feedback
 - **Professional CSS animations** and hover effects throughout the UI
 - **Status indicators** with emoji feedback for all processing states
-- **Batch processing capabilities** with "Process All Files" functionality
+- **Batch debuggling capabilities** with "Debuggle All Files" functionality
 - **Individual file controls** - process, view results, and remove operations
 
 ### Changed 🔄

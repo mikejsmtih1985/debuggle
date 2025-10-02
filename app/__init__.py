@@ -1,5 +1,5 @@
 """
-Debuggle Trace Level - Init module
+Debuggle Core - Init module
 """
 
 from .main import app

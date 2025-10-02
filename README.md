@@ -1,12 +1,18 @@
-# 🐞 Debuggle - Trace Level
+# 🐞 Debuggle Core
 
-**Log beautification and error analysis microservice**
+**Profession## 🚀 Service Tiers
 
-Debuggle Trace Level is the first tier of the Debuggle ecosystem - a powerful microservice that transforms ugly, hard-to-read error logs and stack traces into beautifully formatted, easy-to-understand output with intelligent summaries and categorization.
+- **🔧 Core** (Current) - Log debuggling, syntax highlighting, smart summaries
+- **⚡ Pro** (Coming Soon) - Log grouping, pattern detection, basic storage
+- **👥 Team** (Planned) - Persistent storage, dashboard UI, search & filter
+- **🏢 Enterprise** (Planned) - Proactive alerts, integrations, team collaboration  
+- **🚀 Scale** (Planned) - AI insights, SSO, compliance, priority supportdebuggling and error analysis microservice**
+
+Debuggle Core is the foundation tier of the Debuggle ecosystem - a powerful microservice that transforms ugly, hard-to-read error logs and stack traces into debuggled, easy-to-understand output with intelligent summaries and categorization.
 
 ## ✨ Features
 
-### 🎨 **Log Beautification**
+### 🎨 **Log Debuggling**
 - **Syntax highlighting** with support for Python, JavaScript, Java, C#, C++, Go, and Rust
 - **Smart formatting** and cleanup of messy stack traces
 - **De-duplication** of repetitive error lines
@@ -32,7 +38,7 @@ Debuggle Trace Level is the first tier of the Debuggle ecosystem - a powerful mi
 
 ## 🐜 Service Tiers
 
-- **🐜 Trace Level** (Current) - Log beautification, syntax highlighting, smart summaries
+- **� Core** (Current) - Log debuggling, syntax highlighting, smart summaries
 - **🐝 Swarm Level** (Coming Soon) - Log grouping, pattern detection, basic storage
 - **🪲 Beetle Level** (Planned) - Persistent storage, dashboard UI, search & filter
 - **🕷️ Spider Level** (Planned) - Proactive alerts, integrations, team collaboration  
@@ -87,7 +93,7 @@ Simply visit `http://localhost:8000` to use the drag & drop file upload interfac
 curl http://localhost:8000/health
 ```
 
-### Beautify Log (JSON API)
+### Debuggle Log (JSON API)
 ```bash
 curl -X POST "http://localhost:8000/api/v1/beautify" \
   -H "Content-Type: application/json" \
@@ -117,7 +123,7 @@ curl -X POST "http://localhost:8000/api/v1/upload-log" \
 ```json
 {
   "cleaned_log": "...",
-  "summary": "Your code tried to access a list element that doesn't exist (IndexError).",
+  "summary": "Your code tried to access a list element that doesn't exist (IndexError) - debuggled for clarity!",
   "tags": ["IndexError", "Python", "Error", "StackTrace"],
   "metadata": {
     "lines": 4,
@@ -139,7 +145,7 @@ Copy `.env.example` to `.env` and customize:
 
 ```bash
 # Application settings
-DEBUGGLE_APP_NAME="Debuggle Trace Level"
+DEBUGGLE_APP_NAME="Debuggle Core"
 DEBUGGLE_DEBUG=false
 
 # Processing limits
