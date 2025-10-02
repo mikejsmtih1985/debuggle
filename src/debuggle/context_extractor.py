@@ -1,6 +1,35 @@
 """
-Advanced context extraction for error analysis.
-Goes beyond basic error messages to capture development context.
+🕵️ SUPER DETECTIVE CONTEXT INVESTIGATOR - The CSI of Error Analysis! 🕵️
+
+Think of this file as the ultimate crime scene investigation unit that gathers
+EVERY possible clue about an error, not just the obvious stuff! While most people
+just copy-paste error messages into ChatGPT, this module is like having a forensic
+expert who examines fingerprints, DNA, security footage, and witness statements.
+
+🎯 WHAT THIS MODULE DOES:
+This is the "CSI: Code Scene Investigation" department of Debuggle! It doesn't just
+look at the error message - it investigates the entire "crime scene" to understand
+the full story of what went wrong and why.
+
+🔍 THE FORENSIC INVESTIGATION ANALOGY:
+- ErrorContext: The complete case file with all evidence
+- ContextExtractor: The lead forensic investigator
+- extract_full_context(): The comprehensive crime scene analysis
+- Git history: Security camera footage showing what happened before
+- Surrounding code: Physical evidence at the crime scene
+- Dependencies: List of all "suspects" (libraries) that might be involved
+- Environment info: The "location details" where the crime occurred
+
+🚀 HOW WE'RE BETTER THAN CHATGPT COPY-PASTE:
+1. We examine the actual code around the error (ChatGPT users rarely include this)
+2. We check what changed recently (git history - almost never included)
+3. We analyze the project structure and dependencies (usually missing)
+4. We gather environment details (operating system, Python version, etc.)
+5. We create a comprehensive report with ALL the context
+
+Real-world analogy: This is like the difference between calling the police and
+saying "someone stole my bike" vs. having a full forensic team investigate with
+fingerprints, security footage, witness interviews, and a complete crime scene report!
 """
 
 import os
@@ -14,50 +43,146 @@ from dataclasses import dataclass
 
 @dataclass
 class ErrorContext:
-    """Rich context information for error analysis."""
+    """
+    📁 COMPLETE CASE FILE - All Evidence About the Error!
+    
+    Think of this as the master case file that a detective assembles with
+    ALL the evidence about a crime. Instead of just having the victim's
+    statement, we have fingerprints, DNA, security footage, witness
+    statements, and background information!
+    
+    🏆 HIGH SCHOOL EXPLANATION:
+    Like a comprehensive school incident report that includes:
+    - Where it happened (error_location)
+    - What was going on around it (surrounding_code)
+    - What happened recently that might be related (recent_changes)
+    - What kind of place this is (project_structure)
+    - Environmental factors (environment_info)
+    - If similar things happened before (similar_errors)
+    - Who else was involved (dependencies)
+    """
+    
+    # 📍 CRIME SCENE LOCATION - where exactly did the error occur?
+    # Like "Room 205, 3rd floor, near the water fountain"
     error_location: Optional[str] = None
+    
+    # 📄 EVIDENCE AT THE SCENE - the actual code around the error
+    # Like photographing everything within 10 feet of where the incident happened
     surrounding_code: Optional[str] = None
+    
+    # 📹 SECURITY FOOTAGE - what changed recently in version control
+    # Like checking security cameras to see what happened before the incident
     recent_changes: List[str] = None
+    
+    # 🏗️ BUILDING BLUEPRINT - what kind of project/system is this?
+    # Like knowing if the incident happened in a school, hospital, or office building
     project_structure: Dict[str, Any] = None
+    
+    # 🌡️ ENVIRONMENTAL CONDITIONS - technical environment details
+    # Like noting "it was raining, temperature was 75°F, lights were on"
     environment_info: Dict[str, Any] = None
+    
+    # 📚 SIMILAR CASES - have we seen this type of error before?
+    # Like checking police records for similar incidents in the area
     similar_errors: List[str] = None
+    
+    # 👥 SUSPECTS AND WITNESSES - what libraries and tools are involved?
+    # Like listing everyone who was in the building at the time
     dependencies: List[str] = None
 
 
 class ContextExtractor:
-    """Extracts rich context from error logs and development environment."""
+    """
+    🔍 MASTER DETECTIVE - The Sherlock Holmes of Error Investigation!
+    
+    This class is like hiring the world's best detective to investigate your
+    programming errors. While most people just look at the error message,
+    this detective examines EVERYTHING: the crime scene, the history, the
+    environment, the suspects, and builds a complete picture.
+    
+    🏆 HIGH SCHOOL EXPLANATION:
+    Think of this like a super-thorough detective who, when investigating
+    a bike theft, doesn't just ask "what happened?" but also:
+    - Examines the exact location where it was stolen
+    - Checks security cameras for recent activity
+    - Interviews witnesses and neighbors
+    - Studies the neighborhood crime patterns
+    - Analyzes the environment and conditions
+    - Creates a comprehensive report with all findings
+    """
     
     def __init__(self, project_root: Optional[str] = None):
+        """
+        🏢 SETTING UP THE DETECTIVE OFFICE
+        
+        When we create a new ContextExtractor, it's like a detective setting up
+        their office in a new city - they need to know what area they're
+        responsible for investigating.
+        
+        🏆 HIGH SCHOOL EXPLANATION:
+        Like a security guard starting a new job - they need to know which
+        building or area they're supposed to watch and protect.
+        """
+        # 🏠 ESTABLISH OUR INVESTIGATION TERRITORY - what project are we examining?
+        # Like a detective being assigned to investigate crimes in a specific district
+        # If no specific area is given, we assume it's the current directory
         self.project_root = Path(project_root) if project_root else Path.cwd()
     
     def extract_full_context(self, log_input: str, file_path: Optional[str] = None) -> ErrorContext:
         """
-        Extract comprehensive context from error log.
-        This gives us MORE information than developers typically paste into ChatGPT.
+        🔬 THE COMPLETE FORENSIC INVESTIGATION - CSI: Code Scene Investigation!
+        
+        This is our main investigation method - like a forensic team that conducts
+        a complete crime scene analysis. While most people just copy-paste error
+        messages into ChatGPT, we conduct a FULL investigation to understand
+        the complete story of what went wrong.
+        
+        🏆 HIGH SCHOOL EXPLANATION:
+        Think of this like being a detective investigating a school incident.
+        Instead of just asking "what happened?", you:
+        1. Find out exactly WHERE it happened
+        2. Look at what was going on around that location
+        3. Check what happened recently that might be related
+        4. Understand what kind of place this is (library? gym? cafeteria?)
+        5. Note environmental factors (time of day, weather, etc.)
+        6. List who else was involved or nearby
+        
+        This gives us MORE information than developers typically paste into ChatGPT!
         """
+        # 📁 CREATE THE CASE FILE - start with an empty investigation folder
+        # Like a detective opening a new case file and preparing to fill it with evidence
         context = ErrorContext()
         
-        # Extract basic error location
+        # 🎯 STEP 1: FIND THE CRIME SCENE - where exactly did this error occur?
+        # Like determining the exact room and location where an incident happened
         context.error_location = self._extract_error_location(log_input)
         
-        # If we have a file path, get surrounding code
+        # 🔍 STEP 2: EXAMINE THE IMMEDIATE AREA - what code is around the error?
+        # Like photographing everything within 10 feet of where the incident occurred
         if file_path or context.error_location:
             target_file = file_path or self._extract_file_from_location(context.error_location)
             if target_file:
                 context.surrounding_code = self._get_surrounding_code(target_file, log_input)
         
-        # Get recent git changes (what developers rarely include)
+        # 📹 STEP 3: CHECK THE SECURITY FOOTAGE - what changed recently?
+        # Like reviewing security camera footage from the past few days
+        # This is something developers RARELY include when asking ChatGPT!
         context.recent_changes = self._get_recent_changes()
         
-        # Analyze project structure
+        # 🏗️ STEP 4: UNDERSTAND THE BUILDING - what kind of project is this?
+        # Like knowing if the incident happened in a school, hospital, or office
         context.project_structure = self._analyze_project_structure()
         
-        # Get environment information
+        # 🌡️ STEP 5: RECORD ENVIRONMENTAL CONDITIONS - technical environment details
+        # Like noting weather, lighting, temperature, and other conditions
         context.environment_info = self._get_environment_info()
         
-        # Extract dependencies
+        # 👥 STEP 6: LIST ALL SUSPECTS AND WITNESSES - what libraries are involved?
+        # Like identifying everyone who was in the building at the time
         context.dependencies = self._extract_dependencies()
         
+        # 📋 CASE COMPLETE - return the comprehensive investigation file
+        # Like handing over a complete forensic report with all findings
         return context
     
     def _extract_error_location(self, log_input: str) -> Optional[str]:
@@ -230,8 +355,22 @@ class ContextExtractor:
     
     def format_context_for_analysis(self, context: ErrorContext, log_input: str) -> str:
         """
-        Format rich context into a comprehensive analysis.
-        This is what makes us BETTER than ChatGPT copy/paste!
+        📄 THE COMPREHENSIVE INVESTIGATION REPORT - Our Secret Weapon!
+        
+        This method takes all our detective work and formats it into a beautiful,
+        comprehensive report that contains WAY more information than what people
+        typically paste into ChatGPT. This is what makes Debuggle superior!
+        
+        🏆 HIGH SCHOOL EXPLANATION:
+        Think of this like writing the final report for a science project where you:
+        1. State the problem clearly
+        2. Show all your experimental data
+        3. Include background research
+        4. Document your methodology
+        5. Present your findings with evidence
+        6. Draw conclusions based on ALL the information
+        
+        This is what makes us BETTER than ChatGPT copy/paste - we provide CONTEXT!
         """
         sections = []
         
