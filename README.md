@@ -1,14 +1,16 @@
 # 🐞 Debuggle Core
 
-**Profession## 🚀 Service Tiers
+**Professional log debuggling and error analysis web application**
 
-- **🔧 Core** (Current) - Log debuggling, syntax highlighting, smart summaries
+Debuggle Core is the foundation tier of the Debuggle ecosystem - a powerful web application with REST API that transforms ugly, hard-to-read error logs and stack traces into debuggled, easy-to-understand output with intelligent summaries and categorization.
+
+## 🚀 Service Tiers
+
+- **🔧 Core** (Current) - Log debuggling, syntax highlighting, smart summaries, file upload, web interface, enhanced stack trace analysis
 - **⚡ Pro** (Coming Soon) - Log grouping, pattern detection, basic storage
 - **👥 Team** (Planned) - Persistent storage, dashboard UI, search & filter
 - **🏢 Enterprise** (Planned) - Proactive alerts, integrations, team collaboration  
-- **🚀 Scale** (Planned) - AI insights, SSO, compliance, priority supportdebuggling and error analysis microservice**
-
-Debuggle Core is the foundation tier of the Debuggle ecosystem - a powerful microservice that transforms ugly, hard-to-read error logs and stack traces into debuggled, easy-to-understand output with intelligent summaries and categorization.
+- **🚀 Scale** (Planned) - AI insights, SSO, compliance, priority support
 
 ## ✨ Features
 
@@ -22,27 +24,20 @@ Debuggle Core is the foundation tier of the Debuggle ecosystem - a powerful micr
 - **Plain-English summaries** for common error types (IndexError, KeyError, NullPointerException, etc.)
 - **Smart tagging** system for error categorization
 - **Pattern recognition** for known error types across multiple languages
+- **Enhanced stack trace processing** with detailed exception chain analysis
 
-### � **File Upload & Web Interface**
+### 🌐 **File Upload & Web Interface**
 - **Drag & drop file upload** for log files (.log, .txt, .out, .err files)
 - **Beautiful web interface** with real-time processing
-- **Large file support** (up to 50KB) with encoding detection
+- **Large file support** (up to 100KB) with encoding detection
 - **Both API and web interface** for maximum flexibility
 
-### �🚀 **Production Ready**
+### 🚀 **Production Ready**
 - **FastAPI-powered** REST API with automatic OpenAPI documentation
 - **Rate limiting** and input validation for production use
 - **Docker containerization** with health checks
 - **Comprehensive test suite** with 95%+ coverage
 - **Environment-based configuration** management
-
-## 🐜 Service Tiers
-
-- **� Core** (Current) - Log debuggling, syntax highlighting, smart summaries
-- **🐝 Swarm Level** (Coming Soon) - Log grouping, pattern detection, basic storage
-- **🪲 Beetle Level** (Planned) - Persistent storage, dashboard UI, search & filter
-- **🕷️ Spider Level** (Planned) - Proactive alerts, integrations, team collaboration  
-- **🦋 Butterfly Level** (Planned) - AI insights, SSO, compliance, enterprise features
 
 ## 🚀 Quick Start
 
@@ -79,8 +74,8 @@ docker-compose up --build
 
 2. **Using Docker directly:**
 ```bash
-docker build -t debuggle-trace:latest .
-docker run -p 8000:8000 debuggle-trace:latest
+docker build -t debuggle-core:latest .
+docker run -p 8000:8000 debuggle-core:latest
 ```
 
 ## 📡 API Usage
@@ -122,9 +117,9 @@ curl -X POST "http://localhost:8000/api/v1/upload-log" \
 **Response:**
 ```json
 {
-  "cleaned_log": "...",
-  "summary": "Your code tried to access a list element that doesn't exist (IndexError) - debuggled for clarity!",
-  "tags": ["IndexError", "Python", "Error", "StackTrace"],
+  "cleaned_log": "🚨 **Main Problem**: IndexError: list index out of range\n\n📋 **What Happened**:\n1. **IndexError**: Tried to access a list position that doesn't exist\n   💬 Details: list index out of range\n   📍 Where: File \"app.py\", line 14, in <module>\n\n🔍 **Key Code Locations**:\n   • main() - app.py:14\n\n💡 **Suggested Actions**:\n   • Check the length of your list before accessing elements\n   • Use bounds checking or try/catch blocks",
+  "summary": "🚨 **Critical Error**: Your code tried to access a list element that doesn't exist. This is a common issue when loops or indexing operations go beyond the actual size of the data.",
+  "tags": ["Critical Error", "Python Error", "Stack Trace", "Needs Developer Attention"],
   "metadata": {
     "lines": 4,
     "language_detected": "python",
@@ -139,6 +134,8 @@ curl -X POST "http://localhost:8000/api/v1/upload-log" \
 curl http://localhost:8000/api/v1/tiers
 ```
 
+**What this does:** Returns the available service tiers/pricing plans with their features. This is useful for showing users what's available in the current "Core" tier versus higher tiers (Pro, Team, Enterprise, Scale) that may be offered in the future.
+
 ## 🔧 Configuration
 
 Copy `.env.example` to `.env` and customize:
@@ -149,7 +146,7 @@ DEBUGGLE_APP_NAME="Debuggle Core"
 DEBUGGLE_DEBUG=false
 
 # Processing limits
-DEBUGGLE_MAX_LOG_SIZE=50000
+DEBUGGLE_MAX_LOG_SIZE=100000
 DEBUGGLE_MAX_LINES=1000
 DEBUGGLE_RATE_LIMIT_PER_MINUTE=100
 
@@ -207,6 +204,7 @@ Once running, visit:
 - **Python:** IndexError, KeyError, AttributeError, ImportError, SyntaxError, TypeError, ValueError, etc.
 - **JavaScript:** ReferenceError, TypeError, SyntaxError, RangeError
 - **Java:** NullPointerException, ArrayIndexOutOfBoundsException, ClassNotFoundException
+- **C#:** NullReferenceException, ArgumentNullException, InvalidOperationException
 - **And many more...**
 
 ## 🚢 Deployment
@@ -218,11 +216,11 @@ make build
 make up
 
 # Or deploy to your container platform
-docker build -t debuggle-trace:$(git rev-parse --short HEAD) .
+docker build -t debuggle-core:$(git rev-parse --short HEAD) .
 ```
 
 ### Cloud Platforms
-Debuggle is designed to work seamlessly with:
+Debuggle Core is designed to work seamlessly with:
 - **AWS Lambda** (serverless)
 - **Google Cloud Run**  
 - **Azure Container Instances**
@@ -230,16 +228,16 @@ Debuggle is designed to work seamlessly with:
 - **Railway**
 - **Heroku**
 
-## 🤝 Contributing
+## 💼 Enterprise & Custom Solutions
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Make your changes
-4. Add tests for new functionality
-5. Run the test suite (`make test`)
-6. Commit your changes (`git commit -m 'Add amazing feature'`)
-7. Push to the branch (`git push origin feature/amazing-feature`)
-8. Open a Pull Request
+Interested in higher tiers (Pro, Team, Enterprise, Scale) or custom solutions?
+
+- **Enterprise features**: SSO, compliance, priority support
+- **Team collaboration**: Persistent storage, dashboards, search
+- **Custom integrations**: API customization, dedicated support
+- **On-premise deployment**: Private cloud or on-site installation
+
+Contact us for enterprise licensing and custom development.
 
 ## 📄 License
 

@@ -42,7 +42,7 @@ app.add_middleware(
 )
 
 # Mount static files (HTML frontend)
-app.mount("/static", StaticFiles(directory="static"), name="static")
+app.mount("/static", StaticFiles(directory="assets/static"), name="static")
 
 # Initialize log processor
 processor = LogProcessor()
@@ -78,7 +78,7 @@ async def get_tiers():
         TierFeature(
             name="Core",
             icon="🔧",
-            features=["Debuggle logs", "Syntax highlighting", "Error tags", "Smart summaries"]
+            features=["Debuggle logs", "Syntax highlighting", "Error tags", "Smart summaries", "File upload", "Web interface", "Enhanced stack trace analysis"]
         ),
         TierFeature(
             name="Pro",
@@ -306,7 +306,7 @@ async def upload_log_file(
 @app.get("/", response_class=HTMLResponse)
 async def root():
     """Serve the main HTML frontend."""
-    with open("static/index.html", "r") as f:
+    with open("assets/static/index.html", "r") as f:
         return HTMLResponse(content=f.read())
 
 

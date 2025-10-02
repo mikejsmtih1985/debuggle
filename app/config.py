@@ -12,11 +12,11 @@ class Settings(BaseSettings):
     
     # Application metadata
     app_name: str = "Debuggle Core"
-    app_version: str = "1.0.1"
+    app_version: str = "1.0.0"
     debug: bool = False
     
     # Processing limits
-    max_log_size: int = 50000
+    max_log_size: int = 100000  # 100KB limit for file uploads
     max_lines: int = 1000
     max_lines_limit: int = 5000
     
