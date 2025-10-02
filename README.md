@@ -245,6 +245,28 @@ npm test debug
 mvn compile debug
 ```
 
+### Real-Time Error Monitoring ⚡ NEW!
+```bash
+# Start the web server
+python entry_point.py server
+
+# Open http://localhost:8000 in your browser
+# Real-time error notifications appear automatically!
+
+# WebSocket endpoint for custom integrations
+ws://localhost:8000/ws/errors
+
+# Check error monitoring status
+curl http://localhost:8000/api/v1/errors/stats
+```
+
+**Features:**
+- **Live error streaming** - See errors as they happen
+- **WebSocket notifications** - Real-time updates in the browser
+- **Error statistics** - Track error patterns and frequency  
+- **Connection monitoring** - Automatic reconnection handling
+- **Multi-client support** - Multiple browsers can monitor simultaneously
+
 ### API Integration (For Tools/IDEs)
 ```bash
 # Health check

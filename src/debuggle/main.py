@@ -11,7 +11,7 @@ This is imported by entry_point.py when running in server mode.
 For direct CLI usage, use the debuggle_cli.py module instead.
 """
 
-from fastapi import FastAPI, HTTPException, Request, File, UploadFile, Form
+from fastapi import FastAPI, HTTPException, Request, File, UploadFile, Form, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
@@ -19,6 +19,7 @@ from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 import time
+import json
 from typing import Optional
 
 from .models import (
@@ -28,6 +29,7 @@ from .models import (
 )
 from .processor import LogProcessor
 from .config_v2 import settings
+from .realtime import connection_manager, error_monitor
 
 # Initialize rate limiter
 limiter = Limiter(key_func=get_remote_address)
@@ -157,14 +159,43 @@ async def beautify_log(request: Request, beautify_request: BeautifyRequest):
             )
         
         # Process the log
-        cleaned_log, summary, tags, metadata = processor.process_log(
-            log_input=beautify_request.log_input,
-            language=beautify_request.language.value,
-            highlight=beautify_request.options.highlight,
-            summarize=beautify_request.options.summarize and settings.enable_summarization,
-            tags=beautify_request.options.tags,
-            max_lines=beautify_request.options.max_lines
-        )
+        try:
+            cleaned_log, summary, tags, metadata = processor.process_log(
+                log_input=beautify_request.log_input,
+                language=beautify_request.language.value,
+                highlight=beautify_request.options.highlight,
+                summarize=beautify_request.options.summarize and settings.enable_summarization,
+                tags=beautify_request.options.tags,
+                max_lines=beautify_request.options.max_lines
+            )
+            
+            # Report successful processing to real-time monitoring
+            if any(tag in ['Error', 'Critical', 'Exception'] for tag in tags):
+                await error_monitor.report_error(
+                    error_type="ErrorDetected",
+                    message=f"Error detected in log processing: {summary[:100] if summary else 'No summary available'}",
+                    source="api_beautify",
+                    severity="warning",
+                    metadata={
+                        "detected_language": metadata.get("detected_language"),
+                        "error_tags": tags,
+                        "input_size": len(beautify_request.log_input),
+                        "processing_time": metadata.get("processing_time")
+                    }
+                )
+        
+        except Exception as processing_error:
+            # Report processing failure to real-time monitoring
+            await error_monitor.report_log_processing_error(
+                beautify_request.log_input,
+                processing_error,
+                {
+                    "endpoint": "/api/v1/beautify",
+                    "language": beautify_request.language.value,
+                    "client_ip": str(request.client.host) if request.client else "unknown"
+                }
+            )
+            raise processing_error
         
         # Build response
         return BeautifyResponse(
@@ -415,9 +446,102 @@ async def api_info():
         "endpoints": {
             "beautify": "/api/v1/beautify",
             "upload": "/api/v1/upload-log",
-            "tiers": "/api/v1/tiers"
+            "tiers": "/api/v1/tiers",
+            "realtime": "/ws/errors",
+            "error_stats": "/api/v1/errors/stats"
         }
     }
+
+
+# WebSocket endpoints for real-time error reporting
+@app.websocket("/ws/errors")
+async def websocket_errors(websocket: WebSocket):
+    """WebSocket endpoint for real-time error updates."""
+    try:
+        await connection_manager.connect(websocket, {
+            "endpoint": "/ws/errors",
+            "purpose": "real-time error monitoring"
+        })
+        
+        # Send welcome message with current stats
+        welcome_message = {
+            "type": "welcome",
+            "message": "Connected to real-time error monitoring",
+            "stats": error_monitor.get_error_stats(),
+            "recent_errors": error_monitor.get_recent_errors(10)
+        }
+        await connection_manager.send_personal_message(json.dumps(welcome_message), websocket)
+        
+        # Keep connection alive and handle incoming messages
+        while True:
+            try:
+                # Wait for messages from client (like ping/pong or config changes)
+                data = await websocket.receive_text()
+                message = json.loads(data)
+                
+                if message.get("type") == "ping":
+                    await connection_manager.send_personal_message(
+                        json.dumps({"type": "pong", "timestamp": time.time()}), 
+                        websocket
+                    )
+                elif message.get("type") == "get_stats":
+                    stats = {
+                        "type": "stats_update",
+                        "error_stats": error_monitor.get_error_stats(),
+                        "connection_stats": connection_manager.get_connection_stats()
+                    }
+                    await connection_manager.send_personal_message(json.dumps(stats), websocket)
+                elif message.get("type") == "get_recent_errors":
+                    limit = message.get("limit", 20)
+                    recent = {
+                        "type": "recent_errors",
+                        "errors": error_monitor.get_recent_errors(limit)
+                    }
+                    await connection_manager.send_personal_message(json.dumps(recent), websocket)
+                    
+            except WebSocketDisconnect:
+                break
+            except json.JSONDecodeError:
+                await connection_manager.send_personal_message(
+                    json.dumps({"type": "error", "message": "Invalid JSON format"}), 
+                    websocket
+                )
+            except Exception as e:
+                await connection_manager.send_personal_message(
+                    json.dumps({"type": "error", "message": f"Server error: {str(e)}"}), 
+                    websocket
+                )
+                
+    except WebSocketDisconnect:
+        pass
+    finally:
+        connection_manager.disconnect(websocket)
+
+
+@app.get("/api/v1/errors/stats")
+async def get_error_stats():
+    """Get current error monitoring statistics."""
+    return {
+        "error_stats": error_monitor.get_error_stats(),
+        "connection_stats": connection_manager.get_connection_stats(),
+        "monitoring_enabled": error_monitor.monitoring_enabled
+    }
+
+
+@app.post("/api/v1/errors/toggle-monitoring")
+async def toggle_error_monitoring(enabled: bool = True):
+    """Enable or disable real-time error monitoring."""
+    error_monitor.toggle_monitoring(enabled)
+    
+    # Broadcast the monitoring status change
+    status_message = {
+        "type": "monitoring_status",
+        "enabled": enabled,
+        "message": f"Error monitoring {'enabled' if enabled else 'disabled'}"
+    }
+    await connection_manager.broadcast(json.dumps(status_message))
+    
+    return {"message": f"Error monitoring {'enabled' if enabled else 'disabled'}", "enabled": enabled}
 
 
 # Additional middleware for request logging (optional)

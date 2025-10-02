@@ -678,6 +678,29 @@
             }
         }
 
+        /* Real-time notification animations */
+        @keyframes slideInRight {
+            from {
+                transform: translateX(300px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        @keyframes slideOutRight {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(300px);
+                opacity: 0;
+            }
+        }
+
         @media (max-width: 768px) {
             .container {
                 margin: 10px;
@@ -809,12 +832,177 @@
         const processBtn = document.getElementById('processBtn');
         const removeBtn = document.getElementById('removeBtn');
         
+        // Real-time error monitoring
+        let websocket = null;
+        let realtimeErrors = [];
+        let realtimeConnectionStatus = 'disconnected';
+        
         let selectedFile = null;
         let selectedFiles = [];
         let currentFileIndex = 0;
         let lastProcessedData = null; // Store the last processed results for live filtering
         let fileQueue = []; // Queue for multiple files
         let activeTab = null; // Currently active tab
+        
+        // Initialize real-time error monitoring
+        function initRealtimeMonitoring() {
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsUrl = `${protocol}//${window.location.host}/ws/errors`;
+            
+            websocket = new WebSocket(wsUrl);
+            
+            websocket.onopen = function(event) {
+                console.log('Real-time error monitoring connected');
+                realtimeConnectionStatus = 'connected';
+                updateConnectionStatus();
+            };
+            
+            websocket.onmessage = function(event) {
+                try {
+                    const data = JSON.parse(event.data);
+                    handleRealtimeMessage(data);
+                } catch (error) {
+                    console.error('Error parsing WebSocket message:', error);
+                }
+            };
+            
+            websocket.onclose = function(event) {
+                console.log('Real-time error monitoring disconnected');
+                realtimeConnectionStatus = 'disconnected';
+                updateConnectionStatus();
+                
+                // Attempt to reconnect after 5 seconds
+                setTimeout(() => {
+                    if (realtimeConnectionStatus === 'disconnected') {
+                        initRealtimeMonitoring();
+                    }
+                }, 5000);
+            };
+            
+            websocket.onerror = function(error) {
+                console.error('WebSocket error:', error);
+                realtimeConnectionStatus = 'error';
+                updateConnectionStatus();
+            };
+        }
+        
+        function handleRealtimeMessage(data) {
+            switch (data.type) {
+                case 'welcome':
+                    console.log('Real-time monitoring:', data.message);
+                    if (data.recent_errors) {
+                        realtimeErrors = data.recent_errors;
+                        updateRealtimeErrorsDisplay();
+                    }
+                    break;
+                    
+                case 'error':
+                    // New error reported
+                    const errorEvent = {
+                        id: data.id,
+                        timestamp: data.timestamp,
+                        error_type: data.error_type,
+                        message: data.message,
+                        source: data.source,
+                        severity: data.severity,
+                        metadata: data.metadata
+                    };
+                    realtimeErrors.unshift(errorEvent);
+                    
+                    // Keep only last 50 errors
+                    if (realtimeErrors.length > 50) {
+                        realtimeErrors = realtimeErrors.slice(0, 50);
+                    }
+                    
+                    updateRealtimeErrorsDisplay();
+                    showRealtimeErrorNotification(errorEvent);
+                    break;
+                    
+                case 'stats_update':
+                    console.log('Error stats updated:', data.error_stats);
+                    break;
+                    
+                case 'monitoring_status':
+                    console.log('Monitoring status:', data.message);
+                    break;
+                    
+                case 'pong':
+                    // Keep-alive response
+                    break;
+                    
+                default:
+                    console.log('Unknown realtime message:', data);
+            }
+        }
+        
+        function updateConnectionStatus() {
+            // You could add a status indicator to the UI here
+            const statusColors = {
+                'connected': '#4caf50',
+                'disconnected': '#f44336',
+                'error': '#ff9800'
+            };
+            
+            // Update header background color slightly to indicate connection status
+            document.querySelector('.header').style.borderBottom = 
+                `3px solid ${statusColors[realtimeConnectionStatus]}`;
+        }
+        
+        function updateRealtimeErrorsDisplay() {
+            // This could be enhanced to show recent errors in a sidebar or notification area
+            console.log(`${realtimeErrors.length} real-time errors tracked`);
+        }
+        
+        function showRealtimeErrorNotification(errorEvent) {
+            // Create a temporary notification for new errors
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: #ff6b35;
+                color: white;
+                padding: 15px 20px;
+                border-radius: 10px;
+                box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+                z-index: 1000;
+                max-width: 300px;
+                animation: slideInRight 0.3s ease-out;
+            `;
+            
+            notification.innerHTML = `
+                <strong>🚨 ${errorEvent.error_type}</strong><br>
+                <small>${errorEvent.message.substring(0, 100)}${errorEvent.message.length > 100 ? '...' : ''}</small>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            // Remove notification after 5 seconds
+            setTimeout(() => {
+                notification.style.animation = 'slideOutRight 0.3s ease-in';
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.parentNode.removeChild(notification);
+                    }
+                }, 300);
+            }, 5000);
+        }
+        
+        function sendWebSocketMessage(message) {
+            if (websocket && websocket.readyState === WebSocket.OPEN) {
+                websocket.send(JSON.stringify(message));
+            }
+        }
+        
+        // Start real-time monitoring when page loads
+        window.addEventListener('load', function() {
+            initRealtimeMonitoring();
+            
+            // Send periodic pings to keep connection alive
+            setInterval(() => {
+                sendWebSocketMessage({ type: 'ping' });
+            }, 30000);
+        });
 
         // Drag and drop functionality
         dragDropArea.addEventListener('dragover', (e) => {
