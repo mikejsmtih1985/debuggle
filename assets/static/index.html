@@ -1,88 +1,372 @@
+<!--
+🎨 DEBUGGLE WEB DASHBOARD - The Digital Control Center (2,700+ Lines!)
+========================================================================
+
+This HTML file creates the beautiful, interactive web interface for Debuggle's
+error analysis system. Think of it as designing a modern, user-friendly 
+control panel for a high-tech spacecraft or research facility.
+
+🏆 HIGH SCHOOL EXPLANATION:
+Imagine you're building a professional website that looks like something from
+a sci-fi movie - clean, modern, and powerful. This massive file contains three main parts:
+
+1. 📋 HTML STRUCTURE (Lines 1-1200) - Like the blueprint of a building, defining what goes where
+2. 🎨 CSS STYLING (Lines 100-1100) - Like interior decorating, making everything look beautiful
+3. ⚡ JAVASCRIPT CODE (Lines 1200-2700) - Like the electrical system, making everything interactive
+
+🌟 KEY FEATURES IMPLEMENTED:
+✅ Drag & Drop File Upload - Intuitive file selection with visual feedback
+✅ Real-Time Progress Tracking - Live updates during file processing
+✅ WebSocket Communication - Instant error notifications without page refresh
+✅ Interactive Dashboard Elements - Buttons, toggles, and dynamic content
+✅ Responsive Design - Works perfectly on desktop, tablet, and mobile
+✅ Professional Styling - Modern gradients, shadows, and animations
+✅ Error Handling - Graceful recovery from problems and clear user feedback
+
+🎯 MAJOR COMPONENTS EXPLAINED:
+• File Upload Zone - Drag & drop interface with hover effects and processing states
+• Progress Indicators - Visual feedback during file analysis operations  
+• Results Display - Formatted output with syntax highlighting and interactive tags
+• Real-Time Monitoring - WebSocket connection for live error notifications
+• Control Panels - User preferences and analysis options
+• Responsive Layout - Automatic adjustment for different screen sizes
+
+EDUCATIONAL METAPHORS USED IN THIS FILE:
+🏗️ Architecture & Construction - HTML structure like building blueprints
+🎨 Interior Design - CSS styling like decorating and furniture arrangement  
+⚡ Electrical Systems - JavaScript like wiring that makes everything work
+🎭 Theater Production - Event handling like stage cues and lighting
+🚀 Spacecraft Controls - Dashboard elements like mission control panels
+📡 Communication Systems - WebSocket connections like radio/satellite links
+🏭 Factory Automation - File processing workflows like assembly lines
+
+The goal is to make complex error analysis feel approachable and intuitive,
+like using a well-designed mobile app instead of scary command-line tools.
+-->
+
 <!DOCTYPE html>
+<!--
+📋 DOCUMENT BLUEPRINT - Telling the browser what kind of web page this is
+
+The DOCTYPE declaration is like putting a label on a blueprint that says
+"This is a modern web page design using HTML5 standards." It ensures the
+browser interprets our code correctly, like making sure an architect and
+contractor are using the same measurement system.
+-->
+
 <html lang="en">
+<!--
+🌍 LANGUAGE SETTINGS - Setting up international compatibility
+
+The 'lang="en"' attribute tells browsers, screen readers, and search engines
+that this page is written in English. It's like putting a language label
+on a document so translation services know how to handle it properly.
+-->
+
 <head>
+    <!--
+    🧠 PAGE BRAIN - The control center that browsers read first
+    
+    The <head> section is like the control room of our web page. Users don't
+    see this directly, but it contains all the important instructions that
+    tell the browser how to display and behave. Think of it like the backstage
+    area of a theater production - essential for the show, but hidden from the audience.
+    -->
+    
+    <!-- 🔤 CHARACTER ENCODING - Making sure all text displays correctly -->
     <meta charset="UTF-8">
+    <!--
+    This tells the browser how to interpret text characters, including emojis,
+    special symbols, and international characters. UTF-8 is like a universal
+    translator that can handle almost any language or symbol.
+    -->
+    
+    <!-- 📱 MOBILE OPTIMIZATION - Making sure the page looks good on phones and tablets -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!--
+    This magic line ensures our dashboard looks great on everything from
+    giant desktop monitors to tiny phone screens. It's like having a responsive
+    design that automatically adjusts, similar to how a good website should
+    look perfect whether you're on a laptop or smartphone.
+    -->
+    
+    <!-- 🏷️ PAGE TITLE - What appears in the browser tab -->
     <title>🐞 Debuggle - Error Analysis Tool</title>
+    <!--
+    This is what users see in their browser tab and bookmarks. The bug emoji
+    makes it instantly recognizable among dozens of open tabs, like having
+    a distinctive logo on a storefront.
+    -->
+    
+    <!--
+    🎨 STYLESHEET SECTION - The Interior Design Department
+    ========================================================
+    
+    Everything between <style> tags is CSS (Cascading Style Sheets), which is
+    like having a team of interior designers who decide how everything looks:
+    colors, fonts, layouts, animations, and visual effects.
+    
+    🏆 HIGH SCHOOL EXPLANATION:
+    Think of CSS like decorating a house:
+    - HTML is the house structure (walls, rooms, doors)
+    - CSS is the decoration (paint colors, furniture, lighting)
+    - JavaScript is the utilities (plumbing, electrical, smart home features)
+    
+    We'll use metaphors like interior design, architecture, and visual arts
+    to explain how CSS creates beautiful, professional interfaces.
+    -->
     <style>
+        /*
+        🧹 UNIVERSAL RESET - Starting with a clean slate
+        ================================================
+        
+        This CSS rule applies to every single element on the page (that's what * means).
+        It's like having a cleaning crew come through and remove all the default
+        spacing and formatting that browsers add automatically.
+        
+        🏆 HIGH SCHOOL EXPLANATION:
+        Imagine you're redecorating a room. Before you can arrange your furniture
+        exactly how you want it, you need to:
+        1. Remove all existing furniture (margin: 0, padding: 0)
+        2. Measure everything consistently (box-sizing: border-box)
+        
+        Without this reset, different browsers would display our page slightly
+        differently, like having different sized rooms in different buildings.
+        */
         * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+            margin: 0;          /* 📏 Remove all outer spacing around elements */
+            padding: 0;         /* 📦 Remove all inner spacing inside elements */
+            box-sizing: border-box;  /* 📐 Make size calculations predictable and consistent */
         }
 
+        /*
+        🏠 MAIN CANVAS - Setting up our page background and foundation
+        =============================================================
+        
+        The body element is like the main canvas or stage where our entire
+        interface will be painted. This is where we set the overall mood,
+        color scheme, and basic layout foundation.
+        
+        🏆 HIGH SCHOOL EXPLANATION:
+        Think of this like setting up a photography studio:
+        1. Choose the backdrop color/pattern (background gradient)
+        2. Set up proper lighting (font choices for readability)  
+        3. Arrange the space (padding, height settings)
+        4. Make sure everything fits in the frame (min-height: 100vh)
+        */
         body {
+            /* 🖋️ TYPOGRAPHY SETUP - Choosing the best fonts for readability */
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            /*
+            This font stack is like having backup singers ready. The browser tries:
+            1. Apple's system font (on Mac/iOS) - looks native and familiar
+            2. Microsoft's Segoe UI (on Windows) - clean and professional  
+            3. Roboto (on Android) - modern and readable
+            4. Generic sans-serif as final backup - always works
+            */
+            
+            /* 🌈 BACKGROUND MAGIC - Creating a beautiful color gradient */
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
+            /*
+            This creates a diagonal color fade from blue to purple, like a sunset
+            or professional presentation background. The degrees (135deg) control
+            the angle, and percentages (0%, 100%) control where colors transition.
+            */
+            
+            /* 📐 LAYOUT FOUNDATION - Setting up the basic page structure */
+            min-height: 100vh;  /* 📏 Ensure page fills the full viewport height (100vh = 100% of visible height) */
+            padding: 20px;      /* 🎯 Add breathing room around the edges */
         }
 
+        /*
+        🏢 MAIN DASHBOARD CONTAINER - The control center housing
+        =======================================================
+        
+        This creates the main "building" that houses our entire dashboard.
+        Think of it like designing a modern office building or spacecraft
+        control center that sits beautifully in the landscape.
+        
+        🏆 HIGH SCHOOL EXPLANATION:
+        Imagine you're an architect designing a high-tech control center:
+        1. Size limits (max-width) - don't make it too wide for readability
+        2. Centering (margin: 0 auto) - place it perfectly in the middle
+        3. Clean background (white) - professional, neutral workspace
+        4. Rounded corners (border-radius) - modern, friendly appearance
+        5. Floating effect (box-shadow) - makes it appear to hover above background
+        */
         .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-            overflow: hidden;
+            max-width: 1200px;                              /* 📏 Maximum width prevents reading difficulty on huge screens */
+            margin: 0 auto;                                 /* 🎯 Center the container horizontally on the page */
+            background: white;                              /* 🤍 Clean, professional workspace background */
+            border-radius: 20px;                           /* 🔘 Smooth, modern rounded corners */
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);      /* ✨ Subtle shadow creates floating effect */
+            overflow: hidden;                              /* 📦 Ensure child elements stay within rounded corners */
         }
 
+        /*
+        🎪 DASHBOARD HEADER - The welcoming entrance and title area
+        ==========================================================
+        
+        The header is like the impressive entrance lobby of our control center.
+        It needs to make a great first impression and clearly communicate what
+        this system does, like the marquee sign outside a theater.
+        
+        🏆 HIGH SCHOOL EXPLANATION:
+        Think of this like designing the entrance to a theme park or museum:
+        1. Eye-catching colors (gradient background) - draws attention
+        2. Clear branding (centered text) - tells people where they are  
+        3. Professional spacing (padding) - gives content room to breathe
+        4. Consistent color scheme - matches the overall design theme
+        */
         .header {
+            /* 🌊 HEADER BACKGROUND - Creating visual impact with color flow */
             background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-            color: white;
-            padding: 30px;
-            text-align: center;
+            /*
+            A darker blue gradient that complements our page background,
+            like having coordinated colors in interior design. Creates
+            a professional, trustworthy feeling like bank or tech company branding.
+            */
+            
+            color: white;           /* 🤍 White text for maximum contrast and readability */
+            padding: 30px;          /* 🎭 Generous spacing for an impressive, uncluttered look */
+            text-align: center;     /* 🎯 Center-align all header content for balance */
         }
 
+        /*
+        📢 MAIN TITLE STYLING - Making the page title stand out
+        =======================================================
+        
+        The h1 (heading 1) is like the main sign or logo - it needs to be
+        immediately visible and communicate the purpose of our tool.
+        */
         .header h1 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
+            font-size: 2.5em;      /* 📏 Large, attention-grabbing size (2.5 times normal text) */
+            margin-bottom: 10px;    /* 📐 Small gap before the subtitle */
         }
 
+        /*
+        💬 SUBTITLE STYLING - Supporting information that explains our purpose
+        ====================================================================
+        
+        The paragraph text provides context and description, like the tagline
+        under a company logo or the subtitle on a movie poster.
+        */
         .header p {
-            font-size: 1.2em;
-            opacity: 0.9;
+            font-size: 1.2em;      /* 📏 Slightly larger than normal text for emphasis */
+            opacity: 0.9;          /* 🌫️ Slightly transparent for subtle, elegant effect */
         }
 
+        /*
+        🏢 MAIN WORKSPACE - The primary working area of our dashboard
+        ============================================================
+        
+        This is like the main floor of our control center where all the
+        important work happens. It needs generous spacing so content
+        doesn't feel cramped, like having a spacious office layout.
+        
+        🏆 HIGH SCHOOL EXPLANATION:
+        Think of this like the main area of a well-designed store or restaurant:
+        - Plenty of space to move around comfortably (padding: 40px)
+        - Clean, uncluttered feeling that focuses attention on important content
+        - Professional spacing that makes everything feel organized and premium
+        */
         .main-content {
-            padding: 40px;
+            padding: 40px;      /* 🎭 Generous spacing creates a premium, comfortable feeling */
         }
 
+        /*
+        📁 FILE UPLOAD ZONE - The primary interaction area for users
+        ===========================================================
+        
+        This section is like the reception desk or main service counter
+        where users first interact with our system. It needs to be
+        prominent and inviting, like the entrance to a helpful service.
+        
+        🏆 HIGH SCHOOL EXPLANATION:
+        Think of this like the main counter at a phone repair shop or
+        copy center - it's where customers bring their "problems" (log files)
+        to get help. The spacing ensures it stands out as the primary action area.
+        */
         .upload-section {
-            margin-bottom: 40px;
+            margin-bottom: 40px;    /* 📐 Space separation from other sections below */
         }
 
+        /*
+        🎯 DRAG & DROP INTERFACE - The interactive file upload area
+        ==========================================================
+        
+        This creates the main "drop zone" where users can drag files from
+        their computer, like having a designated landing pad for incoming
+        spacecraft or a collection box for important documents.
+        
+        🏆 HIGH SCHOOL EXPLANATION:
+        Think of this like designing a dropbox or collection bin that:
+        1. Looks clearly different from regular content (dashed border)
+        2. Feels interactive and clickable (rounded corners, hover effects)
+        3. Gives visual feedback when users interact with it (color changes)
+        4. Has plenty of space so it's easy to "hit the target"
+        */
         .drag-drop-area {
-            border: 3px dashed #ddd;
-            border-radius: 15px;
-            padding: 60px 20px;
-            text-align: center;
-            transition: all 0.3s ease;
-            cursor: pointer;
-            background: #f8f9fa;
+            border: 3px dashed #ddd;        /* 📦 Dashed border shows this is a "drop zone" */
+            border-radius: 15px;            /* 🔘 Rounded corners feel modern and friendly */
+            padding: 60px 20px;             /* 🎭 Generous padding makes target easy to hit */
+            text-align: center;             /* 🎯 Center all content for balanced appearance */
+            transition: all 0.3s ease;      /* ✨ Smooth animation for all property changes */
+            cursor: pointer;                /* 👆 Show hand cursor to indicate clickability */
+            background: #f8f9fa;            /* 🌫️ Light gray background, subtle and clean */
         }
 
-        .drag-drop-area:hover,
-        .drag-drop-area.drag-over {
-            border-color: #2a5298;
-            background: #e3f2fd;
+        /*
+        🎨 INTERACTIVE FEEDBACK - Visual responses to user actions
+        =========================================================
+        
+        These rules create different visual states that give users immediate
+        feedback about what's happening, like traffic lights or status indicators.
+        
+        🏆 HIGH SCHOOL EXPLANATION:
+        Think of this like a smart doorbell or gaming controller that lights up:
+        1. Hover state - changes color when you move mouse over it
+        2. Drag-over state - special color when dragging a file over it  
+        3. Processing state - different color when actively working
+        
+        This makes the interface feel alive and responsive, like a good video game.
+        */
+        .drag-drop-area:hover,              /* 👆 When user hovers mouse over the area */
+        .drag-drop-area.drag-over {         /* 📁 When user is dragging a file over it */
+            border-color: #2a5298;          /* 🔵 Change to blue border - "ready to receive" */
+            background: #e3f2fd;            /* 💙 Light blue background - "active and ready" */
         }
 
-        .drag-drop-area.processing {
-            border-color: #ff9800;
-            background: #fff3e0;
+        .drag-drop-area.processing {        /* ⚙️ When the system is actively processing files */
+            border-color: #ff9800;          /* 🟠 Orange border - "working on it" */
+            background: #fff3e0;            /* 🧡 Light orange background - "please wait" */
         }
 
+        /*
+        📁 UPLOAD ICON - The visual symbol that communicates purpose
+        ===========================================================
+        
+        The folder emoji serves as an international symbol that immediately
+        tells users "this is where files go," like having clear signage
+        in an airport or universal symbols on appliances.
+        */
         .upload-icon {
-            font-size: 4em;
-            margin-bottom: 20px;
-            color: #666;
+            font-size: 4em;                 /* 📏 Large size makes it impossible to miss */
+            margin-bottom: 20px;            /* 📐 Space between icon and text */
+            color: #666;                    /* 🌫️ Neutral gray color, professional but friendly */
         }
 
+        /*
+        💬 PRIMARY INSTRUCTION TEXT - Clear, action-oriented guidance
+        ============================================================
+        
+        This text tells users exactly what they can do, like having clear
+        instructions on a vending machine or self-checkout kiosk.
+        */
         .upload-text {
-            font-size: 1.3em;
-            color: #666;
-            margin-bottom: 10px;
+            font-size: 1.3em;              /* 📏 Slightly larger for emphasis and readability */
+            color: #666;                    /* 🌫️ Consistent color scheme with icon */
+            margin-bottom: 10px;            /* 📐 Small gap before secondary instructions */
         }
 
         .upload-subtext {
@@ -956,56 +1240,171 @@
         </div>
     </div>
 
+    <!--
+    ⚡ JAVASCRIPT CONTROL SYSTEM - The Brain and Nervous System of Our Dashboard
+    ===========================================================================
+    
+    Everything between <script> tags is JavaScript code - the "electrical system"
+    that makes our beautiful dashboard actually work and respond to user actions.
+    
+    🏆 HIGH SCHOOL EXPLANATION:
+    Think of our web page like a sophisticated smart home or gaming setup:
+    
+    1. 📋 HTML = The house structure (rooms, walls, doors, windows)
+    2. 🎨 CSS = The decoration and design (paint, furniture, lighting)  
+    3. ⚡ JAVASCRIPT = The electrical and smart systems (lights, security, automation)
+    
+    JavaScript is what turns our static, pretty webpage into an interactive,
+    intelligent system that can:
+    - Respond to mouse clicks and keyboard input
+    - Communicate with servers over the internet
+    - Update content in real-time without page refreshes
+    - Process files and display results dynamically
+    
+    We'll use metaphors like electrical systems, control panels, automation,
+    and smart home technology to explain how JavaScript creates interactivity.
+    -->
     <script>
-        const dragDropArea = document.getElementById('dragDropArea');
-        const fileInput = document.getElementById('fileInput');
-        const progressBar = document.getElementById('progressBar');
-        const progressFill = document.getElementById('progressFill');
-        const resultsSection = document.getElementById('resultsSection');
-        const resultsContent = document.getElementById('resultsContent');
-        const summarySection = document.getElementById('summarySection');
-        const summaryContent = document.getElementById('summaryContent');
-        const tagsSection = document.getElementById('tagsSection');
-        const tagsContent = document.getElementById('tagsContent');
-        const metadataSection = document.getElementById('metadataSection');
-        const errorMessage = document.getElementById('errorMessage');
-        const filePreview = document.getElementById('filePreview');
-        const fileName = document.getElementById('fileName');
-        const fileSize = document.getElementById('fileSize');
-        const uploadSuccess = document.getElementById('uploadSuccess');
-        const processBtn = document.getElementById('processBtn');
-        const removeBtn = document.getElementById('removeBtn');
+        /*
+        🎛️ CONTROL PANEL CONNECTIONS - Linking JavaScript to HTML elements
+        ==================================================================
         
-        // Real-time error monitoring
-        let websocket = null;
-        let realtimeErrors = [];
-        let realtimeConnectionStatus = 'disconnected';
+        These variables are like connecting wires that link our JavaScript "brain"
+        to specific parts of our HTML interface. Each getElementById() call is
+        like plugging a wire into a specific component on our control panel.
         
-        let selectedFile = null;
-        let selectedFiles = [];
-        let currentFileIndex = 0;
-        let lastProcessedData = null; // Store the last processed results for live filtering
-        let fileQueue = []; // Queue for multiple files
-        let activeTab = null; // Currently active tab
+        🏆 HIGH SCHOOL EXPLANATION:
+        Think of this like setting up a home theater system where you need to
+        connect the remote control to each device:
+        - dragDropArea = connect to the file drop zone
+        - progressBar = connect to the loading indicator  
+        - resultsSection = connect to the output display
         
-        // Initialize real-time error monitoring
+        Once connected, our JavaScript can control these elements, change their
+        content, hide/show them, or respond when users interact with them.
+        */
+        
+        // 📱 USER INTERFACE CONTROLS - connecting to interactive elements
+        const dragDropArea = document.getElementById('dragDropArea');      // 🎯 File drop zone
+        const fileInput = document.getElementById('fileInput');            // 📁 Hidden file picker
+        const progressBar = document.getElementById('progressBar');        // 📊 Loading indicator container
+        const progressFill = document.getElementById('progressFill');      // 📈 Actual progress bar fill
+        
+        // 📺 DISPLAY SCREENS - connecting to content display areas
+        const resultsSection = document.getElementById('resultsSection');    // 📋 Main results container
+        const resultsContent = document.getElementById('resultsContent');    // 📄 Processed log content
+        const summarySection = document.getElementById('summarySection');    // 🧠 AI analysis summary
+        const summaryContent = document.getElementById('summaryContent');    // 💭 Summary text content
+        const tagsSection = document.getElementById('tagsSection');          // 🏷️ Interactive tags area
+        const tagsContent = document.getElementById('tagsContent');          // 🎯 Tag buttons container
+        
+        // 📋 STATUS AND FEEDBACK DISPLAYS - connecting to user feedback elements
+        const metadataSection = document.getElementById('metadataSection');  // 📊 File information display
+        const errorMessage = document.getElementById('errorMessage');        // ⚠️ Error notification area
+        const filePreview = document.getElementById('filePreview');          // 👁️ File preview container
+        const fileName = document.getElementById('fileName');                // 📄 Display selected filename
+        const fileSize = document.getElementById('fileSize');                // 📏 Display file size info
+        const uploadSuccess = document.getElementById('uploadSuccess');      // ✅ Success notification
+        
+        // 🎮 ACTION BUTTONS - connecting to user controls
+        const processBtn = document.getElementById('processBtn');            // ⚡ Process/analyze button
+        const removeBtn = document.getElementById('removeBtn');              // 🗑️ Remove file button
+        
+        /*
+        📡 REAL-TIME COMMUNICATION SYSTEM - Live connection to server
+        ============================================================
+        
+        These variables set up our "radio communication" system that lets our
+        dashboard talk to the server in real-time, like having a live video call
+        or chat connection that stays open for instant updates.
+        
+        🏆 HIGH SCHOOL EXPLANATION:
+        Think of this like having a walkie-talkie or Discord voice chat that
+        stays connected while you're playing online games:
+        - websocket = the open communication channel
+        - realtimeErrors = a list of all messages received
+        - connectionStatus = whether we're currently "online" or "offline"
+        */
+        let websocket = null;                    // 📻 Real-time communication channel
+        let realtimeErrors = [];                 // 📚 Collection of all received error messages
+        let realtimeConnectionStatus = 'disconnected';  // 🚦 Current connection status
+        
+        /*
+        🗂️ DATA MANAGEMENT SYSTEM - Keeping track of files and user choices
+        ===================================================================
+        
+        These variables are like having different filing cabinets and clipboards
+        to keep track of what the user is doing and what files they're working with.
+        
+        🏆 HIGH SCHOOL EXPLANATION:
+        Think of this like managing homework assignments or organizing photos:
+        - selectedFile = the current assignment you're working on
+        - selectedFiles = all the assignments you need to complete
+        - fileQueue = the order you'll work on them
+        - lastProcessedData = keeping the results so you can reference them later
+        */
+        let selectedFile = null;                 // 📄 Currently active file
+        let selectedFiles = [];                  // 📁 All uploaded files  
+        let currentFileIndex = 0;                // 🔢 Which file we're currently viewing
+        let lastProcessedData = null;            // 💾 Store results for live filtering
+        let fileQueue = [];                      // 📋 Queue for multiple files
+        let activeTab = null;                    // 🗂️ Currently selected tab/view
+        
+        /*
+        📡 REAL-TIME MONITORING SETUP - Establishing live communication with server
+        ===========================================================================
+        
+        This function sets up our "radio tower" that maintains a constant connection
+        to the Debuggle server, allowing us to receive error notifications instantly
+        as they happen, like having a live news feed or stock ticker.
+        
+        🏆 HIGH SCHOOL EXPLANATION:
+        Think of this like setting up a live stream or video call:
+        1. Figure out the right "phone number" (WebSocket URL)
+        2. Place the call (create WebSocket connection)
+        3. Set up what to do when the call connects (onopen)
+        4. Set up what to do when messages arrive (onmessage)
+        5. Handle any connection problems (error handling)
+        
+        Once this is working, our dashboard can show live updates without the
+        user having to refresh the page, like notifications on your phone.
+        */
         function initRealtimeMonitoring() {
+            // 🌐 SMART URL BUILDING - automatically use secure connection if needed
+            // Like automatically switching between regular phone calls and encrypted calls
             const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
             const wsUrl = `${protocol}//${window.location.host}/ws/errors`;
             
+            // 📞 ESTABLISH CONNECTION - "dial the server" to start live communication
+            // Like placing a video call or starting a live stream
             websocket = new WebSocket(wsUrl);
             
+            /*
+            ✅ CONNECTION SUCCESS HANDLER - what to do when we get connected
+            
+            This is like the "call connected" notification - we update our status
+            display to show users that live monitoring is now active.
+            */
             websocket.onopen = function(event) {
-                console.log('Real-time error monitoring connected');
-                realtimeConnectionStatus = 'connected';
-                updateConnectionStatus();
+                console.log('Real-time error monitoring connected');   // 📝 Developer log message
+                realtimeConnectionStatus = 'connected';               // 🚦 Update our status tracker
+                updateConnectionStatus();                             // 🔄 Update the UI display
             };
             
+            /*
+            📨 MESSAGE HANDLER - what to do when new error data arrives
+            
+            This is like having a notification handler on your phone - when a new
+            message arrives, we need to process it and update our display.
+            */
             websocket.onmessage = function(event) {
                 try {
+                    // 📦 UNPACK THE MESSAGE - convert from text to usable data
+                    // Like opening an envelope and reading the contents
                     const data = JSON.parse(event.data);
-                    handleRealtimeMessage(data);
+                    handleRealtimeMessage(data);                      // 🎯 Process the error data
                 } catch (error) {
+                    // 🚨 HANDLE CORRUPTED MESSAGES - deal with garbled data gracefully
                     console.error('Error parsing WebSocket message:', error);
                 }
             };
