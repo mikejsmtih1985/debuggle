@@ -1,5 +1,5 @@
 import pytest
-from app.processor import LogProcessor
+from src.debuggle.processor import LogProcessor
 
 
 class TestLogProcessor:

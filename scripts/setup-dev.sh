@@ -47,7 +47,7 @@ chmod 755 uploads logs
 
 # Check if everything is working
 echo "🧪 Testing installation..."
-python3 -c "from app.main import app; print('✅ Import successful')"
+python3 -c "from src.debuggle.main import app; print('✅ Import successful')"
 
 echo ""
 echo "✅ Development environment setup complete!"

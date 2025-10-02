@@ -1,6 +1,16 @@
 #!/usr/bin/env python3
 """
-Debuggle Entry Point - Unified entry point for both CLI and web server modes
+Debuggle Entry Point - Unified CLI/Server launcher
+
+This is the main entry point for Debuggle that provides:
+- CLI mode: Direct log analysis from command line
+- Server mode: Web interface for interactive debugging
+- Default behavior: Starts web server on port 8000
+
+Usage:
+    python entry_point.py                    # Start web server
+    python entry_point.py serve --port 8080  # Custom port
+    python entry_point.py analyze file.log   # CLI analysis
 """
 
 import sys
@@ -61,7 +71,7 @@ def start_server(host='0.0.0.0', port=8000, reload=False):
     """Start the FastAPI web server"""
     try:
         import uvicorn
-        from app.main import app
+        from src.debuggle.main import app
         
         print(f"🚀 Starting Debuggle web server...")
         print(f"📍 URL: http://localhost:{port}")

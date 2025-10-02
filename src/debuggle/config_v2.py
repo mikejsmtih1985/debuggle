@@ -267,7 +267,9 @@ class TestingSettings(Settings):
     # Fast settings for testing
     api: APISettings = APISettings(
         rate_limit_per_minute=10000,  # No rate limiting in tests
-        request_timeout=5
+        request_timeout=5,
+        max_log_size=100000,  # 100KB for testing
+        max_lines_limit=5000  # 5000 lines for testing
     )
     
     analysis: AnalysisSettings = AnalysisSettings(

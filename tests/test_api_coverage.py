@@ -4,7 +4,7 @@ API endpoint tests to improve main.py coverage.
 
 import pytest
 from fastapi.testclient import TestClient
-from app.main import app
+from src.debuggle.main import app
 
 client = TestClient(app)
 

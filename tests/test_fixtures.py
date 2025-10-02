@@ -8,7 +8,7 @@ from tests.fixtures.stack_traces import (
     NON_STACK_TRACE_SAMPLES, 
     EXPECTED_OUTCOMES
 )
-from app.processor import LogProcessor
+from src.debuggle.processor import LogProcessor
 
 
 class TestStackTraceFixtures:

@@ -6,8 +6,8 @@ Targeting the remaining uncovered lines in processor.py and main.py.
 import pytest
 from unittest.mock import patch, Mock
 from fastapi.testclient import TestClient
-from app.main import app
-from app.processor import LogProcessor
+from src.debuggle.main import app
+from src.debuggle.processor import LogProcessor
 
 client = TestClient(app)
 
@@ -256,7 +256,7 @@ class TestFullCoverage:
     def test_main_exception_handler(self):
         """Test the general exception handler in main.py (line 54).""" 
         # This is tricky to test directly, but we can simulate an internal error
-        with patch('app.main.processor') as mock_processor:
+        with patch('src.debuggle.main.processor') as mock_processor:
             # Make the processor raise an unexpected exception
             mock_processor.process_log.side_effect = Exception("Simulated internal error")
             
@@ -336,7 +336,7 @@ class TestFullCoverage:
         processor = LogProcessor()
         
         # Test with problematic input that might cause langdetect to fail
-        with patch('app.processor.detect') as mock_detect:
+        with patch('src.debuggle.processor.detect') as mock_detect:
             mock_detect.side_effect = Exception("LangDetect error")
             
             result = processor.detect_language("Some text that causes langdetect to fail")

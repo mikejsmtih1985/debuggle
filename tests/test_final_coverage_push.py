@@ -5,8 +5,8 @@ Final push to 95%+ coverage - targeting remaining specific uncovered lines.
 import pytest
 from unittest.mock import patch, Mock
 from fastapi.testclient import TestClient
-from app.main import app
-from app.processor import LogProcessor
+from src.debuggle.main import app
+from src.debuggle.processor import LogProcessor
 
 client = TestClient(app)
 
@@ -246,8 +246,8 @@ class TestFinalCoveragePush:
         """Test exception handler with debug mode variations."""
         
         # Test with debug mode potentially showing more details
-        with patch('app.main.settings.debug', True):
-            with patch('app.main.processor.process_log') as mock_process:
+        with patch('src.debuggle.main.settings.debug', True):
+            with patch('src.debuggle.main.processor.process_log') as mock_process:
                 mock_process.side_effect = ValueError("Test exception")
                 
                 payload = {

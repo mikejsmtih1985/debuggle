@@ -12,7 +12,7 @@ import subprocess
 import ast
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Dict, List, Optional, Any, Tuple
+from typing import Dict, List, Optional, Any, Tuple, Union
 
 
 logger = logging.getLogger(__name__)
@@ -61,6 +61,18 @@ class EnvironmentContext:
     environment_variables: Dict[str, str] = field(default_factory=dict)
 
 
+@dataclass 
+class ErrorContext:
+    """Legacy error context for backward compatibility."""
+    error_location: Optional[str] = None
+    surrounding_code: Optional[str] = None
+    recent_changes: List[str] = field(default_factory=list)
+    project_structure: Dict[str, Any] = field(default_factory=dict)
+    environment_info: Dict[str, Any] = field(default_factory=dict)
+    similar_errors: List[str] = field(default_factory=list)
+    dependencies: List[str] = field(default_factory=list)
+
+
 @dataclass
 class DevelopmentContext:
     """Complete development context."""
@@ -69,6 +81,44 @@ class DevelopmentContext:
     project_context: Optional[ProjectContext] = None
     environment_context: Optional[EnvironmentContext] = None
     extraction_metadata: Dict[str, Any] = field(default_factory=dict)
+    
+    # Add properties for backward compatibility
+    @property
+    def error_location(self) -> Optional[str]:
+        if self.file_context and self.file_context.line_number:
+            return f"{self.file_context.file_path}:{self.file_context.line_number}"
+        return None
+    
+    @property
+    def surrounding_code(self) -> Optional[str]:
+        return self.file_context.surrounding_code if self.file_context else None
+    
+    @property
+    def project_structure(self) -> Dict[str, Any]:
+        if self.project_context:
+            return {
+                'language': self.project_context.language,
+                'framework': self.project_context.framework,
+                'has_tests': self.project_context.has_tests,
+                'config_files': self.project_context.config_files
+            }
+        return {}
+    
+    @property
+    def dependencies(self) -> List[str]:
+        return self.project_context.dependencies if self.project_context else []
+    
+    @property
+    def environment_info(self) -> Dict[str, Any]:
+        if self.environment_context:
+            return {
+                'python_version': self.environment_context.python_version,
+                'node_version': self.environment_context.node_version,
+                'java_version': self.environment_context.java_version,
+                'working_directory': self.environment_context.working_directory,
+                **self.environment_context.environment_variables
+            }
+        return {}
 
 
 class ContextExtractor:
@@ -163,7 +213,7 @@ class ContextExtractor:
             class_name = None
             
             if line_number:
-                surrounding_code = self._get_surrounding_code(full_path, line_number)
+                surrounding_code = self._get_surrounding_code_internal(full_path, line_number)
                 function_name, class_name = self._get_function_and_class_context(full_path, line_number)
             
             return FileContext(
@@ -279,10 +329,10 @@ class ContextExtractor:
             r'File "([^"]+)".*line (\d+)',
         ]
         
-        # JavaScript error patterns
+        # JavaScript error patterns  
         js_patterns = [
-            r'at .* \(([^:]+):(\d+):\d+\)',
-            r'at ([^:]+):(\d+):\d+',
+            r'at ([^:]+):(\d+):\d+',  # Direct file:line pattern (prioritize this)
+            r'at .* \(([^:]+):(\d+):\d+\)',  # Function call pattern
         ]
         
         # Java error patterns
@@ -317,7 +367,7 @@ class ContextExtractor:
         
         return None
     
-    def _get_surrounding_code(self, file_path: Path, line_number: int, context_lines: int = 5) -> Optional[str]:
+    def _get_surrounding_code_internal(self, file_path: Path, line_number: int, context_lines: int = 5) -> Optional[str]:
         """Get code surrounding the error line."""
         try:
             with open(file_path, 'r', encoding='utf-8') as f:
@@ -448,7 +498,8 @@ class ContextExtractor:
         config_patterns = [
             '.env', '.env.*', 'config.json', 'config.yml', 'config.yaml',
             'settings.py', 'settings.json', 'docker-compose.yml',
-            '.gitignore', 'Dockerfile', 'Makefile'
+            '.gitignore', 'Dockerfile', 'Makefile', 'requirements.txt',
+            'requirements-dev.txt', 'pyproject.toml', 'package.json'
         ]
         
         config_files = []
@@ -499,8 +550,10 @@ class ContextExtractor:
                         for line in f:
                             line = line.strip()
                             if line and not line.startswith('#'):
-                                # Extract package name (before == or >=)
+                                # Extract package name (before == or >= and handle extras like [standard])
                                 pkg = re.split(r'[>=<]', line)[0].strip()
+                                # Remove extras like [standard] from uvicorn[standard]
+                                pkg = re.split(r'\[', pkg)[0].strip()
                                 if pkg:
                                     dependencies.append(pkg)
                 except Exception:
@@ -594,5 +647,120 @@ class ContextExtractor:
         sections.append("  ✅ Debuggle sees your entire development context")
         sections.append("  ✅ This leads to more accurate and specific solutions")
         sections.append("  ✅ All analysis happens locally - your code stays private")
+        
+        return "\n".join(sections)
+    
+    # Backward compatibility methods for existing tests
+    def _extract_error_location(self, log_input: str) -> Optional[str]:
+        """Extract error location (backward compatibility)."""
+        file_path, line_number = self._parse_file_location_from_error(log_input)
+        if file_path and line_number:
+            return f"{file_path}:{line_number}"
+        return None
+    
+    def _analyze_project_structure(self) -> Dict[str, Any]:
+        """Analyze project structure (backward compatibility)."""
+        context = self._extract_project_context()
+        return {
+            'language': context.language or 'unknown',
+            'framework': context.framework or 'unknown', 
+            'has_tests': context.has_tests,
+            'config_files': context.config_files
+        }
+    
+    def _get_dependencies_list(self) -> List[str]:
+        """Get dependencies list (backward compatibility).""" 
+        context = self._extract_project_context()
+        return context.dependencies
+    
+    def _get_surrounding_code(self, file_path: str, log_input: str) -> Optional[str]:
+        """Get surrounding code (backward compatibility method matching test expectations)."""
+        try:
+            line_number = self._parse_line_number_from_error(log_input)
+            if not line_number:
+                return None
+            return self._get_surrounding_code_internal(Path(file_path), line_number)
+        except Exception as e:
+            self.logger.error(f"Error getting surrounding code: {e}")
+            return None
+    
+    def format_context_for_analysis(self, context: Union[ErrorContext, DevelopmentContext], log_input: str) -> str:
+        """Format context for analysis (backward compatibility)."""
+        sections = []
+        
+        sections.append("🚨 **ERROR ANALYSIS WITH FULL CONTEXT**")
+        sections.append("=" * 50)
+        
+        # Original error
+        sections.append("\n📋 **Original Error:**")
+        sections.append(f"```\n{log_input}\n```")
+        
+        # Error location with surrounding code
+        if context.surrounding_code:
+            sections.append("\n🎯 **Code Context (What you probably didn't paste into ChatGPT):**")
+            sections.append(f"```python\n{context.surrounding_code}\n```")
+        
+        # Handle different context types
+        if isinstance(context, ErrorContext):
+            # Recent changes
+            if context.recent_changes:
+                sections.append("\n🔄 **Recent Changes (Git History):**")
+                for change in context.recent_changes:
+                    sections.append(f"  • {change}")
+            
+            # Project context
+            if context.project_structure:
+                sections.append("\n🏗️ **Project Context:**")
+                proj = context.project_structure
+                sections.append(f"  • Language: {proj.get('language', 'unknown')}")
+                sections.append(f"  • Framework: {proj.get('framework', 'none detected')}")
+                sections.append(f"  • Has Tests: {'Yes' if proj.get('has_tests') else 'No'}")
+                if proj.get('config_files'):
+                    sections.append(f"  • Config Files: {', '.join(proj['config_files'])}")
+            
+            # Dependencies
+            if context.dependencies:
+                sections.append("\n📦 **Key Dependencies:**")
+                sections.append(f"  {', '.join(context.dependencies[:10])}")  # Limit to first 10
+            
+            # Environment
+            if context.environment_info:
+                sections.append("\n💻 **Environment:**")
+                for key, value in context.environment_info.items():
+                    sections.append(f"  • {key}: {value}")
+        
+        elif isinstance(context, DevelopmentContext):
+            # Git context
+            if context.git_context and context.git_context.recent_commits:
+                sections.append("\n🔄 **Recent Changes (Git History):**")
+                for change in context.git_context.recent_commits:
+                    sections.append(f"  • {change}")
+            
+            # Project context
+            if context.project_context:
+                sections.append("\n🏗️ **Project Context:**")
+                sections.append(f"  • Language: {context.project_context.language or 'unknown'}")
+                sections.append(f"  • Framework: {context.project_context.framework or 'none detected'}")
+                sections.append(f"  • Has Tests: {'Yes' if context.project_context.has_tests else 'No'}")
+                if context.project_context.config_files:
+                    sections.append(f"  • Config Files: {', '.join(context.project_context.config_files)}")
+            
+            # Dependencies
+            if context.project_context and context.project_context.dependencies:
+                sections.append("\n📦 **Key Dependencies:**")
+                sections.append(f"  {', '.join(context.project_context.dependencies[:10])}")  # Limit to first 10
+            
+            # Environment
+            if context.environment_context:
+                sections.append("\n💻 **Environment:**")
+                if context.environment_context.python_version:
+                    sections.append(f"  • {context.environment_context.python_version}")
+                if context.environment_context.node_version:
+                    sections.append(f"  • Node: {context.environment_context.node_version}")
+                if context.environment_context.java_version:
+                    sections.append(f"  • Java: {context.environment_context.java_version}")
+        
+        sections.append("\n" + "=" * 50)
+        sections.append("🎯 **This comprehensive context helps provide more accurate solutions than generic error explanations!**")
         
         return "\n".join(sections)

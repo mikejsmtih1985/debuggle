@@ -2,8 +2,7 @@
 Additional targeted tests to hit specific uncovered lines and achieve 95%+ coverage.
 """
 
-import pytest
-from app.processor import LogProcessor
+from src.debuggle.processor import LogProcessor
 
 
 class TestSpecificCoverageTargets:

@@ -4,7 +4,11 @@ Test configuration and fixtures.
 
 import pytest
 import sys
+import os
 from pathlib import Path
+
+# Set testing environment BEFORE any imports that might cache settings
+os.environ['DEBUGGLE_ENVIRONMENT'] = 'testing'
 
 # Add the app directory to Python path
 app_dir = Path(__file__).parent.parent / "app"

@@ -3,7 +3,7 @@ import tempfile
 from fastapi.testclient import TestClient
 from io import BytesIO
 
-from app.main import app
+from src.debuggle.main import app
 
 client = TestClient(app)
 

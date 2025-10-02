@@ -158,7 +158,7 @@ check_health() {
     
     # Check if CLI can import
     echo -n "✅ Debuggle CLI: "
-    if python3 -c "import sys; sys.path.append('$PROJECT_ROOT'); from app.core.processor import LogProcessor; print('OK')" 2>/dev/null; then
+    if python3 -c "import sys; sys.path.append('$PROJECT_ROOT'); from src.debuggle.core.processor import LogProcessor; print('OK')" 2>/dev/null; then
         echo "Imports OK"
     else
         echo "❌ Import failed"

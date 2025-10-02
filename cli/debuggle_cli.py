@@ -19,8 +19,8 @@ from typing import Optional
 import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
-from app.core.processor import LogProcessor
-from app.core.context import ContextExtractor
+from src.debuggle.core.processor import LogProcessor
+from src.debuggle.core.context import ContextExtractor
 
 
 def analyze_error_from_file(log_file: str, project_root: Optional[str] = None):

@@ -10,7 +10,7 @@ from unittest.mock import patch, MagicMock
 import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
-from app.core.context import ContextExtractor, DevelopmentContext
+from src.debuggle.core.context import ContextExtractor, DevelopmentContext, ErrorContext
 
 
 class TestContextExtractor:

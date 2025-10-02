@@ -1,12 +1,25 @@
+"""
+Debuggle FastAPI Application - Core web service
+
+This module contains the FastAPI web application that provides:
+- REST API endpoints for log analysis
+- File upload functionality
+- Rate limiting and CORS handling
+- Health checks and service metadata
+
+This is imported by entry_point.py when running in server mode.
+For direct CLI usage, use the debuggle_cli.py module instead.
+"""
+
 from fastapi import FastAPI, HTTPException, Request, File, UploadFile, Form
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse, HTMLResponse, RedirectResponse
+from fastapi.responses import JSONResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 import time
-from typing import List, Optional
+from typing import Optional
 
 from .models import (
     BeautifyRequest, BeautifyResponse, BeautifyMetadata,
@@ -14,7 +27,7 @@ from .models import (
     HealthResponse, TiersResponse, TierFeature, ErrorResponse
 )
 from .processor import LogProcessor
-from .config import settings
+from .config_v2 import settings
 
 # Initialize rate limiter
 limiter = Limiter(key_func=get_remote_address)
@@ -109,7 +122,7 @@ async def get_tiers():
 
 
 @app.post("/api/v1/beautify", response_model=BeautifyResponse)
-@limiter.limit(f"{settings.rate_limit_per_minute}/minute")
+@limiter.limit(f"{settings.api.rate_limit_per_minute}/minute")
 async def beautify_log(request: Request, beautify_request: BeautifyRequest):
     """
     Debuggle and analyze log entries or stack traces.
@@ -122,23 +135,23 @@ async def beautify_log(request: Request, beautify_request: BeautifyRequest):
     """
     try:
         # Validate input size
-        if len(beautify_request.log_input) > settings.max_log_size:
+        if len(beautify_request.log_input) > settings.api.max_log_size:
             raise HTTPException(
                 status_code=400,
                 detail=ErrorResponse(
                     error="Log input too large",
-                    details=f"Maximum size is {settings.max_log_size} characters",
+                    details=f"Maximum size is {settings.api.max_log_size} characters",
                     code="INPUT_TOO_LARGE"
                 ).model_dump()
             )
         
         # Validate max_lines parameter
-        if beautify_request.options.max_lines > settings.max_lines_limit:
+        if beautify_request.options.max_lines > settings.api.max_lines_limit:
             raise HTTPException(
                 status_code=400,
                 detail=ErrorResponse(
                     error="Max lines parameter too large",
-                    details=f"Maximum allowed is {settings.max_lines_limit} lines",
+                    details=f"Maximum allowed is {settings.api.max_lines_limit} lines",
                     code="MAX_LINES_EXCEEDED"
                 ).model_dump()
             )
@@ -175,7 +188,7 @@ async def beautify_log(request: Request, beautify_request: BeautifyRequest):
 
 
 @app.post("/api/v1/upload-log", response_model=FileUploadResponse)
-@limiter.limit(f"{settings.rate_limit_per_minute}/minute")
+@limiter.limit(f"{settings.api.rate_limit_per_minute}/minute")
 async def upload_log_file(
     request: Request,
     file: UploadFile = File(..., description="Log file to process"),
@@ -193,23 +206,23 @@ async def upload_log_file(
     """
     try:
         # Validate file size (check content length if available)
-        if file.size and file.size > settings.max_log_size:
+        if file.size and file.size > settings.api.max_log_size:
             raise HTTPException(
                 status_code=400,
                 detail=ErrorResponse(
                     error="File too large",
-                    details=f"Maximum file size is {settings.max_log_size} bytes",
+                    details=f"Maximum file size is {settings.api.max_log_size} bytes",
                     code="FILE_TOO_LARGE"
                 ).model_dump()
             )
         
         # Validate max_lines parameter
-        if max_lines > settings.max_lines_limit:
+        if max_lines > settings.api.max_lines_limit:
             raise HTTPException(
                 status_code=400,
                 detail=ErrorResponse(
                     error="Max lines parameter too large",
-                    details=f"Maximum allowed is {settings.max_lines_limit} lines",
+                    details=f"Maximum allowed is {settings.api.max_lines_limit} lines",
                     code="MAX_LINES_EXCEEDED"
                 ).model_dump()
             )
@@ -230,17 +243,6 @@ async def upload_log_file(
         # Read file content
         content = await file.read()
         
-        # Validate content size after reading
-        if len(content) > settings.max_log_size:
-            raise HTTPException(
-                status_code=400,
-                detail=ErrorResponse(
-                    error="File content too large",
-                    details=f"Maximum content size is {settings.max_log_size} bytes",
-                    code="CONTENT_TOO_LARGE"
-                ).model_dump()
-            )
-        
         # Decode file content (try UTF-8 first, then other encodings)
         try:
             log_input = content.decode('utf-8')
@@ -256,6 +258,17 @@ async def upload_log_file(
                         code="ENCODING_ERROR"
                     ).model_dump()
                 )
+        
+        # Validate content size after decoding (check character count)
+        if len(log_input) > settings.api.max_log_size:
+            raise HTTPException(
+                status_code=400,
+                detail=ErrorResponse(
+                    error="File content too large",
+                    details=f"Maximum content size is {settings.api.max_log_size} characters",
+                    code="CONTENT_TOO_LARGE"
+                ).model_dump()
+            )
         
         # Validate that file has content
         if not log_input.strip():
@@ -307,7 +320,7 @@ async def upload_log_file(
 
 
 @app.post("/api/v1/analyze-with-context")
-@limiter.limit(f"{settings.rate_limit_per_minute}/minute")
+@limiter.limit(f"{settings.api.rate_limit_per_minute}/minute")
 async def analyze_with_context(
     request: Request,
     log_input: str = Form(..., description="Raw log or stack trace"),
@@ -333,10 +346,10 @@ async def analyze_with_context(
     """
     try:
         # Validate input size
-        if len(log_input) > settings.max_log_size:
+        if len(log_input) > settings.api.max_log_size:
             raise HTTPException(
                 status_code=400,
-                detail=f"Log input too large. Maximum size is {settings.max_log_size} characters"
+                detail=f"Log input too large. Maximum size is {settings.api.max_log_size} characters"
             )
         
         # Process with rich context extraction

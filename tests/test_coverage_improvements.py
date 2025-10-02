@@ -3,7 +3,7 @@ Additional tests to improve code coverage to 95%+
 """
 
 import pytest
-from app.processor import LogProcessor
+from src.debuggle.processor import LogProcessor
 
 
 class TestCoverageImprovements:

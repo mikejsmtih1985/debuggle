@@ -1,6 +1,6 @@
 import pytest
 from pydantic import ValidationError
-from app.models import BeautifyRequest, BeautifyOptions, LanguageEnum
+from src.debuggle.models import BeautifyRequest, BeautifyOptions, LanguageEnum
 
 
 class TestBeautifyRequest:

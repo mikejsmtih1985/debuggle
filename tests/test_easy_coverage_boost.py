@@ -1,6 +1,6 @@
 import pytest
-from app.processor import LogProcessor
-from app.main import app
+from src.debuggle.processor import LogProcessor
+from src.debuggle.main import app
 from fastapi.testclient import TestClient
 
 
@@ -34,7 +34,7 @@ class TestEasyCoverageBoost:
     
     def test_error_fixes_uncovered_branches(self):
         """Test uncovered branches in error_fixes.py."""
-        from app.error_fixes import extract_error_context
+        from src.debuggle.error_fixes import extract_error_context
         
         # Test with no matching error type
         context = extract_error_context("Some random text", "UnknownError")
@@ -50,7 +50,7 @@ class TestEasyCoverageBoost:
     
     def test_main_exception_handler_debug_mode(self):
         """Test exception handler in debug mode."""
-        from app.config import settings
+        from src.debuggle.config_v2 import settings
         original_debug = settings.debug
         
         try:

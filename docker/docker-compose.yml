@@ -8,8 +8,8 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - DEBUGGLE_DEBUG=false
-      - DEBUGGLE_RATE_LIMIT_PER_MINUTE=100
+      - DEBUG=false
+      - RATE_LIMIT_PER_MINUTE=100
     volumes:
       - ../config/.env:/app/.env:ro
     restart: unless-stopped

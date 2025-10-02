@@ -1,6 +1,6 @@
 import pytest
-from app.processor import LogProcessor
-from app.error_fixes import generate_enhanced_error_summary, extract_error_context
+from src.debuggle.processor import LogProcessor
+from src.debuggle.error_fixes import generate_enhanced_error_summary, extract_error_context
 
 
 class TestEnhancedErrorSuggestions:

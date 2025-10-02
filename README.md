@@ -323,7 +323,7 @@ Perfect for GitHub Actions, GitLab CI, Jenkins, Azure DevOps - any build system 
 
 ## 🤝 **Contributing**
 
-We welcome contributions! See our [Contributing Guide](CONTRIBUTING.md) for details.
+We welcome contributions! See our [Contributing Guide](docs/CONTRIBUTING.md) for details.
 
 1. Fork the repository
 2. Create a feature branch
