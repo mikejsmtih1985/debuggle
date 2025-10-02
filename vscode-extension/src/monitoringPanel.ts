@@ -1,43 +1,124 @@
-import * as vscode from 'vscode';
-import { DebugglerMonitor, DebugglerError } from './debuggleMonitor';
+/**
+ * 📺 DEBUGGLE MISSION CONTROL DASHBOARD - The Visual Command Center
+ * 
+ * This file creates the beautiful, interactive dashboard that displays all our
+ * error monitoring information in an easy-to-understand visual format.
+ * Think of it as the main screen in mission control where all the important
+ * information is displayed with charts, graphs, and real-time updates.
+ * 
+ * 🏆 HIGH SCHOOL EXPLANATION:
+ * Imagine you're building the main dashboard for a space mission control room.
+ * You need:
+ * 1. Large displays showing current status and data (the webview panel)
+ * 2. Interactive controls and buttons (message handling)
+ * 3. Connection to all the monitoring equipment (DebugglerMonitor integration)
+ * 4. Automatic updates so the information stays current (periodic refreshes)
+ * 
+ * This file handles all of that, creating a professional-looking interface
+ * that makes complex debugging information easy to understand and act on.
+ */
 
+// 🏗️ MISSION CONTROL TOOLKIT - importing our essential dashboard tools
+import * as vscode from 'vscode';                                    // Like importing the display system framework
+import { DebugglerMonitor, DebugglerError } from './debuggleMonitor'; // Like connecting to our radar and monitoring systems
+
+/**
+ * 🎯 MISSION CONTROL DASHBOARD - The Visual Command Center
+ * 
+ * This class creates and manages the interactive dashboard panel where users
+ * can see all their error information, monitoring status, and control the
+ * debugging system. It's like the main control panel in a spaceship cockpit.
+ * 
+ * 🏆 HIGH SCHOOL EXPLANATION:
+ * Think of this like creating a custom app interface on a tablet that shows:
+ * - Real-time charts and graphs of system performance
+ * - Big, colorful buttons to control different functions
+ * - Status indicators showing whether systems are online or offline
+ * - Automatic updates so the information is always current
+ * 
+ * The panel is like a window within VS Code that displays our custom web page
+ * with all the debugging information formatted in a beautiful, easy-to-read way.
+ */
 export class MonitoringPanel {
+    // 🏷️ PANEL IDENTIFICATION - unique identifier for our dashboard type
+    // Like having a model number that VS Code uses to recognize our specific dashboard
     public static readonly viewType = 'debuggleMonitoring';
+    
+    // 📺 MAIN DISPLAY SCREEN - the actual panel that shows our dashboard
+    // Like the main monitor in mission control that displays all the important information
     private panel: vscode.WebviewPanel;
+    
+    // 🗑️ CLEANUP CREW - list of things to clean up when we shut down
+    // Like having a checklist of equipment to power down when the mission ends
     private disposables: vscode.Disposable[] = [];
+    
+    // 📡 RADAR CONNECTION - our link to the error monitoring system
+    // Like having a direct line to the radar operators who report what they see
     private monitor: DebugglerMonitor;
 
+    /**
+     * 🚀 DASHBOARD CONSTRUCTION - building our mission control interface
+     * 
+     * This constructor creates and sets up our interactive dashboard panel.
+     * It's like setting up a new control room with all the screens, buttons,
+     * and communication systems needed to monitor and control operations.
+     * 
+     * 🏆 HIGH SCHOOL EXPLANATION:
+     * Think of this like setting up a streaming setup with multiple monitors:
+     * 1. Create the main display window (webview panel)
+     * 2. Connect it to your data sources (monitor connection)
+     * 3. Set up interactive controls (message handling)
+     * 4. Configure automatic updates (event listeners)
+     * 5. Plan for proper cleanup when you're done (disposal management)
+     * 
+     * The extensionUri parameter tells us where our extension's files are stored,
+     * and the monitor parameter connects us to our error detection system.
+     */
     constructor(extensionUri: vscode.Uri, monitor: DebugglerMonitor) {
+        // 📡 RADAR CONNECTION - establish link to our monitoring system
         this.monitor = monitor;
         
+        // 📺 MAIN DASHBOARD CREATION - build the visual interface panel
+        // Like setting up a new monitor and configuring it for our mission control room
         this.panel = vscode.window.createWebviewPanel(
-            MonitoringPanel.viewType,
-            'Debuggle Monitor Dashboard',
-            vscode.ViewColumn.One,
+            MonitoringPanel.viewType,           // 🏷️ Panel type identifier
+            'Debuggle Monitor Dashboard',       // 📋 Title shown in VS Code tab
+            vscode.ViewColumn.One,              // 📍 Where to position the panel
             {
-                enableScripts: true,
-                localResourceRoots: [vscode.Uri.joinPath(extensionUri, 'media')]
+                enableScripts: true,            // 🔧 Allow JavaScript for interactivity
+                localResourceRoots: [vscode.Uri.joinPath(extensionUri, 'media')] // 📁 Where to find our assets
             }
         );
 
+        // 🎨 DASHBOARD CONTENT - load the HTML/CSS/JavaScript for our interface
+        // Like loading the software that creates all the charts, graphs, and buttons
         this.panel.webview.html = this.getWebviewContent();
         
+        // 🗑️ CLEANUP SCHEDULING - plan for proper shutdown when panel is closed
+        // Like programming the automatic shutdown sequence when mission control closes
         this.panel.onDidDispose(() => this.dispose(), null, this.disposables);
         
+        // 🎛️ CONTROL SYSTEM - set up interactive button handling
+        // Like programming what happens when operators press different control buttons
         this.panel.webview.onDidReceiveMessage(
             (message: any) => {
+                // 📨 MESSAGE PROCESSING - handle commands from the dashboard interface
                 switch (message.command) {
                     case 'refresh':
+                        // 🔄 REFRESH BUTTON - update the display with latest information
                         this.updateContent();
                         break;
                     case 'clearErrors':
+                        // 🧹 CLEAR BUTTON - reset the error log and update display
                         this.monitor.clearErrors();
                         this.updateContent();
                         break;
                     case 'startMonitoring':
+                        // 🚀 START BUTTON - begin error monitoring operations
                         this.monitor.startMonitoring();
                         break;
                     case 'stopMonitoring':
+                        // 🛑 STOP BUTTON - pause error monitoring operations
                         this.monitor.stopMonitoring();
                         break;
                 }
@@ -46,17 +127,36 @@ export class MonitoringPanel {
             this.disposables
         );
 
-        // Update content periodically
+        // ⏰ AUTOMATIC UPDATES - set up periodic refresh of dashboard information
+        // Like having a digital clock that updates every second, we refresh our
+        // error information every 2 seconds to keep everything current
         const updateInterval = setInterval(() => {
             this.updateContent();
         }, 2000);
 
+        // 📋 CLEANUP REGISTRATION - add the update timer to our cleanup list
+        // When we shut down the dashboard, we need to stop the automatic updates
+        // to prevent memory leaks and unnecessary processing
         this.disposables.push({
             dispose: () => clearInterval(updateInterval)
         });
 
-        // Initial content update
+        // 🎬 INITIAL DISPLAY - show the first version of our dashboard
+        // Like turning on the monitors and displaying the starting information
         this.updateContent();
+        
+        /**
+         * 🎯 MISSION CONTROL DASHBOARD READY!
+         * 
+         * At this point, our interactive dashboard is fully operational and ready to:
+         * - Display real-time error information with beautiful formatting
+         * - Respond to user button clicks and commands
+         * - Update automatically every 2 seconds with fresh data
+         * - Handle proper cleanup when the user closes the panel
+         * 
+         * It's like having a fully functional mission control center that's
+         * staffed, powered up, and ready to monitor and control operations!
+         */
     }
 
     public reveal() {
@@ -67,20 +167,58 @@ export class MonitoringPanel {
         this.panel.onDidDispose(callback);
     }
 
+    /**
+     * 🔄 DASHBOARD REFRESH - updating the display with latest information
+     * 
+     * This method fetches the latest error data from our monitoring system and
+     * sends it to the dashboard display for visual presentation. It's like a
+     * mission control operator updating all the screens with the newest data.
+     * 
+     * 🏆 HIGH SCHOOL EXPLANATION:
+     * Think of this like refreshing a social media app:
+     * 1. Ask the server for the latest posts (get errors from monitor)
+     * 2. Check if you're currently online (get monitoring status)
+     * 3. Package all the information together (create data object)
+     * 4. Send it to your app's display system (post message to webview)
+     * 
+     * This happens automatically every 2 seconds to keep the dashboard current.
+     */
     private updateContent() {
-        const errors = this.monitor.getErrors();
-        const isActive = this.monitor.isActive();
+        // 📊 DATA COLLECTION - gather the latest information from our monitoring system
+        const errors = this.monitor.getErrors();    // 🚨 Get all detected errors
+        const isActive = this.monitor.isActive();   // 🚦 Check if monitoring is currently running
         
+        // 📤 DATA TRANSMISSION - send the fresh information to our dashboard display
+        // Like mission control updating all the wall displays with new data
         this.panel.webview.postMessage({
-            command: 'updateData',
+            command: 'updateData',              // 📋 Tell the dashboard this is a data update
             data: {
-                errors: errors,
-                isActive: isActive,
-                timestamp: new Date().toISOString()
+                errors: errors,                 // 🚨 The list of all current errors
+                isActive: isActive,             // 🚦 Whether monitoring is currently active
+                timestamp: new Date().toISOString() // ⏰ When this update was created
             }
         });
     }
 
+    /**
+     * 🎨 DASHBOARD DESIGN - creating the visual interface HTML
+     * 
+     * This method generates the HTML code that creates our beautiful dashboard
+     * interface. It's like being a web designer who creates the layout, styling,
+     * and interactive elements for our mission control display.
+     * 
+     * 🏆 HIGH SCHOOL EXPLANATION:
+     * Think of this like creating a custom website that will be displayed
+     * inside VS Code. This method writes all the HTML, CSS, and JavaScript
+     * needed to create:
+     * - Beautiful charts and graphs showing error data
+     * - Colorful buttons for controlling the monitoring system
+     * - Status indicators showing whether systems are online
+     * - Professional styling that looks like a real control center
+     * 
+     * The returned string contains a complete web page that VS Code will
+     * display in our panel, just like opening a website in a browser.
+     */
     private getWebviewContent(): string {
         return `<!DOCTYPE html>
 <html lang="en">
