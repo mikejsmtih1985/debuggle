@@ -7,6 +7,7 @@ from pygments.formatters import TerminalFormatter
 from pygments.util import ClassNotFound
 from langdetect import detect, DetectorFactory
 from .error_fixes import ERROR_FIX_PATTERNS, generate_enhanced_error_summary
+from .context_extractor import ContextExtractor, ErrorContext
 
 # Set seed for consistent language detection
 DetectorFactory.seed = 0
@@ -807,3 +808,40 @@ class LogProcessor:
         }
         
         return cleaned_log, summary, extracted_tags, metadata
+    
+    def process_log_with_context(self, log_input: str, project_root: Optional[str] = None, 
+                                file_path: Optional[str] = None, language: str = 'auto', 
+                                highlight: bool = True, summarize: bool = True, 
+                                tags: bool = True, max_lines: int = 1000) -> Tuple[str, Optional[str], List[str], dict, str]:
+        """
+        Process a log entry with full context extraction - THIS IS OUR CHATGPT KILLER FEATURE!
+        
+        Args:
+            log_input: Raw error log or stack trace
+            project_root: Root directory of the project for context extraction
+            file_path: Specific file path if known
+            Other args: Same as process_log
+        
+        Returns:
+            Tuple of (cleaned_log, summary, tags, metadata, rich_context)
+        """
+        start_time = time.time()
+        
+        # First do normal processing
+        cleaned_log, summary, extracted_tags, metadata = self.process_log(
+            log_input, language, highlight, summarize, tags, max_lines
+        )
+        
+        # Now extract rich context that ChatGPT users never include!
+        context_extractor = ContextExtractor(project_root)
+        error_context = context_extractor.extract_full_context(log_input, file_path)
+        
+        # Format the comprehensive context
+        rich_context = context_extractor.format_context_for_analysis(error_context, log_input)
+        
+        # Add context extraction time to metadata
+        context_time = int((time.time() - start_time) * 1000)
+        metadata['context_extraction_time_ms'] = context_time - metadata['processing_time_ms']
+        metadata['has_rich_context'] = True
+        
+        return cleaned_log, summary, extracted_tags, metadata, rich_context

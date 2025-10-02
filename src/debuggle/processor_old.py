@@ -1,0 +1,847 @@
+import re
+import time
+from typing import List, Tuple, Optional
+from pygments import highlight
+from pygments.lexers import get_lexer_by_name, guess_lexer
+from pygments.formatters import TerminalFormatter
+from pygments.util import ClassNotFound
+from langdetect import detect, DetectorFactory
+from .error_fixes import ERROR_FIX_PATTERNS, generate_enhanced_error_summary
+from .context_extractor import ContextExtractor, ErrorContext
+
+# Set seed for consistent language detection
+DetectorFactory.seed = 0
+
+# Known error patterns and their explanations
+ERROR_PATTERNS = {
+    # Python errors
+    r'IndexError': 'Array/list access out of bounds - trying to access an index that doesn\'t exist',
+    r'KeyError': 'Dictionary key not found - the key you\'re looking for doesn\'t exist',
+    r'AttributeError': 'Object attribute/method not found - the object doesn\'t have this property',
+    r'ImportError|ModuleNotFoundError': 'Module import failed - the package/module cannot be found',
+    r'SyntaxError': 'Code syntax is invalid - there\'s a typo or formatting error in your code',
+    r'TypeError': 'Wrong data type used - operation not supported between given types',
+    r'ValueError': 'Correct type but inappropriate value - value is not acceptable for the operation',
+    r'FileNotFoundError': 'File or directory not found - the specified path doesn\'t exist',
+    r'PermissionError': 'Insufficient permissions - don\'t have rights to access/modify the resource',
+    r'ZeroDivisionError': 'Division by zero - cannot divide a number by zero',
+    
+    # JavaScript errors
+    r'ReferenceError': 'Variable is not defined or out of scope',
+    r'TypeError.*undefined': 'Trying to use undefined value - variable hasn\'t been initialized',
+    r'SyntaxError.*Unexpected': 'Syntax error - unexpected character or token in code',
+    r'RangeError': 'Number is out of acceptable range',
+    
+    # Java errors
+    r'NullPointerException': 'Trying to use a null object reference',
+    r'ArrayIndexOutOfBoundsException': 'Array index is outside valid range',
+    r'ClassNotFoundException': 'Required class file not found in classpath',
+    r'NumberFormatException': 'String cannot be converted to number format',
+}
+
+# Language detection patterns
+LANGUAGE_PATTERNS = {
+    'python': [r'Traceback \(most recent call last\)', r'File ".*\.py"', r'^\s*at .*\.py:\d+'],
+    'javascript': [r'at .*\.js:\d+', r'ReferenceError:', r'TypeError:.*undefined'],
+    'java': [r'Exception in thread', r'at .*\.java:\d+', r'Caused by:'],
+    'csharp': [r'Unhandled exception:', r'at .*\.cs:line \d+', r'System\..*Exception'],
+    'cpp': [r'Segmentation fault', r'core dumped', r'terminate called'],
+    'go': [r'panic:', r'goroutine \d+', r'runtime error:'],
+}
+
+
+class LogProcessor:
+    """Handles log debuggling, syntax highlighting, and analysis."""
+    
+    def __init__(self):
+        self.formatter = TerminalFormatter()
+    
+    def detect_language(self, log_text: str) -> str:
+        """Detect programming language from log content."""
+        # Check for explicit patterns first
+        for lang, patterns in LANGUAGE_PATTERNS.items():
+            for pattern in patterns:
+                if re.search(pattern, log_text, re.MULTILINE | re.IGNORECASE):
+                    return lang
+        
+        # Try general language detection on code-like content
+        try:
+            # Extract lines that look like code (contain common programming elements)
+            code_lines = []
+            for line in log_text.split('\n'):
+                if re.search(r'[(){}\[\];=]|def |class |function |var |let |const |import |from ', line):
+                    code_lines.append(line)
+            
+            if code_lines:
+                code_sample = '\n'.join(code_lines[:10])  # Use first 10 code-like lines
+                detected = detect(code_sample)
+                
+                # Map detected language to programming language if possible
+                lang_mapping = {
+                    'en': 'python',  # Default fallback
+                }
+                return lang_mapping.get(detected, 'python')
+        except:
+            pass
+        
+        return 'python'  # Default fallback
+    
+    def apply_syntax_highlighting(self, text: str, language: str) -> str:
+        """Clean the text and return it formatted for web display."""
+        # For our simplified approach, we don't need syntax highlighting
+        # Instead, return clean text that the HTML interface can style
+        return text.strip()
+    
+    def extract_error_tags(self, text: str) -> List[str]:
+        """Extract simple, friendly tags that anyone can understand."""
+        tags = set()
+        
+        # Check if this is a stack trace first
+        if self._is_stack_trace(text):
+            tags.add('Stack Trace')
+            
+            # Add specific exception types
+            if 'NullPointerException' in text:
+                tags.add('Null Pointer Error')
+            if 'IllegalStateException' in text:
+                tags.add('Illegal State')
+            if 'ConcurrentModificationException' in text:
+                tags.add('Thread Safety Issue')
+            if 'OutOfMemoryError' in text:
+                tags.add('Memory Problem')
+            if 'RuntimeException' in text:
+                tags.add('Runtime Error')
+            if 'flux capacitor' in text.lower():
+                tags.add('Test/Mock Data')
+            
+            # Add language tags
+            if 'java' in text.lower() or '.java:' in text:
+                tags.add('Java Error')
+            if '.py:' in text or 'Traceback' in text:
+                tags.add('Python')
+                
+            # Add specific Python exception types
+            if 'IndexError' in text:
+                tags.add('IndexError')
+            if 'KeyError' in text:
+                tags.add('KeyError')
+            if 'ValueError' in text:
+                tags.add('ValueError')
+            if 'TypeError' in text:
+                tags.add('TypeError')
+            if 'AttributeError' in text:
+                tags.add('AttributeError')
+            
+            tags.add('Critical Error')
+            tags.add('Needs Developer Attention')
+        else:
+            # Regular log processing
+            # Simple problem categories
+            if re.search(r'connection.*(?:refused|failed|timeout)', text, re.IGNORECASE):
+                tags.add('Connection Problems')
+            if re.search(r'(?:invalid|failed).*(?:password|login|auth)', text, re.IGNORECASE):
+                tags.add('Login Issues')
+            if re.search(r'(?:failed|cannot|unable).*(?:read|write|access).*file', text, re.IGNORECASE):
+                tags.add('File Problems')
+            if re.search(r'email.*(?:rejected|failed)|smtp', text, re.IGNORECASE):
+                tags.add('Email Issues')
+            if re.search(r'timeout|timed out', text, re.IGNORECASE):
+                tags.add('Slow Response')
+            if re.search(r'database|db|sql', text, re.IGNORECASE):
+                tags.add('Database')
+            if re.search(r'cache', text, re.IGNORECASE):
+                tags.add('Memory Storage')
+            if re.search(r'scheduler|task|job', text, re.IGNORECASE):
+                tags.add('Scheduled Jobs')
+            if re.search(r'null.*pointer|attempt.*invoke.*null', text, re.IGNORECASE):
+                tags.add('Programming Bug')
+            if re.search(r'deadlock', text, re.IGNORECASE):
+                tags.add('System Conflict')
+                
+        # Detect Python exceptions even in simple error messages
+        if 'IndexError' in text:
+            tags.add('Python')
+            tags.add('IndexError')
+            tags.add('Programming Bug')
+        if 'KeyError' in text:
+            tags.add('Python')
+            tags.add('KeyError')
+            tags.add('Programming Bug')
+        if 'ValueError' in text:
+            tags.add('Python')
+            tags.add('ValueError')
+            tags.add('Programming Bug')
+        if 'TypeError' in text:
+            tags.add('Python')
+            tags.add('TypeError')
+            tags.add('Programming Bug')
+        if 'AttributeError' in text:
+            tags.add('Python')
+            tags.add('AttributeError')
+            tags.add('Programming Bug')
+            
+        # Detect JavaScript exceptions even in simple error messages
+        if 'ReferenceError' in text:
+            tags.add('JavaScript')
+            tags.add('ReferenceError')
+            tags.add('Programming Bug')
+        if 'TypeError' in text and ('undefined' in text or 'null' in text):
+            tags.add('JavaScript')
+            tags.add('TypeError')
+            tags.add('Programming Bug')
+        if 'SyntaxError' in text:
+            tags.add('JavaScript')
+            tags.add('SyntaxError')
+            tags.add('Programming Bug')
+        
+        # Severity levels in simple terms
+        if re.search(r'\b(ERROR|FATAL)\b', text, re.IGNORECASE):
+            tags.add('Serious Problems')
+        if re.search(r'\b(WARN|WARNING)\b', text, re.IGNORECASE):
+            tags.add('Minor Warnings')
+        if re.search(r'completed successfully', text, re.IGNORECASE):
+            tags.add('Some Things Working')
+        
+        # Add a friendly overall assessment
+        error_count = len(re.findall(r'\b(ERROR|FATAL)\b', text, re.IGNORECASE))
+        success_count = len(re.findall(r'completed successfully', text, re.IGNORECASE))
+        
+        if error_count == 0 and success_count > 0:
+            tags.add('Mostly Healthy')
+        elif error_count > success_count:
+            tags.add('Needs Attention')
+        else:
+            tags.add('Mixed Results')
+        
+        return sorted(list(tags))
+    
+    def generate_summary(self, text: str) -> Optional[str]:
+        """Generate enhanced summary with actionable fix suggestions."""
+        # Check for specific error patterns first and provide detailed help
+        enhanced_summary = generate_enhanced_error_summary(text)
+        if enhanced_summary:
+            return enhanced_summary
+            
+        # Special handling for stack traces
+        if self._is_stack_trace(text):
+            return self._generate_stack_trace_summary(text)
+        
+        lines = text.split('\n')
+        
+        # Count different types of problems
+        connection_problems = len(re.findall(r'connection.*(?:refused|failed|timeout)', text, re.IGNORECASE))
+        login_problems = len(re.findall(r'(?:invalid|failed).*(?:password|login|auth)', text, re.IGNORECASE))
+        file_problems = len(re.findall(r'(?:failed|cannot|unable).*(?:read|write|access).*file', text, re.IGNORECASE))
+        email_problems = len(re.findall(r'email.*(?:rejected|failed)|smtp.*(?:connect|failed)', text, re.IGNORECASE))
+        timeout_problems = len(re.findall(r'timeout|timed out', text, re.IGNORECASE))
+        
+        # Count serious vs normal activities
+        serious_problems = len(re.findall(r'\b(ERROR|FATAL)\b', text, re.IGNORECASE))
+        warnings = len(re.findall(r'\b(WARN|WARNING)\b', text, re.IGNORECASE))
+        normal_activities = len(re.findall(r'completed successfully|operation completed', text, re.IGNORECASE))
+        
+        # Build a friendly summary
+        summary_parts = []
+        
+        # Start with the overall health
+        if serious_problems == 0 and warnings == 0:
+            summary_parts.append("🎉 Great news! Your system is running smoothly with no problems detected.")
+        elif serious_problems > 10:
+            summary_parts.append("😟 Your system has quite a few problems that need attention.")
+        elif serious_problems > 0:
+            summary_parts.append(f"⚠️ Your system has {serious_problems} problems that should be fixed.")
+        else:
+            summary_parts.append("👍 Your system is mostly healthy with just some minor warnings.")
+        
+        # Explain specific problem types
+        problem_explanations = []
+        if connection_problems > 0:
+            problem_explanations.append(f"Can't connect to other services ({connection_problems} times)")
+        if login_problems > 0:
+            problem_explanations.append(f"People using wrong passwords ({login_problems} times)")
+        if file_problems > 0:
+            problem_explanations.append(f"Trouble reading files ({file_problems} times)")
+        if email_problems > 0:
+            problem_explanations.append(f"Email sending issues ({email_problems} times)")
+        if timeout_problems > 0:
+            problem_explanations.append(f"Things taking too long to respond ({timeout_problems} times)")
+        
+        if problem_explanations:
+            summary_parts.append(f"Main issues: {', '.join(problem_explanations)}")
+        
+        # Add some positive notes
+        if normal_activities > 0:
+            summary_parts.append(f"✅ Good news: {normal_activities} things completed successfully!")
+        
+        # Simple advice
+        if serious_problems > 0:
+            summary_parts.append("💡 Recommendation: Ask someone technical to look at the connection and login problems first.")
+        elif warnings > 0:
+            summary_parts.append("💡 The warnings aren't urgent, but it's good to keep an eye on them.")
+        
+        return " ".join(summary_parts)
+    
+    def _generate_stack_trace_summary(self, text: str) -> str:
+        """Generate a specific summary for stack traces."""
+        # Extract main exception info
+        exceptions = self._extract_exception_chain(text)
+        
+        if not exceptions:
+            return "🚨 A critical error occurred in your application that needs immediate attention from a developer."
+        
+        main_exception = exceptions[0][0] if exceptions else "Unknown"
+        
+        # Generate user-friendly summary based on exception type
+        if 'NullPointerException' in main_exception:
+            summary = "🚨 **Critical Error**: Your application crashed because it tried to use something that doesn't exist. This is a common programming bug that happens when code assumes something is there but it's actually empty or null."
+        elif 'IllegalStateException' in main_exception:
+            summary = "🚨 **Critical Error**: Your application is in an unexpected state. This usually means operations are happening in the wrong order or the application wasn't properly initialized."
+        elif 'ConcurrentModificationException' in main_exception:
+            summary = "🚨 **Critical Error**: Multiple parts of your application tried to modify the same data at the same time, causing a conflict. This is a threading/concurrency issue."
+        elif 'OutOfMemoryError' in main_exception:
+            summary = "🚨 **Critical Error**: Your application ran out of memory. This could be due to processing too much data or a memory leak."
+        elif 'flux capacitor' in text.lower():
+            summary = "🎭 **Test/Mock Error**: This appears to be a humorous test stack trace with fictional components like 'flux capacitor' and 'quantum processor'. This is likely from a development or testing environment."
+        else:
+            summary = f"🚨 **Critical Error**: A {main_exception} occurred in your application."
+        
+        # Add impact assessment
+        exception_count = len(exceptions)
+        if exception_count > 1:
+            summary += f" This error triggered a chain of {exception_count} related problems."
+        
+        # Add recommendation
+        if 'flux capacitor' in text.lower():
+            summary += " 💡 **Recommendation**: If this is a production system, investigate why test/mock data is appearing in your logs."
+        else:
+            summary += " 💡 **Recommendation**: This requires immediate developer attention to prevent application instability and user impact."
+        
+        return summary
+    
+    def clean_and_deduplicate(self, text: str) -> str:
+        """Transform technical log into simple, understandable explanations."""
+        # First, check if this looks like a multi-line stack trace
+        if self._is_stack_trace(text):
+            return self._process_stack_trace(text)
+        
+        # Otherwise, process line by line as before
+        lines = text.split('\n')
+        simplified_lines = []
+        problem_counts = {}
+        
+        for line in lines:
+            stripped = line.strip()
+            if not stripped:
+                continue
+            
+            # Convert this technical line into simple English
+            simple_explanation = self._explain_in_simple_terms(stripped)
+            
+            # Count similar problems
+            problem_key = self._get_problem_category(stripped)
+            if problem_key in problem_counts:
+                problem_counts[problem_key] += 1
+            else:
+                problem_counts[problem_key] = 1
+                if simple_explanation:  # Only add unique explanations
+                    simplified_lines.append(simple_explanation)
+        
+        # Add summary of repeated problems
+        final_lines = []
+        added_explanations = set()
+        
+        for line in simplified_lines:
+            if line not in added_explanations:
+                final_lines.append(line)
+                added_explanations.add(line)
+        
+        # Add counts for repeated problems
+        for problem, count in problem_counts.items():
+            if count > 1 and problem != "unknown":
+                final_lines.append(f"⚠️  The '{problem}' problem happened {count} times")
+        
+        return '\n'.join(final_lines)
+    
+    def _extract_core_message(self, log_line: str) -> str:
+        """Extract the core message from a log line, ignoring timestamp and level."""
+        # Remove common timestamp patterns
+        line = re.sub(r'^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}[,.]?\d*', '', log_line)
+        line = re.sub(r'^\[\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.*?\]', '', line)
+        
+        # Remove log levels
+        line = re.sub(r'\[(DEBUG|INFO|WARN|WARNING|ERROR|FATAL|TRACE)\]', '', line, flags=re.IGNORECASE)
+        line = re.sub(r'(DEBUG|INFO|WARN|WARNING|ERROR|FATAL|TRACE)', '', line, flags=re.IGNORECASE)
+        
+        # Remove logger names (like com.example.app.Service)
+        line = re.sub(r'[a-zA-Z0-9]+\.[a-zA-Z0-9.]+\s*-\s*', '', line)
+        
+        return line.strip()
+    
+    def _explain_in_simple_terms(self, log_line: str) -> Optional[str]:
+        """Convert a technical log line into simple, understandable language."""
+        line = log_line.lower()
+        
+        # Extract timestamp for context - make it prettier
+        time_match = re.search(r'(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})', log_line)
+        if time_match:
+            time_str = time_match.group(1)
+            # Format time nicely: convert 24h to 12h format for readability
+            try:
+                from datetime import datetime
+                dt = datetime.strptime(time_str, '%Y-%m-%d %H:%M:%S')
+                time_display = dt.strftime('%I:%M:%S %p on %b %d')
+            except:
+                time_display = time_str
+        else:
+            time_display = "At some point"
+        
+        # Database connection problems
+        if 'connection refused' in line and ('database' in line or 'db' in line or 'sql' in line):
+            return f"❌ At {time_display}: The app tried to talk to the database, but the database wasn't listening or was turned off."
+        
+        # General connection problems
+        if 'connection refused' in line or 'failed to connect' in line:
+            return f"❌ At {time_display}: The app tried to connect to another service, but it couldn't reach it (like calling a phone that's turned off)."
+        
+        # Authentication failures
+        if 'invalid password' in line or 'authentication failed' in line or 'login failed' in line:
+            return f"🔒 At {time_display}: Someone tried to log in with the wrong password."
+        
+        # Account locked
+        if 'account' in line and 'locked' in line:
+            return f"🔒 At {time_display}: An account got locked because someone tried the wrong password too many times."
+        
+        # File problems
+        if 'failed to read file' in line or 'file not found' in line or 'cannot access file' in line:
+            return f"📁 At {time_display}: The app tried to open a file, but the file wasn't there or couldn't be opened."
+        
+        # Email problems
+        if 'smtp' in line or 'email' in line:
+            if 'rejected' in line:
+                return f"📧 At {time_display}: The app tried to send an email, but the email server didn't accept it."
+            elif 'could not connect' in line:
+                return f"📧 At {time_display}: The app tried to send an email, but couldn't connect to the email server."
+        
+        # Network timeouts
+        if 'timeout' in line or 'timed out' in line:
+            return f"⏱️ At {time_display}: The app was waiting for something, but it took too long and gave up (like waiting for a webpage that never loads)."
+        
+        # Null pointer exceptions
+        if 'nullpointerexception' in line or 'attempt to invoke method' in line and 'null' in line:
+            return f"🐛 At {time_display}: The app tried to use something that didn't exist (like trying to open a box that isn't there)."
+        
+        # Cache problems
+        if 'cache miss' in line:
+            return f"🗃️ At {time_display}: The app looked for some saved information, but it wasn't there, so it had to get it the slow way."
+        
+        # Cache rebuild failed
+        if 'cache rebuild failed' in line:
+            return f"🗃️ At {time_display}: The app tried to organize its saved information, but something went wrong."
+        
+        # Task/Scheduler failures
+        if 'task' in line and ('failed' in line or 'timeout' in line):
+            return f"⚙️ At {time_display}: A scheduled job (like a daily cleanup) didn't finish properly."
+        
+        # Deadlock
+        if 'deadlock' in line:
+            return f"🔄 At {time_display}: Two parts of the app got stuck waiting for each other (like two people trying to go through a door at the same time)."
+        
+        # Success messages - make them positive
+        if 'operation completed successfully' in line or 'completed successfully' in line:
+            service = self._extract_service_name(log_line)
+            return f"✅ At {time_display}: {service} finished its job successfully."
+        
+        # Info messages about normal operations
+        if any(level in line for level in ['[info]', '[debug]', 'info:', 'debug:']):
+            if 'completed successfully' in line:
+                return None  # Skip, already handled above
+            return f"ℹ️ At {time_display}: Normal system activity (everything working as expected)."
+        
+        # If we can't explain it simply, return the original line
+        return log_line
+    
+    def _get_problem_category(self, log_line: str) -> str:
+        """Categorize the type of problem for counting duplicates."""
+        line = log_line.lower()
+        
+        if 'connection refused' in line or 'failed to connect' in line:
+            return "connection problems"
+        elif 'invalid password' in line or 'authentication failed' in line:
+            return "login problems"
+        elif 'account' in line and 'locked' in line:
+            return "account lockouts"
+        elif 'failed to read file' in line or 'file not found' in line:
+            return "file problems"
+        elif 'email' in line or 'smtp' in line:
+            return "email problems"
+        elif 'timeout' in line or 'timed out' in line:
+            return "timeout problems"
+        elif 'nullpointerexception' in line or ('null' in line and 'pointer' in line):
+            return "programming errors"
+        elif 'cache' in line:
+            return "cache problems"
+        elif 'task' in line and 'failed' in line:
+            return "scheduled job problems"
+        elif 'deadlock' in line:
+            return "system conflicts"
+        else:
+            return "unknown"
+    
+    def _extract_service_name(self, log_line: str) -> str:
+        """Extract the service name from a log line for friendlier messages."""
+        # Look for service names like com.example.app.DatabaseService
+        service_match = re.search(r'com\.example\.app\.(\w+)', log_line)
+        if service_match:
+            service = service_match.group(1)
+            # Convert CamelCase to readable names
+            service = re.sub(r'([A-Z])', r' \1', service).strip()
+            return f"The {service.lower()}"
+        
+        return "The system"
+    
+    def _is_stack_trace(self, text: str) -> bool:
+        """Detect if the text contains a multi-line stack trace."""
+        lines = text.split('\n')
+        
+        # Check for common stack trace patterns
+        stack_trace_indicators = [
+            r'Exception in thread',  # Java
+            r'Traceback \(most recent call last\)',  # Python
+            r'Caused by:',  # Java chained exceptions
+            r'Suppressed:',  # Java suppressed exceptions
+            r'at .*\.java:\d+',  # Java stack frame
+            r'at .*\.py:\d+',  # Python stack frame
+            r'File ".*", line \d+',  # Python stack frame
+            r'NullPointerException',  # Common Java exception
+            r'RuntimeException',  # Common Java exception
+            r'System\.\w+Exception',  # C# system exceptions
+            r'at .*\.cs:line \d+',  # C# stack frame
+            r'at .*in.*\.cs:line \d+',  # C# stack frame with file path
+            r'at .*\.js:\d+:\d+',  # JavaScript stack frame
+            r'TypeError.*undefined',  # JavaScript common error
+            r'ReferenceError.*not defined',  # JavaScript common error
+        ]
+        
+        # Count how many stack trace indicators we find
+        indicator_count = 0
+        for line in lines[:10]:  # Check first 10 lines
+            for pattern in stack_trace_indicators:
+                if re.search(pattern, line, re.IGNORECASE):
+                    indicator_count += 1
+                    break
+        
+        # If we have multiple stack trace indicators, it's likely a stack trace
+        return indicator_count >= 2 or len([l for l in lines if l.strip().startswith('at ')]) >= 3
+    
+    def _process_stack_trace(self, text: str) -> str:
+        """Process a complete stack trace and provide detailed analysis."""
+        lines = text.split('\n')
+        result_lines = []
+        
+        # Extract the main exception
+        main_exception = self._extract_main_exception(text)
+        if main_exception:
+            result_lines.append(f"🚨 **Main Problem**: {main_exception}")
+            result_lines.append("")
+        
+        # Extract and explain the exception chain
+        exceptions = self._extract_exception_chain(text)
+        if exceptions:
+            result_lines.append("📋 **What Happened** (in order):")
+            for i, (exception_type, message, location) in enumerate(exceptions, 1):
+                explanation = self._explain_exception_type(exception_type)
+                result_lines.append(f"{i}. **{exception_type}**: {explanation}")
+                if message:
+                    result_lines.append(f"   💬 Details: {message}")
+                if location:
+                    result_lines.append(f"   📍 Where: {location}")
+                result_lines.append("")
+        
+        # Show the most relevant stack frames
+        relevant_frames = self._extract_relevant_stack_frames(text)
+        if relevant_frames:
+            result_lines.append("🔍 **Key Code Locations**:")
+            for frame in relevant_frames[:5]:  # Show top 5 most relevant
+                result_lines.append(f"   • {frame}")
+            result_lines.append("")
+        
+        # Add helpful suggestions
+        suggestions = self._get_stack_trace_suggestions(text)
+        if suggestions:
+            result_lines.append("💡 **Suggested Actions**:")
+            for suggestion in suggestions:
+                result_lines.append(f"   • {suggestion}")
+        
+        return '\n'.join(result_lines)
+    
+    def _extract_main_exception(self, text: str) -> Optional[str]:
+        """Extract the main exception type and message."""
+        lines = text.split('\n')
+        
+        for line in lines:
+            # Java thread exceptions: "Exception in thread "main" java.lang.NullPointerException"
+            if line.startswith('Exception in thread') and 'Exception' in line:
+                # Extract just the exception class name from the end
+                parts = line.split()
+                if len(parts) >= 4:
+                    exception_name = parts[-1]  # Gets "java.lang.NullPointerException"
+                    return exception_name
+            
+            # Look for the main exception line with colon
+            if ':' in line and any(ex in line for ex in ['Exception', 'Error']):
+                # Clean up the exception message
+                if 'Fatal Error:' in line:
+                    return line.replace('Fatal Error:', '').strip()
+                return line.strip()
+        
+        return None
+    
+    def _extract_exception_chain(self, text: str) -> list:
+        """Extract the chain of exceptions with their details."""
+        exceptions = []
+        lines = text.split('\n')
+        
+        current_exception = None
+        current_message = None
+        current_location = None
+        
+        for line in lines:
+            stripped = line.strip()
+            
+            # Main exception
+            if (':' in stripped and any(ex in stripped for ex in ['Exception', 'Error']) and 
+                not stripped.startswith('at ') and not stripped.startswith('Caused by:') and 
+                not stripped.startswith('Suppressed:')):
+                
+                if current_exception:  # Save previous exception
+                    exceptions.append((current_exception, current_message, current_location))
+                
+                parts = stripped.split(':', 1)
+                current_exception = parts[0].replace('Fatal Error', '').strip()
+                current_message = parts[1].strip() if len(parts) > 1 else None
+                current_location = None
+            
+            # Caused by exceptions
+            elif stripped.startswith('Caused by:'):
+                if current_exception:  # Save previous exception
+                    exceptions.append((current_exception, current_message, current_location))
+                
+                cause_line = stripped.replace('Caused by:', '').strip()
+                if ':' in cause_line:
+                    parts = cause_line.split(':', 1)
+                    current_exception = parts[0].strip()
+                    current_message = parts[1].strip()
+                else:
+                    current_exception = cause_line
+                    current_message = None
+                current_location = None
+            
+            # Suppressed exceptions
+            elif stripped.startswith('Suppressed:'):
+                suppressed_line = stripped.replace('Suppressed:', '').strip()
+                if ':' in suppressed_line:
+                    parts = suppressed_line.split(':', 1)
+                    exceptions.append((f"Suppressed {parts[0].strip()}", parts[1].strip(), None))
+            
+            # Stack frame with location info
+            elif stripped.startswith('at ') and current_exception and not current_location:
+                # Extract the most relevant location (usually the first 'at' line)
+                frame_match = re.search(r'at (.+?)\((.+?)\)', stripped)
+                if frame_match:
+                    method = frame_match.group(1)
+                    location = frame_match.group(2)
+                    current_location = f"{method} in {location}"
+        
+        # Don't forget the last exception
+        if current_exception:
+            exceptions.append((current_exception, current_message, current_location))
+        
+        return exceptions
+    
+    def _explain_exception_type(self, exception_type: str) -> str:
+        """Provide human-friendly explanations for exception types."""
+        explanations = {
+            'NullPointerException': 'The program tried to use something that doesn\'t exist (like opening an empty box)',
+            'IllegalStateException': 'The program is in an unexpected state (like trying to drive a car that\'s not started)',
+            'ConcurrentModificationException': 'Multiple parts of the program tried to change the same thing at once',
+            'RuntimeException': 'Something unexpected happened while the program was running',
+            'OutOfMemoryError': 'The program ran out of memory (like a computer running out of storage space)',
+            'StackOverflowError': 'The program got stuck in an endless loop of function calls',
+            'ClassNotFoundException': 'The program couldn\'t find a required piece of code',
+            'IOException': 'There was a problem reading or writing data',
+            'SQLException': 'There was a problem communicating with the database',
+            'NumberFormatException': 'The program couldn\'t convert text to a number',
+            'ArrayIndexOutOfBoundsException': 'The program tried to access an item in a list that doesn\'t exist',
+        }
+        
+        # Clean the exception type name
+        clean_type = exception_type.split('.')[-1]  # Remove package names
+        
+        return explanations.get(clean_type, f"A {clean_type.lower()} occurred")
+    
+    def _extract_relevant_stack_frames(self, text: str) -> list:
+        """Extract the most relevant stack frames, prioritizing user code."""
+        lines = text.split('\n')
+        frames = []
+        
+        for line in lines:
+            stripped = line.strip()
+            if stripped.startswith('at '):
+                # Clean up the stack frame
+                frame = stripped.replace('at ', '')
+                
+                # Prioritize user code (avoid system/library frames)
+                if any(skip in frame.lower() for skip in ['java.lang', 'java.util', 'sun.', 'org.springframework.cglib']):
+                    continue
+                
+                # Make it more readable
+                if '(' in frame and ')' in frame:
+                    method_part = frame.split('(')[0]
+                    location_part = frame.split('(')[1].replace(')', '')
+                    
+                    # Simplify method names
+                    if '.' in method_part:
+                        class_name = method_part.split('.')[-2] if len(method_part.split('.')) > 1 else 'Unknown'
+                        method_name = method_part.split('.')[-1]
+                        frames.append(f"{class_name}.{method_name}() - {location_part}")
+                    else:
+                        frames.append(f"{method_part} - {location_part}")
+                else:
+                    frames.append(frame)
+        
+        return frames
+    
+    def _get_stack_trace_suggestions(self, text: str) -> list:
+        """Provide helpful suggestions based on the stack trace content."""
+        suggestions = []
+        text_lower = text.lower()
+        
+        if 'nullpointerexception' in text_lower:
+            suggestions.append("Check for null values before using objects")
+            suggestions.append("Add null checks or use Optional in Java")
+        
+        if 'concurrentmodificationexception' in text_lower:
+            suggestions.append("Use thread-safe collections or synchronization")
+            suggestions.append("Avoid modifying collections while iterating over them")
+        
+        if 'outofmemoryerror' in text_lower:
+            suggestions.append("Increase JVM heap size with -Xmx parameter")
+            suggestions.append("Check for memory leaks in your application")
+        
+        if 'illegalstateexception' in text_lower:
+            suggestions.append("Check the order of operations in your code")
+            suggestions.append("Ensure proper initialization before use")
+        
+        if 'flux capacitor' in text_lower:
+            suggestions.append("This appears to be a humorous/test stack trace")
+            suggestions.append("Check if this is from a development or testing environment")
+        
+        # Python specific exceptions
+        if 'indexerror' in text_lower:
+            suggestions.append("Check the length of your list/array before accessing elements")
+            suggestions.append("Ensure the index is within bounds (0 to length-1)")
+            suggestions.append("Consider using try-except or len() checks")
+        
+        if 'keyerror' in text_lower:
+            suggestions.append("Check if the key exists in the dictionary first")
+            suggestions.append("Use dict.get() with a default value instead")
+        
+        if 'attributeerror' in text_lower:
+            suggestions.append("Check if the object has the attribute you're trying to access")
+            suggestions.append("Verify the object type and its available methods")
+        
+        if not suggestions:
+            suggestions.append("Review the stack trace for the root cause")
+            suggestions.append("Check the application logs for more context")
+        
+        return suggestions
+    
+    def process_log(self, log_input: str, language: str = 'auto', 
+                   highlight: bool = True, summarize: bool = True, 
+                   tags: bool = True, max_lines: int = 1000) -> Tuple[str, Optional[str], List[str], dict]:
+        """
+        Process a log entry with beautification, highlighting, and analysis.
+        
+        Returns:
+            Tuple of (cleaned_log, summary, tags, metadata)
+        """
+        start_time = time.time()
+        
+        # Truncate if too many lines
+        lines = log_input.split('\n')
+        truncated = len(lines) > max_lines
+        if truncated:
+            lines = lines[:max_lines]
+            log_input = '\n'.join(lines)
+        
+        # Detect language if auto
+        detected_language = language
+        if language == 'auto':
+            detected_language = self.detect_language(log_input)
+        
+        # Clean and deduplicate
+        cleaned_log = self.clean_and_deduplicate(log_input)
+        
+        # Apply syntax highlighting if requested
+        if highlight:
+            cleaned_log = self.apply_syntax_highlighting(cleaned_log, detected_language)
+        
+        # Generate summary if requested
+        summary = None
+        if summarize:
+            summary = self.generate_summary(log_input)
+        
+        # Extract tags if requested
+        extracted_tags = []
+        if tags:
+            extracted_tags = self.extract_error_tags(log_input)
+        
+        # Calculate processing time
+        processing_time = int((time.time() - start_time) * 1000)
+        
+        # Build metadata
+        metadata = {
+            'lines': len(lines),
+            'language_detected': detected_language,
+            'processing_time_ms': processing_time,
+            'truncated': truncated
+        }
+        
+        return cleaned_log, summary, extracted_tags, metadata
+    
+    def process_log_with_context(self, log_input: str, project_root: Optional[str] = None, 
+                                file_path: Optional[str] = None, language: str = 'auto', 
+                                highlight: bool = True, summarize: bool = True, 
+                                tags: bool = True, max_lines: int = 1000) -> Tuple[str, Optional[str], List[str], dict, str]:
+        """
+        Process a log entry with full context extraction - THIS IS OUR CHATGPT KILLER FEATURE!
+        
+        Args:
+            log_input: Raw error log or stack trace
+            project_root: Root directory of the project for context extraction
+            file_path: Specific file path if known
+            Other args: Same as process_log
+        
+        Returns:
+            Tuple of (cleaned_log, summary, tags, metadata, rich_context)
+        """
+        start_time = time.time()
+        
+        # First do normal processing
+        cleaned_log, summary, extracted_tags, metadata = self.process_log(
+            log_input, language, highlight, summarize, tags, max_lines
+        )
+        
+        # Now extract rich context that ChatGPT users never include!
+        context_extractor = ContextExtractor(project_root)
+        error_context = context_extractor.extract_full_context(log_input, file_path)
+        
+        # Format the comprehensive context
+        rich_context = context_extractor.format_context_for_analysis(error_context, log_input)
+        
+        # Add context extraction time to metadata
+        context_time = int((time.time() - start_time) * 1000)
+        metadata['context_extraction_time_ms'] = context_time - metadata['processing_time_ms']
+        metadata['has_rich_context'] = True
+        
+        return cleaned_log, summary, extracted_tags, metadata, rich_context

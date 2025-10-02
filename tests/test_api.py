@@ -14,7 +14,7 @@ class TestHealthEndpoint:
         data = response.json()
         assert data["status"] == "ok"
         assert data["service"] == "Debuggle Core"
-        assert data["version"] == "1.0.0"
+        assert data["version"] == "2.0.0"  # Updated for refactored version
 
 
 class TestTiersEndpoint:

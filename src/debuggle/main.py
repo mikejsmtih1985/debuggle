@@ -13,11 +13,8 @@ from .models import (
     FileUploadResponse, FileUploadMetadata, LanguageEnum,
     HealthResponse, TiersResponse, TierFeature, ErrorResponse
 )
-from .core.processor import LogProcessor
-from .config_v2 import get_settings
-
-# Get settings instance  
-settings = get_settings()
+from .processor import LogProcessor
+from .config import settings
 
 # Initialize rate limiter
 limiter = Limiter(key_func=get_remote_address)
@@ -44,8 +41,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Mount static files (HTML frontend)
-app.mount("/static", StaticFiles(directory="assets/static"), name="static")
+# Mount static files (HTML frontend) - only if directory exists
+import os
+static_dir = "assets/static"
+if os.path.exists(static_dir):
+    app.mount("/static", StaticFiles(directory=static_dir), name="static")
 
 # Initialize log processor
 processor = LogProcessor()
@@ -109,7 +109,7 @@ async def get_tiers():
 
 
 @app.post("/api/v1/beautify", response_model=BeautifyResponse)
-@limiter.limit(f"{settings.api.rate_limit_per_minute}/minute")
+@limiter.limit(f"{settings.rate_limit_per_minute}/minute")
 async def beautify_log(request: Request, beautify_request: BeautifyRequest):
     """
     Debuggle and analyze log entries or stack traces.
@@ -122,18 +122,18 @@ async def beautify_log(request: Request, beautify_request: BeautifyRequest):
     """
     try:
         # Validate input size
-        if len(beautify_request.log_input) > settings.api.max_log_size:
+        if len(beautify_request.log_input) > settings.max_log_size:
             raise HTTPException(
                 status_code=400,
                 detail=ErrorResponse(
                     error="Log input too large",
-                    details=f"Maximum size is {settings.api.max_log_size} characters",
+                    details=f"Maximum size is {settings.max_log_size} characters",
                     code="INPUT_TOO_LARGE"
                 ).model_dump()
             )
         
         # Validate max_lines parameter
-        if beautify_request.options.max_lines > settings.api.max_lines_limit:
+        if beautify_request.options.max_lines > settings.max_lines_limit:
             raise HTTPException(
                 status_code=400,
                 detail=ErrorResponse(
@@ -175,7 +175,7 @@ async def beautify_log(request: Request, beautify_request: BeautifyRequest):
 
 
 @app.post("/api/v1/upload-log", response_model=FileUploadResponse)
-@limiter.limit(f"{settings.api.rate_limit_per_minute}/minute")
+@limiter.limit(f"{settings.rate_limit_per_minute}/minute")
 async def upload_log_file(
     request: Request,
     file: UploadFile = File(..., description="Log file to process"),
@@ -193,18 +193,18 @@ async def upload_log_file(
     """
     try:
         # Validate file size (check content length if available)
-        if file.size and file.size > settings.api.max_log_size:
+        if file.size and file.size > settings.max_log_size:
             raise HTTPException(
                 status_code=400,
                 detail=ErrorResponse(
                     error="File too large",
-                    details=f"Maximum file size is {settings.api.max_log_size} bytes",
+                    details=f"Maximum file size is {settings.max_log_size} bytes",
                     code="FILE_TOO_LARGE"
                 ).model_dump()
             )
         
         # Validate max_lines parameter
-        if max_lines > settings.api.max_lines_limit:
+        if max_lines > settings.max_lines_limit:
             raise HTTPException(
                 status_code=400,
                 detail=ErrorResponse(
@@ -231,12 +231,12 @@ async def upload_log_file(
         content = await file.read()
         
         # Validate content size after reading
-        if len(content) > settings.api.max_log_size:
+        if len(content) > settings.max_log_size:
             raise HTTPException(
                 status_code=400,
                 detail=ErrorResponse(
                     error="File content too large",
-                    details=f"Maximum content size is {settings.api.max_log_size} bytes",
+                    details=f"Maximum content size is {settings.max_log_size} bytes",
                     code="CONTENT_TOO_LARGE"
                 ).model_dump()
             )
@@ -303,6 +303,83 @@ async def upload_log_file(
                 details=str(e) if settings.debug else "Failed to process uploaded file",
                 code="FILE_PROCESSING_ERROR"
             ).model_dump()
+        )
+
+
+@app.post("/api/v1/analyze-with-context")
+@limiter.limit(f"{settings.rate_limit_per_minute}/minute")
+async def analyze_with_context(
+    request: Request,
+    log_input: str = Form(..., description="Raw log or stack trace"),
+    project_root: Optional[str] = Form(default=None, description="Project root directory for context"),
+    file_path: Optional[str] = Form(default=None, description="Specific file path if known"),
+    language: str = Form(default="auto", description="Programming language"),
+    highlight: bool = Form(default=True, description="Apply syntax highlighting"),
+    summarize: bool = Form(default=True, description="Generate error summary"),
+    tags: bool = Form(default=True, description="Generate error tags"),
+    max_lines: int = Form(default=1000, description="Maximum lines to process")
+):
+    """
+    🚀 **OUR CHATGPT KILLER FEATURE** 🚀
+    
+    Analyze errors with FULL CONTEXT that developers never paste into ChatGPT:
+    - Surrounding code from the actual error location
+    - Recent git changes that might have caused the issue
+    - Project structure and dependencies
+    - Environment information
+    - Development context that ChatGPT never sees
+    
+    This provides WAY MORE insight than copy/pasting a stack trace!
+    """
+    try:
+        # Validate input size
+        if len(log_input) > settings.max_log_size:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Log input too large. Maximum size is {settings.max_log_size} characters"
+            )
+        
+        # Process with rich context extraction
+        processor = LogProcessor()
+        cleaned_log, summary, tags_list, metadata, rich_context = processor.process_log_with_context(
+            log_input=log_input,
+            project_root=project_root,
+            file_path=file_path,
+            language=language,
+            highlight=highlight,
+            summarize=summarize,
+            tags=tags,
+            max_lines=max_lines
+        )
+        
+        return {
+            "message": "🎯 Analysis complete with FULL context - something ChatGPT can't do!",
+            "basic_analysis": {
+                "cleaned_log": cleaned_log,
+                "summary": summary,
+                "tags": tags_list,
+                "metadata": metadata
+            },
+            "rich_context": rich_context,
+            "competitive_advantage": {
+                "vs_chatgpt": [
+                    "✅ Includes surrounding code context",
+                    "✅ Shows recent git changes",  
+                    "✅ Analyzes project structure",
+                    "✅ Provides environment details",
+                    "✅ 100% private - no data sent to external APIs",
+                    "✅ Integrated into your development workflow"
+                ],
+                "why_better": "ChatGPT only sees what you copy/paste. We see your entire development context!"
+            }
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Context analysis failed: {str(e) if settings.debug else 'Processing error'}"
         )
 
 

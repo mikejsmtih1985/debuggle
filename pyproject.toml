@@ -1,0 +1,135 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "debuggle-core"
+version = "1.0.0"
+authors = [
+    {name = "Mike Smith", email = "mike@debuggle.com"},
+]
+description = "Intelligent error analysis that beats copy/pasting into ChatGPT"
+readme = "README.md"
+license = {file = "LICENSE"}
+requires-python = ">=3.9"
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Debuggers",
+    "Topic :: Software Development :: Quality Assurance",
+]
+keywords = ["debugging", "error-analysis", "logging", "development-tools", "chatgpt-alternative"]
+
+dependencies = [
+    "fastapi>=0.68.0",
+    "uvicorn[standard]>=0.15.0",
+    "pydantic>=2.0.0",
+    "pydantic-settings>=2.0.0",
+    "pygments>=2.9.0",
+    "rich>=12.0.0",
+    "slowapi>=0.1.7",
+    "python-multipart>=0.0.5",
+    "langdetect>=1.0.9",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+    "pytest-asyncio>=0.21.0",
+    "black>=22.0.0",
+    "flake8>=5.0.0",
+    "mypy>=1.0.0",
+    "pre-commit>=2.20.0",
+]
+examples = [
+    "flask>=2.3.0",
+    "requests>=2.31.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/mikejsmtih1985/debuggle"
+Documentation = "https://github.com/mikejsmtih1985/debuggle#readme"
+Repository = "https://github.com/mikejsmtih1985/debuggle.git"
+Issues = "https://github.com/mikejsmtih1985/debuggle/issues"
+
+[project.scripts]
+debuggle = "cli.debuggle_cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+debuggle = ["py.typed"]
+
+[tool.black]
+line-length = 100
+target-version = ['py39']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # directories
+  \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | build
+  | dist
+)/
+'''
+
+[tool.pytest.ini_options]
+minversion = "7.0"
+addopts = [
+    "--strict-markers",
+    "--strict-config",
+    "--cov=src/debuggle",
+    "--cov-report=term-missing",
+    "--cov-report=html",
+    "--cov-branch",
+]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+
+[tool.coverage.run]
+source = ["src/debuggle"]
+branch = true
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = false
+fail_under = 90
+
+[tool.mypy]
+python_version = "3.9"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_unreachable = true
+strict_equality = true
+
+[[tool.mypy.overrides]]
+module = [
+    "langdetect.*",
+    "pygments.*",
+    "slowapi.*",
+]
+ignore_missing_imports = true

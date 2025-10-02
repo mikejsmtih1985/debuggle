@@ -1,77 +1,134 @@
-# Examples Directory
+# 🎬 **Debuggle Core Examples**
 
-This directory contains sample log files, code examples, and usage demonstrations for Debuggle.
+This directory contains demonstrations showing how Debuggle Core beats ChatGPT for error analysis.
 
-## 📁 Contents
+## 📁 **Contents**
 
-### 📋 Sample Log Files (`logs/`)
-Real-world log file examples for testing and demonstration:
-- **application.log** - Standard application logs
-- **error.log** - Error-focused log entries  
-- **nginx-access.log** - Web server access logs
-- **database.log** - Database query and error logs
-- **json-logs.log** - Structured JSON log entries
+### **Demo Scripts**
+- **`demo_errors.py`** - 7 realistic error scenarios for testing
+- **`compare_chatgpt.py`** - Side-by-side comparison with ChatGPT
+- **`demo_app/`** - Flask web application with intentional bugs
 
-### 💻 Code Examples (`integrations/`)
-Code snippets showing how to integrate Debuggle:
-- **python/** - Python integration examples
-- **javascript/** - JavaScript/Node.js examples  
-- **bash/** - Shell script examples
-- **curl/** - cURL command examples
+### **Requirements**
+- **`requirements.demo.txt`** - Additional dependencies for examples (Flask, etc.)
 
-### 🎯 Use Cases (`use-cases/`)
-Complete scenarios demonstrating Debuggle features:
-- **monitoring/** - System monitoring setups
-- **debugging/** - Application debugging workflows
-- **analytics/** - Log analysis examples
+### **Sample Data**
+- **`sample_logs/`** - Example log files for testing
 
-## 🚀 Quick Start Examples
+## � **Quick Start**
 
-### Process a Sample Log File
+### **1. Basic Comparison**
 ```bash
-# Upload sample application log
-curl -X POST http://localhost:8000/upload-file \
-  -F "file=@examples/logs/application.log" \
-  -F "tier=core"
+# See what ChatGPT gets vs. what Debuggle Core analyzes:
+python compare_chatgpt.py 1
 ```
 
-### Test Different Service Tiers
+### **2. Try Different Error Types**
 ```bash
-# Core tier example
-curl -X POST http://localhost:8000/debuggle-log \
-  -H "Content-Type: application/json" \
-  -d @examples/requests/core-tier.json
-
-# Pro tier example  
-curl -X POST http://localhost:8000/debuggle-log \
-  -H "Content-Type: application/json" \
-  -d @examples/requests/pro-tier.json
+python compare_chatgpt.py 2    # KeyError
+python compare_chatgpt.py 3    # AttributeError  
+python compare_chatgpt.py 4    # ImportError
+python compare_chatgpt.py 5    # TypeError
+python compare_chatgpt.py 6    # FileNotFoundError
+python compare_chatgpt.py 7    # ZeroDivisionError
 ```
 
-### Run Integration Examples
+### **3. Direct CLI Usage**
 ```bash
-# Python example
-cd examples/integrations/python
-python basic_integration.py
+# Generate error and pipe to Debuggle Core:
+python demo_errors.py 1 2>&1 | ../cli/debuggle_cli.py
 
-# JavaScript example
-cd examples/integrations/javascript  
-node basic_integration.js
+# Or save to file first:
+python demo_errors.py 2 > error.log 2>&1
+../cli/debuggle_cli.py error.log
 ```
 
-## 📊 Sample Data
+### **4. Web Application Demo**
+```bash
+# Install demo dependencies:
+pip install -r requirements.demo.txt
 
-All sample log files contain realistic but anonymized data. No real user information, credentials, or sensitive data is included.
+# Start the buggy Flask app:
+cd demo_app && python app.py
 
-## 🔧 Using Examples
+# In another terminal, trigger errors:
+curl http://localhost:5000/users/5  # IndexError
+curl http://localhost:5000/calculate/conversion  # ZeroDivisionError
+```
 
-1. **Copy and modify** examples for your specific use case
-2. **Test features** using provided sample data
-3. **Learn patterns** from real-world scenarios
-4. **Validate integrations** with working code
+## 🎯 **What You'll See**
 
-## 📚 Related Documentation
+### **ChatGPT Input (Limited Context):**
+```
+IndexError: list index out of range
+```
 
-- [Getting Started Guide](../docs/user-guide/getting-started.md)
-- [API Reference](../docs/api/README.md)
-- [Integration Patterns](../docs/user-guide/features.md)
+### **Debuggle Core Analysis (Rich Context):**
+```
+🚨 ERROR ANALYSIS WITH FULL CONTEXT
+• Code Context: Shows actual error location with surrounding code
+• Recent Changes: Git history that might have caused the issue  
+• Project Context: Language, framework, dependencies
+• Environment: Python version, virtual env details
+• Privacy: 100% local processing
+```
+
+## 💡 **Key Demonstrations**
+
+### **🔒 Privacy Advantage**
+- All processing happens locally
+- No data sent to external APIs
+- Corporate/enterprise safe
+
+### **🎯 Context Advantage** 
+- Sees surrounding code (ChatGPT doesn't)
+- Understands project structure
+- Knows your environment details
+- Shows recent changes that might be relevant
+
+### **⚡ Workflow Advantage**
+- No copy/paste required
+- Pipe errors directly from any command
+- Integrates into development workflow
+- Faster than API calls
+
+## 🔧 **Integration Examples**
+
+### **Terminal Integration**
+```bash
+# Any command that might error:
+python your_script.py 2>&1 | debuggle
+
+# Watch log files:
+debuggle --watch server.log
+```
+
+### **Development Workflow**
+```bash
+# Pre-commit hook example:
+python -m pytest 2>&1 | debuggle
+```
+
+### **CI/CD Pipeline**
+```bash
+# GitHub Actions example:
+run: |
+  pytest 2>&1 | tee test_output.log
+  if [ $? -ne 0 ]; then
+    debuggle test_output.log > analysis.md
+  fi
+```
+
+## � **Comparison Results**
+
+When you run these examples, you'll see:
+
+| **Aspect** | **ChatGPT** | **Debuggle Core** |
+|------------|-------------|-------------------|
+| **Context** | Basic error only | Full development context |
+| **Privacy** | Data sent to OpenAI | 100% local processing |
+| **Speed** | 3-10 second API calls | <1 second local analysis |
+| **Integration** | Manual copy/paste | Automated workflow |
+| **Learning** | Generic responses | Project-aware analysis |
+
+Try the examples and see the difference for yourself!

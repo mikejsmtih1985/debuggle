@@ -1,94 +1,110 @@
 # 🐞 Debuggle Core
 
-**Turn "What the hell happened?" into "Ah, I know exactly how to fix this!"**
+**Your AI-powered debugging companion that works locally, privately, and instantly**
 
-When you're staring at a cryptic error message at 2 AM, Debuggle Core transforms confusing stack traces into clear, actionable solutions. Get unstuck faster with intelligent error analysis that actually helps you fix bugs instead of just showing you what broke.
-
----
-
-## 🎯 **What Job Are You Hiring Debuggle For?**
-
-### 😤 **"I'm stuck on this error and don't know what it means"**
-**→ Debuggle gives you plain-English explanations + specific fix suggestions**
-
-```
-Before: "IndexError: list index out of range" 😕
-After:  "🚨 You tried to access position 5 in a list that only has 3 items
-         🛠️ Quick fixes:
-         1. Check list length: if len(my_list) > index: item = my_list[index]
-         2. Use safe indexing: item = my_list[index] if index < len(my_list) else None
-         💡 Prevention: Always verify array bounds before accessing elements"
-```
-
-### ⏰ **"I'm wasting hours trying to parse this stack trace"**
-**→ Debuggle highlights what matters and filters out the noise**
-
-- **Smart cleanup** removes repetitive lines and focuses on your code
-- **Key locations highlighted** so you know exactly where to look
-- **Exception chain analysis** shows you the root cause, not just symptoms
-
-### 🤯 **"This error spans multiple languages/frameworks"**  
-**→ Debuggle speaks Python, JavaScript, Java, C#, C++, Go, and Rust**
-
-- **Auto-detects language** from your logs
-- **Cross-language expertise** handles complex polyglot applications
-- **Framework-aware** understands Spring, React, Django patterns
-
-### 📚 **"I want to learn from my mistakes"**
-**→ Debuggle teaches you patterns to prevent future errors**
-
-- **Prevention tips** for each error type
-- **Best practices** linked to official documentation  
-- **Pattern recognition** helps you spot similar issues early
-
-### 🚀 **"I need this to work in production"**
-**→ Debuggle is battle-tested and production-ready**
-
-- **95% test coverage** with 198 passing tests
-- **Rate limiting** and input validation
-- **Docker deployment** ready
-- **FastAPI performance** handles high throughput
+Stop copying error messages into ChatGPT. Debuggle Core analyzes your errors with full project context, giving you smarter insights than any cloud service - all while keeping your code completely private.
 
 ---
 
-## ⚡ **Get Started in 30 Seconds**
+## 🎯 **What Development Job Are You Hiring Debuggle For?**
 
-### 🌐 **Option 1: Web Interface (Easiest)**
+### 😤 **"I hit an error and need to understand it quickly without breaking my flow"**
+**→ Debuggle analyzes errors instantly in your terminal with full context**
+
+```bash
+# Instead of this workflow:
+python app.py   # Error occurs
+# Copy error message → Open ChatGPT → Paste → Wait → Get generic advice
+
+# Do this instead:
+python app.py 2>&1 | debuggle
+# Get instant, contextual analysis with project-specific insights
+```
+
+### ⏰ **"I need to debug without context-switching or waiting for APIs"**
+**→ Debuggle runs locally and integrates seamlessly into your development workflow**
+
+- **Instant analysis** - no API calls or network delays
+- **Terminal integration** - pipe any command's output directly
+- **IDE-friendly** - works with any editor or development setup
+- **Zero configuration** - works out of the box
+
+### 🔒 **"I can't send my code/errors to external services due to privacy/security"**  
+**→ Debuggle processes everything locally with no data transmission**
+
+- **100% private** - your code never leaves your machine
+- **Corporate-safe** - no compliance issues or firewall problems
+- **Air-gap compatible** - works completely offline
+- **No vendor lock-in** - open source and self-hosted
+
+### 🧠 **"I want intelligent analysis, not just error monitoring"**
+**→ Debuggle provides educational insights that make you a better developer**
+
+- **Context-aware** - sees your project structure, recent changes, and environment
+- **Educational explanations** - learn why errors happen and how to prevent them
+- **Pattern recognition** - understand error categories and common fixes
+- **Multi-language expertise** - Python, JavaScript, Java, C#, C++, Go, Rust
+
+### � **"I need professional-quality error analysis without the enterprise price tag"**
+**→ Debuggle is completely free with no usage limits or feature restrictions**
+
+- **$0 forever** - no subscriptions, usage limits, or hidden costs
+- **Full feature access** - get everything, not a limited "free tier"
+- **Self-hosted** - no per-seat pricing or team limits
+- **Open source** - modify and extend as needed
+
+---
+
+## ⚡ **Get Started in Your Development Workflow**
+
+### 🛠️ **Option 1: CLI Integration (Recommended for Developers)**
+```bash
+# Install once
+git clone https://github.com/mikejsmtih1985/debuggle.git
+cd debuggle && pip install -r requirements.txt
+
+# Use anywhere in your development workflow
+python your_script.py 2>&1 | python cli/debuggle_cli.py
+npm test 2>&1 | python cli/debuggle_cli.py
+mvn compile 2>&1 | python cli/debuggle_cli.py
+```
+
+### 🌐 **Option 2: Web Interface (For Occasional Use)**
 ```bash
 docker run -p 8000:8000 debuggle/core:latest
 # Visit http://localhost:8000 and drag & drop your log file
 ```
 
-### 🛠️ **Option 2: API Integration**
-```bash
-curl -X POST "http://localhost:8000/api/v1/beautify" \
-  -H "Content-Type: application/json" \
-  -d '{"log_input": "Your error message here"}'
-```
-
-### 💻 **Option 3: Local Development**
+### � **Option 3: Development Server (For Team Sharing)**
 ```bash
 git clone https://github.com/mikejsmtih1985/debuggle.git
 cd debuggle && pip install -r requirements.txt
-uvicorn app.main:app --reload
+uvicorn app.main:app --reload --host 0.0.0.0
+# Share http://your-dev-server:8000 with your team
 ```
 
 ---
 
-## 🎬 **See It In Action**
+## 🎬 **See It In Your Development Workflow**
 
-### Real Example: Python IndexError
-**Input:** Messy stack trace
-```
+### Real Development Scenario: 
+**You're coding and hit an error...**
+
+```bash
+# Instead of copying to ChatGPT...
+$ python app.py
 Traceback (most recent call last):
   File "app.py", line 14, in <module>
     main()
   File "app.py", line 10, in main
     user = users[999]
 IndexError: list index out of range
+
+# Just pipe it to Debuggle:
+$ python app.py 2>&1 | debuggle
 ```
 
-**Debuggle Output:** Actionable insights
+**Debuggle gives you context ChatGPT never sees:**
 ```
 🚨 **IndexError Detected**
 
@@ -108,61 +124,87 @@ IndexError: list index out of range
 
 ---
 
-## 🔥 **Why Developers Choose Debuggle**
+## 🔥 **Why Developers Choose Debuggle Over ChatGPT for Debugging**
 
-### ✅ **Instant Clarity**
-- Transform cryptic errors into clear explanations
-- Get specific fix suggestions, not just descriptions
-- Learn the "why" behind each error
+### ✅ **Seamless Workflow Integration**
+- **No context switching** - stays in your terminal/IDE
+- **Instant results** - no waiting for API calls
+- **Command chaining** - `npm test 2>&1 | debuggle` becomes muscle memory
+- **Works offline** - debug on planes, trains, or restrictive networks
 
-### ✅ **Time Saver**
-- Skip the "copy error into Google" step
-- Get context-aware solutions immediately
-- Focus on fixing, not investigating
+### ✅ **Superior Context Awareness**
+- **Sees your project structure** - knows your framework and dependencies
+- **Git integration** - shows recent changes that might have caused issues
+- **Environment aware** - understands your Python version, virtual env, etc.
+- **Code context** - analyzes surrounding code, not just the error message
 
-### ✅ **Production Ready**
-- 95% test coverage ensures reliability
-- Docker containerized for easy deployment
-- Rate limited and validated for production use
+### ✅ **Privacy & Security First**
+- **Zero data transmission** - your proprietary code stays local
+- **Corporate-compliant** - no external API dependencies
+- **Audit-friendly** - open source and fully transparent
+- **Works behind firewalls** - no network requirements
 
-### ✅ **Multi-Language Expert**
-- Handles Python, JavaScript, Java, C#, C++, Go, Rust
-- Understands framework-specific patterns
-- Auto-detects language from log content
-
----
-
-## 🚀 **Service Tiers: Grow With Your Needs**
-
-| **Core** (Free) | **Pro** ($19/mo) | **Team** ($49/mo) | **Enterprise** (Custom) |
-|------------------|-------------------|-------------------|-------------------------|
-| ✅ Error analysis | ✅ Everything in Core | ✅ Everything in Pro | ✅ Everything in Team |
-| ✅ 15+ error types | ✅ Log grouping | ✅ Persistent storage | ✅ SSO integration |
-| ✅ Web + API access | ✅ Pattern detection | ✅ Team dashboards | ✅ Custom integrations |
-| ✅ File upload | ✅ Basic storage | ✅ Advanced search | ✅ Compliance features |
-| | ✅ Slack alerts | ✅ User management | ✅ Priority support |
+### ✅ **Developer-Optimized**
+- **Fast startup** - ready in seconds, not minutes
+- **Terminal-native** - designed for command-line workflows
+- **Error pattern learning** - gets smarter with your specific codebase
+- **Multi-language** - Python, JS, Java, C#, C++, Go, Rust
 
 ---
 
-## 🤝 **Common Use Cases**
+## 🚀 **Deployment Options: Choose Your Development Setup**
 
-### 👨‍💻 **Solo Developer**
-*"I'm debugging alone and need quick answers"*
-- Use the web interface for one-off error analysis
-- Get unstuck on tricky stack traces
-- Learn better error handling patterns
+| **Local CLI** (Free) | **Team Server** (Free) | **Enterprise** (Custom) |
+|----------------------|------------------------|-------------------------|
+| ✅ Full error analysis | ✅ Everything in CLI | ✅ Everything in Team Server |
+| ✅ Terminal integration | ✅ Shared team access | ✅ SSO integration |
+| ✅ All 7 languages | ✅ Web interface | ✅ Custom deployment |
+| ✅ Git context | ✅ API access | ✅ Compliance packages |
+| ✅ Offline capable | ✅ Docker deployment | ✅ Priority support |
+| ✅ Zero setup | ✅ Team collaboration | ✅ Custom integrations |
 
-### 🏢 **Development Team**  
-*"We need to triage errors efficiently"*
-- API integration with your monitoring stack
-- Consistent error analysis across team members
-- Share insights through clear, formatted output
+**All deployment options are completely free and open source**
 
-### 🏭 **Production Support**
-*"We need to diagnose customer issues fast"*
-- Process production logs safely and securely
-- Get actionable insights for customer support
-- Reduce mean time to resolution (MTTR)
+---
+
+## 🤝 **Development Workflow Integration**
+
+### 👨‍💻 **Solo Developer Workflow**
+*"I need instant error analysis without leaving my terminal"*
+```bash
+# Add to your .bashrc/.zshrc
+alias debug='2>&1 | debuggle'
+
+# Then use anywhere:
+python script.py debug
+npm test debug  
+go run main.go debug
+```
+
+### 🏢 **Development Team Setup**  
+*"We want consistent error analysis across our team"*
+```bash
+# One-time team setup
+docker run -d -p 8000:8000 debuggle/core:latest
+# Everyone uses: curl -X POST team-server:8000/api/v1/beautify
+
+# Or shared CLI setup
+git clone https://github.com/mikejsmtih1985/debuggle.git /shared/debuggle
+# Add /shared/debuggle/cli to everyone's PATH
+```
+
+### 🔧 **CI/CD Integration**
+*"We want automatic error analysis in our build pipeline"*
+```yaml
+# GitHub Actions example
+- name: Test with error analysis
+  run: |
+    npm test 2>&1 | tee test_output.log
+    if [ $? -ne 0 ]; then
+      python /path/to/debuggle/cli/debuggle_cli.py test_output.log > analysis.md
+      # Attach analysis.md to PR or notification
+    fi
+```
 
 ---
 
@@ -185,25 +227,35 @@ IndexError: list index out of range
 
 ---
 
-## 🛠️ **API Documentation**
+## 🛠️ **Development Integration Examples**
 
-### Quick Integration
+### Terminal Aliases (Recommended)
+```bash
+# Add to ~/.bashrc or ~/.zshrc
+alias debug-py='python 2>&1 | debuggle'
+alias debug-npm='npm 2>&1 | debuggle'  
+alias debug-mvn='mvn 2>&1 | debuggle'
+alias debug='2>&1 | debuggle'  # Universal
+
+# Usage:
+python app.py debug
+npm test debug
+mvn compile debug
+```
+
+### API Integration (For Tools/IDEs)
 ```bash
 # Health check
 curl http://localhost:8000/health
 
-# Analyze error
+# Analyze any error output
 curl -X POST "http://localhost:8000/api/v1/beautify" \
   -H "Content-Type: application/json" \
-  -d '{
-    "log_input": "Your error here",
-    "language": "auto",
-    "options": {"summarize": true, "tags": true}
-  }'
+  -d '{"log_input": "Your error here", "language": "auto"}'
 
-# Upload file
+# Upload log files
 curl -X POST "http://localhost:8000/api/v1/upload-log" \
-  -F "file=@error.log"
+  -F "file=@build.log"
 ```
 
 **Full API Docs:** Visit `/docs` for interactive Swagger documentation
@@ -229,27 +281,34 @@ C++, Go, Rust with intelligent pattern recognition
 
 ---
 
-## 🚀 **Deployment Options**
+## 🚀 **Development Environment Setup**
 
-### **Docker (Recommended)**
+### **Local CLI (Individual Developer)**
 ```bash
-# Pull and run
-docker run -p 8000:8000 debuggle/core:latest
-
-# Docker Compose
-docker-compose up
-```
-
-### **Local Development**
-```bash
+# One-time setup
 git clone https://github.com/mikejsmtih1985/debuggle.git
-cd debuggle
-pip install -r requirements.txt
-uvicorn app.main:app --reload
+cd debuggle && pip install -r requirements.txt
+
+# Add to PATH or create alias
+echo 'alias debuggle="python /path/to/debuggle/cli/debuggle_cli.py"' >> ~/.bashrc
+
+# Use immediately
+python your_script.py 2>&1 | debuggle
 ```
 
-### **Cloud Platforms**
-Works seamlessly with AWS Lambda, Google Cloud Run, Azure Container Instances, Fly.io, Railway, Heroku
+### **Team Development Server**
+```bash
+# Shared team server
+docker run -d -p 8000:8000 --name debuggle-team debuggle/core:latest
+
+# Or local development mode
+git clone https://github.com/mikejsmtih1985/debuggle.git
+cd debuggle && pip install -r requirements.txt
+uvicorn app.main:app --reload --host 0.0.0.0
+```
+
+### **CI/CD Integration**
+Perfect for GitHub Actions, GitLab CI, Jenkins, Azure DevOps - any build system that can pipe output to a command
 
 ---
 
@@ -274,6 +333,6 @@ We welcome contributions! See our [Contributing Guide](CONTRIBUTING.md) for deta
 
 ---
 
-**Made with ❤️ by developers who hate cryptic error messages**
+**Made with ❤️ by developers who got tired of copy-pasting stack traces into ChatGPT**
 
-*Stop googling error messages. Start fixing them.*
+*Your AI debugging companion that works locally, privately, and instantly - right in your development workflow.*

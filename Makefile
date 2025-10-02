@@ -1,10 +1,19 @@
 # Start the development server
+# Development server
 dev:
-	uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+	uvicorn src.debuggle.main:app --reload --host 0.0.0.0 --port 8000
 
 # Install dependencies
 install:
 	pip install -r requirements.txt
+
+# Install development dependencies
+install-dev:
+	pip install -r requirements.txt -r requirements-dev.txt
+
+# Install in editable mode
+install-local:
+	pip install -e .
 
 # Run tests
 test:
@@ -12,37 +21,74 @@ test:
 
 # Run tests with coverage
 test-cov:
-	pytest tests/ --cov=app --cov-report=html --cov-report=term-missing
+	pytest --cov=src/debuggle --cov-report=html --cov-report=term-missing
 
 # Format code
 format:
-	black app/ tests/
+	black src/ tests/ cli/ examples/
 	
 # Lint code
 lint:
-	flake8 app/ tests/
+	flake8 src/ tests/ cli/ examples/
+	mypy src/
+
+# Type checking
+typecheck:
+	mypy src/debuggle
+
+# CLI tool
+cli:
+	python cli/debuggle_cli.py
+
+# Run examples
+examples:
+	cd examples && python demo_errors.py
+
+# Build package
+build:
+	python -m build
 
 # Build Docker image
-build:
-	docker build -t debuggle-core:latest .
+docker-build:
+	cd docker && docker build -t debuggle-core:latest -f Dockerfile ..
 
 # Run with Docker Compose
-up:
-	docker-compose up --build
+docker-up:
+	cd docker && docker-compose up --build
 
 # Stop Docker Compose
-down:
-	docker-compose down
+docker-down:
+	cd docker && docker-compose down
 
 # Clean up Docker
-clean:
-	docker-compose down -v
+docker-clean:
+	cd docker && docker-compose down -v
 	docker image prune -f
 
-# Deploy to production (example)
-deploy:
-	docker build -t debuggle-core:$(shell git rev-parse --short HEAD) .
-	# Add your deployment commands here
+# Clean build artifacts
+clean:
+	rm -rf build/
+	rm -rf dist/
+	rm -rf *.egg-info/
+	rm -rf .pytest_cache/
+	rm -rf htmlcov/
+	find . -type d -name __pycache__ -delete
+	find . -type f -name "*.pyc" -delete
+
+# Setup development environment
+setup:
+	python -m venv .venv
+	.venv/bin/pip install -r requirements.txt -r requirements-dev.txt
+	.venv/bin/pip install -e .
+	.venv/bin/pre-commit install
+
+# Check project structure
+check:
+	python -c "import src.debuggle; print('✅ Import successful')"
+	python cli/debuggle_cli.py --help
+	pytest --collect-only
+
+.PHONY: dev install install-dev install-local test test-cov format lint typecheck cli examples build docker-build docker-up docker-down docker-clean clean setup check
 
 # Help command
 help:
