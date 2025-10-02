@@ -1,8 +1,31 @@
 """
-Error pattern matching and classification system.
+🔍 PATTERN RECOGNITION LABORATORY - Error Pattern Matching & Classification 🔍
 
-This module provides intelligent pattern recognition for various error types
-across multiple programming languages and frameworks.
+Think of this file as a specialized forensics lab where pattern recognition experts
+work! Just like how crime scene investigators can look at evidence and say
+"this matches the pattern of a burglary" or "this looks like an accident",
+this module teaches computers to recognize different types of programming errors.
+
+🎯 WHAT THIS MODULE DOES:
+This is the "pattern recognition brain" of Debuggle. It's like having a database
+of "error fingerprints" that helps us identify what went wrong in your code.
+
+🕬️ THE FORENSICS LAB SETUP:
+- ErrorSeverity: Like a scale from "minor scratch" to "broken bone"
+- ErrorCategory: Different types of problems (like "kitchen accidents" vs "car problems")
+- ErrorPattern: A detailed profile of a specific error type (like a criminal profile)
+- ErrorMatch: When we find evidence that matches a known pattern
+- Pattern Matchers: Specialists who know different "languages" (Python, JavaScript, etc.)
+
+🔍 HOW PATTERN RECOGNITION WORKS:
+1. We have a library of known error "fingerprints" for different programming languages
+2. When you give us an error message, we compare it against our database
+3. We find matches and rank them by how confident we are
+4. We provide detailed information about what each error means and how to fix it
+
+Real-world analogy: This is like having a medical diagnosis system that can
+look at symptoms and say "this looks like a cold" or "this might be the flu"
+based on patterns it has learned from thousands of previous cases.
 """
 
 import re
@@ -13,38 +36,108 @@ from typing import Dict, List, Optional, Pattern, Union
 
 
 class ErrorSeverity(Enum):
-    """Error severity levels."""
-    CRITICAL = "critical"
-    HIGH = "high"
-    MEDIUM = "medium"
-    LOW = "low"
-    INFO = "info"
+    """
+    🌡️ ERROR TRIAGE SYSTEM - How Urgent Is This Problem?
+    
+    Just like a hospital emergency room, we need to prioritize problems based on
+    how serious they are. This enum is like the triage nurse who decides
+    "who needs help first?"
+    
+    🏆 HIGH SCHOOL EXPLANATION:
+    Think of this like homework deadlines:
+    - CRITICAL: Due in 1 hour (drop everything and fix NOW!)
+    - HIGH: Due tomorrow (fix this today)
+    - MEDIUM: Due next week (fix when you have some free time)
+    - LOW: Due next month (fix eventually)
+    - INFO: Just a helpful tip (like "you might want to study more")
+    """
+    CRITICAL = "critical"  # 🚨 Your program will crash or produce wrong results!
+    HIGH = "high"          # ⚠️  This will likely cause problems soon
+    MEDIUM = "medium"      # 🔄 This should be fixed but isn't urgent
+    LOW = "low"            # 📅 Fix this when you have time
+    INFO = "info"          # 💡 Just a helpful suggestion or tip
 
 
 class ErrorCategory(Enum):
-    """High-level error categories."""
-    SYNTAX = "syntax"
-    RUNTIME = "runtime"
-    LOGIC = "logic"
-    NETWORK = "network"
-    DATABASE = "database"
-    PERMISSION = "permission"
-    CONFIGURATION = "configuration"
-    DEPENDENCY = "dependency"
+    """
+    📁 ERROR FILING SYSTEM - What Type of Problem Is This?
+    
+    Just like organizing files in different folders, we categorize errors by
+    what part of programming they relate to. This helps us quickly understand
+    what area needs attention.
+    
+    🏆 HIGH SCHOOL EXPLANATION:
+    Think of this like categorizing school problems:
+    - SYNTAX: Like grammar errors in an English essay (wrong spelling/punctuation)
+    - RUNTIME: Like your calculator running out of batteries during a math test
+    - LOGIC: Like using the wrong formula (the math is right, but approach is wrong)
+    - NETWORK: Like your internet cutting out during online class
+    - DATABASE: Like your filing cabinet being locked when you need a document
+    - PERMISSION: Like not having the key to a classroom you need to enter
+    - CONFIGURATION: Like having your desk set up wrong for efficient studying
+    - DEPENDENCY: Like needing a textbook that you don't have
+    """
+    SYNTAX = "syntax"                    # 📝 Grammar/spelling errors in your code
+    RUNTIME = "runtime"                  # 🏃 Problems that happen while your program runs
+    LOGIC = "logic"                      # 🤔 Your code works, but doesn't do what you intended
+    NETWORK = "network"                  # 🌐 Internet/connection problems
+    DATABASE = "database"                # 🗄 Problems with storing/retrieving data
+    PERMISSION = "permission"            # 🔒 Not allowed to access something you need
+    CONFIGURATION = "configuration"      # ⚙️  Settings or setup problems
+    DEPENDENCY = "dependency"            # 📦 Missing tools or libraries your code needs
 
 
 @dataclass
 class ErrorPattern:
-    """Defines an error pattern with matching and fix information."""
+    """
+    🗺️ CRIMINAL PROFILE - Complete Information About One Type of Error
+    
+    Think of this as a detailed profile that police keep on a known criminal!
+    It contains everything we know about a specific type of error: how to
+    recognize it, what it means, and how to "catch" it (fix it).
+    
+    🏆 HIGH SCHOOL EXPLANATION:
+    This is like a Pokemon card that describes everything about one Pokemon:
+    - Name (what it's called)
+    - Type (what category it belongs to)
+    - Rarity (how serious/common it is) 
+    - Description (what it does)
+    - Moves (how to counter it)
+    - Where to find more info (like a Pokedex entry)
+    
+    Each ErrorPattern describes one specific type of programming error completely.
+    """
+    
+    # 🏷️ THE ERROR'S "STAGE NAME" - like "IndexError" or "TypeError"
     name: str
+    
+    # 🔍 THE "FINGERPRINT" - how we recognize this error in text
+    # This is a regex pattern (like a search filter) that matches the error message
     pattern: Union[str, Pattern[str]]
+    
+    # 📁 WHAT FILING CABINET does this belong in? (syntax, runtime, etc.)
     category: ErrorCategory
+    
+    # 🌡️ HOW URGENT is this problem? (critical, high, medium, low, info)
     severity: ErrorSeverity
+    
+    # 🗣️ WHAT PROGRAMMING LANGUAGES can have this error?
+    # Like saying "this crime only happens in certain neighborhoods"
     languages: List[str]
+    
+    # 📝 TECHNICAL EXPLANATION - what this error means in programmer terms
     explanation: str
+    
+    # 🗨️ PLAIN ENGLISH - what happened in terms a human can understand
     what_happened: str
+    
+    # 🔧 REPAIR INSTRUCTIONS - step-by-step fixes you can try
     quick_fixes: List[str]
+    
+    # 🛡️ PREVENTION ADVICE - how to avoid this error in the future
     prevention_tip: str
+    
+    # 📚 STUDY GUIDE - where to learn more about this type of error
     learn_more_url: str
     
     def __post_init__(self):
@@ -55,12 +148,42 @@ class ErrorPattern:
 
 @dataclass
 class ErrorMatch:
-    """Represents a matched error pattern with context."""
+    """
+    🎯 EVIDENCE MATCH - When We Find a Suspect That Fits the Profile
+    
+    This represents a "match" between an error we found and a pattern we know about.
+    It's like when a detective says "this fingerprint matches John Doe in our database!"
+    
+    🏆 HIGH SCHOOL EXPLANATION:
+    Think of this like when you're trying to identify a song:
+    - pattern: The song information from your music app's database
+    - matched_text: The lyrics you heard that made you think of this song
+    - confidence: How sure you are this is the right song (0.0 = "maybe?" to 1.0 = "definitely!")
+    - context: The other lyrics around the part you recognized
+    - line_number: Which line in the code the error appeared on
+    - file_path: Which file had the problem
+    """
+    
+    # 🗺️ THE MATCHING PROFILE - which ErrorPattern this matches
+    # Like pointing to a criminal profile and saying "this is our guy!"
     pattern: ErrorPattern
+    
+    # 🔍 THE ACTUAL EVIDENCE - the exact text that matched our pattern
+    # Like the specific fingerprint or DNA sample we found
     matched_text: str
+    
+    # 🎯 HOW SURE ARE WE? - confidence level from 0.0 (unsure) to 1.0 (certain)
+    # Like a detective saying "I'm 90% sure this is our suspect"
     confidence: float
+    
+    # 🗺️ SURROUNDING CLUES - text around the error for more context
+    # Like taking photos of the area around where evidence was found
     context: Optional[str] = None
+    
+    # 📍 CRIME SCENE LOCATION - what line number the error occurred on
     line_number: Optional[int] = None
+    
+    # 🗺️ WHICH BUILDING - what file path contained the error
     file_path: Optional[str] = None
 
 
@@ -97,19 +220,53 @@ class BasePatternMatcher(ABC):
 
 
 class PythonPatternMatcher(BasePatternMatcher):
-    """Pattern matcher for Python errors."""
+    """
+    🐍 PYTHON ERROR SPECIALIST - The Snake Charmer Detective! 🐍
+    
+    This is our specialist detective who only handles Python programming errors.
+    Just like how a doctor might specialize in heart problems or brain surgery,
+    this matcher specializes in recognizing Python-specific error patterns.
+    
+    🏆 HIGH SCHOOL EXPLANATION:
+    Think of this like a teacher who only teaches Spanish class. They know all
+    the common mistakes Spanish students make, all the grammar rules, and can
+    quickly spot when someone writes "el problema" instead of "la problema".
+    
+    This class does the same thing but for Python programming errors!
+    """
     
     def get_language_indicators(self) -> List[Pattern[str]]:
-        """Python-specific indicators."""
+        """
+        🎯 PYTHON IDENTIFICATION CLUES - How We Know This Is Python
+        
+        These are like "accent markers" that tell us we're looking at a Python error.
+        Just like how you can tell someone is from New York by their accent,
+        we can tell an error is from Python by these specific phrases.
+        
+        🏆 HIGH SCHOOL EXPLANATION:
+        Like recognizing your friend's handwriting - everyone has unique patterns!
+        Python errors have these telltale signs that scream "I'm from Python!"
+        """
         return [
+            # 📜 THE CLASSIC PYTHON "SIGNATURE" - every Python error starts with this
+            # Like how every Harry Potter book starts with "Mr. and Mrs. Dursley..."
             re.compile(r'Traceback \(most recent call last\)', re.IGNORECASE),
+            
+            # 🗺️ PYTHON FILE REFERENCES - mentions of .py files
+            # Like seeing "Chapter 5" and knowing you're reading a book
             re.compile(r'File ".*\.py"', re.IGNORECASE),
+            
+            # 📍 DETAILED LOCATION INFO - Python's very specific about where errors happen
+            # Like GPS coordinates that pinpoint exactly where you are
             re.compile(r'^\s*File ".*\.py", line \d+', re.MULTILINE),
         ]
     
     def get_patterns(self) -> List[ErrorPattern]:
         """Python error patterns."""
         return [
+            # 🎵 THE "MUSICAL CHAIRS" ERROR - IndexError 🎵
+            # Remember the game Musical Chairs? This error is like when the music stops
+            # and you try to sit in chair #10, but there are only 9 chairs!
             ErrorPattern(
                 name="IndexError",
                 pattern=r'IndexError: (?:list )?index out of range',
@@ -119,13 +276,19 @@ class PythonPatternMatcher(BasePatternMatcher):
                 explanation="Array/list access out of bounds - trying to access an index that doesn't exist",
                 what_happened="You tried to access a position in a list/array that doesn't exist",
                 quick_fixes=[
+                    # 📏 SAFETY CHECK: Count the chairs before sitting!
                     "Check list length: `if len(my_list) > index: item = my_list[index]`",
+                    # 🚫 SAFE BACKUP: Have a backup plan if the chair isn't there
                     "Use safe indexing: `item = my_list[index] if index < len(my_list) else None`",
+                    # 🎣 TRY-CATCH NET: Try to sit, but be ready to catch yourself if you fall
                     "Try-catch approach: `try: item = my_list[index] except IndexError: item = None`"
                 ],
                 prevention_tip="Always verify array/list bounds before accessing elements",
                 learn_more_url="https://docs.python.org/3/tutorial/errors.html#handling-exceptions"
             ),
+            # 🗺️ THE "LOST PHONE NUMBER" ERROR - KeyError 🗺️
+            # This is like looking for "Mom" in your phone contacts, but you saved her as "Mother"!
+            # The key (name) you're looking for doesn't exist in your dictionary (phone book)
             ErrorPattern(
                 name="KeyError",
                 pattern=r'KeyError: [\'"]([^\'"]+)[\'"]',
@@ -135,8 +298,11 @@ class PythonPatternMatcher(BasePatternMatcher):
                 explanation="Dictionary key not found - the key you're looking for doesn't exist",
                 what_happened="You tried to access a dictionary key that doesn't exist",
                 quick_fixes=[
+                    # 📦 THE SAFE METHOD: Ask nicely with a backup plan
                     "Use .get() method: `value = my_dict.get('key', 'default_value')`",
+                    # 🔍 CHECK FIRST: Look before you leap!
                     "Check if key exists: `if 'key' in my_dict: value = my_dict['key']`",
+                    # 🎣 SAFETY NET: Try it, but be ready if it fails
                     "Use try-except: `try: value = my_dict['key'] except KeyError: value = None`"
                 ],
                 prevention_tip="Always check if keys exist before accessing or use .get() method",
