@@ -57,14 +57,14 @@ a = Analysis(
     pathex=[str(project_root)],
     binaries=[],
     datas=[
-        # Include static assets (HTML, CSS, JS)
-        ('assets/static/index.html', 'assets/static'),
-        # Include all app modules as data (they'll be imported normally)
-        ('app', 'app'),
+        # Include static assets (conditionally if they exist)
+        *([('assets', 'assets')] if os.path.exists('assets') else []),
         # Include CLI
         ('cli', 'cli'),
         # Include src if it exists  
         ('src', 'src'),
+        # Include configuration files (conditionally)
+        *([('pyproject.toml', '.')] if os.path.exists('pyproject.toml') else []),
     ],
     hiddenimports=[
         # Core Debuggle modules
