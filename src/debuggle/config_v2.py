@@ -313,7 +313,9 @@ class Settings(BaseSettings):
                 env = info.data.get('environment', Environment.DEVELOPMENT)
                 debug = env in [Environment.DEVELOPMENT, Environment.TESTING]
             return LogLevel.DEBUG if debug else LogLevel.INFO
-        return v.upper() if isinstance(v, str) else v    @property
+        return v.upper() if isinstance(v, str) else v
+    
+    @property
     def is_development(self) -> bool:
         """Check if running in development mode."""
         return self.environment == Environment.DEVELOPMENT
