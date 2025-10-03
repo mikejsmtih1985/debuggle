@@ -313,8 +313,8 @@ class TestClaudeOutputFormatting:
         
         assert "🚀 Debuggle Enhanced Analysis" in formatted
         assert "Standard analysis" in formatted
-        assert "🤖 Claude AI Insights" in formatted
-        assert "confidence: 85%" in formatted
+        assert "🤖 **Claude AI Insights**" in formatted
+        assert "confidence: 85.0%" in formatted
         assert "Detailed explanation from Claude" in formatted
         assert "Specific fix suggestion" in formatted
         assert "Prevention advice from Claude" in formatted
