@@ -53,7 +53,7 @@ from pathlib import Path
 project_root = Path('.').absolute()
 
 a = Analysis(
-    ['debuggle_main.py'],  # Use unified entry point
+    ['debuggle_standalone.py'],  # Use unified standalone entry point
     pathex=[str(project_root)],
     binaries=[],
     datas=[
@@ -67,7 +67,15 @@ a = Analysis(
         ('src', 'src'),
     ],
     hiddenimports=[
-        # FastAPI and Uvicorn
+        # Core Debuggle modules
+        'src.debuggle.core.analyzer',
+        'src.debuggle.core.context',
+        'src.debuggle.core.patterns',
+        'src.debuggle.core.processor',
+        'src.debuggle.integrations.claude',
+        'src.debuggle.storage.database',
+        'src.debuggle.config_v2',
+        # FastAPI and Uvicorn (if web interface needed)
         'uvicorn.loops.auto',
         'uvicorn.protocols.http.auto',
         'uvicorn.protocols.websockets.auto',
@@ -92,12 +100,17 @@ a = Analysis(
         'multipart',
         'python_multipart',
         'slowapi',
+        # Claude AI integration (optional)
+        'anthropic',
         # Additional imports that might be needed
         'email.mime.multipart',
         'email.mime.text',
         'json',
         'pathlib',
         'typing',
+        'sqlite3',
+        'logging',
+        'argparse',
     ],
     hookspath=[],
     hooksconfig={{}},

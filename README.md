@@ -143,16 +143,33 @@ python app.py 2>&1 | debuggle --claude
 | Copy-paste workflow | **Seamless terminal integration** |
 | Unknown costs and usage | **Transparent usage tracking and cost control** |
 
-### **🚀 Zero-Configuration Setup**
+### **🚀 Installation Options**
+
+#### **📦 Pre-built Executables (Recommended)**
+Download platform-specific executables with all features included:
+
+- **[📥 Windows (x64)](https://github.com/mikejsmtih1985/debuggle/actions)** - `debuggle-windows-x64.zip`
+- **[📥 Linux (x64)](https://github.com/mikejsmtih1985/debuggle/actions)** - `debuggle-linux-x64.tar.gz`  
+- **[📥 macOS Intel](https://github.com/mikejsmtih1985/debuggle/actions)** - `debuggle-macos-x64.tar.gz`
+- **[📥 macOS Apple Silicon](https://github.com/mikejsmtih1985/debuggle/actions)** - `debuggle-macos-arm64.tar.gz`
 
 ```bash
-# 1. Install Claude support (optional)
-pip install anthropic
+# Extract and run - no installation needed!
+# Windows: Double-click start_debuggle.bat
+# Linux/Mac: ./start_debuggle.sh
+```
 
-# 2. Set API key (get free credits at console.anthropic.com)
+#### **🛠️ From Source (Advanced)**
+```bash
+git clone https://github.com/mikejsmtih1985/debuggle.git
+cd debuggle
+pip install -e .
+
+# Optional: Install Claude AI support
+pip install anthropic
 export ANTHROPIC_API_KEY=your_key_here
 
-# 3. Use immediately - no other setup required!
+# Use immediately
 python your_app.py 2>&1 | debuggle --claude
 ```
 
@@ -172,6 +189,46 @@ python examples/claude_demo.py 2>&1 | debuggle --claude  # With AI insights
 ```
 
 **💡 Demo works even without API key** - Shows graceful degradation in action!
+
+---
+
+## **🏭 Dynamic Build System - Always Up-to-Date**
+
+### **🔄 Automated Executable Builds**
+
+Debuggle uses a **dynamic CI/CD system** that automatically builds fresh executables whenever code is updated:
+
+- **✅ Always Current**: Executables include the latest features and bug fixes
+- **🤖 Includes Claude AI**: All builds include the latest Claude integration
+- **🔧 Multi-Platform**: Windows, Linux, macOS (Intel & Apple Silicon)
+- **⚡ Fast Downloads**: Pre-built executables ready in minutes after code changes
+
+### **📥 How to Get Latest Executables**
+
+1. **🎯 Latest Stable**: Download from [GitHub Releases](https://github.com/mikejsmtih1985/debuggle/releases)
+2. **🚀 Bleeding Edge**: Download from [GitHub Actions](https://github.com/mikejsmtih1985/debuggle/actions) artifacts
+3. **🛠️ Custom Build**: Trigger your own build using GitHub Actions workflow
+
+### **🔨 Build-It-Yourself**
+
+Want to build your own executable with custom modifications?
+
+```bash
+# Clone and modify the code
+git clone https://github.com/mikejsmtih1985/debuggle.git
+cd debuggle
+
+# Install build dependencies  
+pip install -r requirements-build.txt
+
+# Build for your platform
+python scripts/build_standalone.py
+
+# Or build for all platforms
+./scripts/build_all_platforms.sh
+```
+
+**🎉 Result**: Self-contained executable with no dependencies required!
 
 ### **🛡️ Privacy & Control Philosophy**
 
