@@ -46,8 +46,8 @@ import statistics
 import hashlib
 import base64
 
-from .storage.database import DatabaseManager, LogEntry, LogSeverity
-from .realtime import connection_manager
+from ..storage.database import DatabaseManager, LogEntry, LogSeverity
+from ..realtime import connection_manager
 
 logger = logging.getLogger(__name__)
 

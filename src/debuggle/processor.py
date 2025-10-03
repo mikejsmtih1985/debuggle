@@ -3,8 +3,8 @@ import time
 from typing import List, Tuple, Optional
 from pygments.formatters import TerminalFormatter
 from langdetect import detect, DetectorFactory
-from .error_fixes import generate_enhanced_error_summary
-from .context_extractor import ContextExtractor
+from .utils.error_fixes import generate_enhanced_error_summary
+from .utils.context_extractor import ContextExtractor
 
 # Set seed for consistent language detection
 DetectorFactory.seed = 0

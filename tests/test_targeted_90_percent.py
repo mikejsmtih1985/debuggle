@@ -18,7 +18,8 @@ from src.debuggle.config_v2 import (
     Settings, DevelopmentSettings, ProductionSettings, TestingSettings,
     Environment, LogLevel, validate_settings, get_settings_for_env
 )
-from src.debuggle.main import app
+from src.debuggle.app_factory import create_app
+app = create_app()
 from fastapi.testclient import TestClient
 
 

@@ -188,7 +188,8 @@ def start_server(host='0.0.0.0', port=8000, reload=False):
         # uvicorn = the web server engine (like the restaurant's oven and stove)
         # app = our Debuggle application (like the restaurant's menu and recipes)
         import uvicorn
-        from src.debuggle.main import app
+        from src.debuggle.app_factory import create_app
+        app = create_app()
         
         # Tell the user what's happening - like putting up an "OPEN" sign
         print(f"🚀 Starting Debuggle web server...")

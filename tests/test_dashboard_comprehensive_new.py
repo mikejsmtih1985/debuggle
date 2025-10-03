@@ -17,7 +17,8 @@ from fastapi.testclient import TestClient
 from fastapi import status
 
 # Import dashboard functionality 
-from src.debuggle.main import app
+from src.debuggle.app_factory import create_app
+app = create_app()
 
 
 class TestDashboardRoutes:

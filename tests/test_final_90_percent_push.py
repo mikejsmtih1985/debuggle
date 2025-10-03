@@ -73,8 +73,9 @@ class TestFinalCoveragePush:
     def test_main_app_basic_endpoints(self):
         """Test basic main.py endpoints that exist"""
         from fastapi.testclient import TestClient
-        from src.debuggle.main import app
+        from src.debuggle.app_factory import create_app
         
+        app = create_app()
         client = TestClient(app)
         
         # Test root endpoint - this should exist

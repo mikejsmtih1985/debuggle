@@ -15,7 +15,8 @@ from src.debuggle.config_v2 import (
     Environment, LogLevel, get_settings, get_settings_for_env, validate_settings
 )
 from src.debuggle.context_extractor import ContextExtractor, ErrorContext
-from src.debuggle.main import app
+from src.debuggle.app_factory import create_app
+app = create_app()
 
 
 class TestConfigV2Coverage:

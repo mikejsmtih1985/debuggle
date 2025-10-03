@@ -16,7 +16,8 @@ from unittest.mock import patch, MagicMock, mock_open
 from fastapi.testclient import TestClient
 from fastapi import status
 
-from src.debuggle.main import app
+from src.debuggle.app_factory import create_app
+app = create_app()
 from src.debuggle.models import AnalyzeRequest, LanguageEnum, AnalyzeOptions
 
 

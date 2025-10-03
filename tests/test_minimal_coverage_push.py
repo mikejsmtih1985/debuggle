@@ -13,8 +13,9 @@ class TestMinimalCoveragePush:
     def test_main_simple_endpoints(self):
         """Test main.py endpoints that actually exist"""
         from fastapi.testclient import TestClient
-        from src.debuggle.main import app
+        from src.debuggle.app_factory import create_app
         
+        app = create_app()
         client = TestClient(app)
         
         # Test the simplest endpoints

@@ -182,8 +182,8 @@ def register_all_routes(app: FastAPI):
     - Laboratory (dashboard routes)
     Each department has its own entrance but they're all part of one hospital!
     """
-    from .api.routes import register_all_routes as register_routes
-    register_routes(app)
+    from .api.routes import router as main_router
+    app.include_router(main_router)
 
 
 def setup_static_files(app: FastAPI):

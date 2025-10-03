@@ -1,6 +1,7 @@
 import pytest
 from src.debuggle.processor import LogProcessor
-from src.debuggle.main import app
+from src.debuggle.app_factory import create_app
+app = create_app()
 from fastapi.testclient import TestClient
 
 

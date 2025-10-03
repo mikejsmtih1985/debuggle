@@ -23,7 +23,8 @@ from fastapi.testclient import TestClient
 from fastapi import status
 
 # Import the main app and its dependencies
-from src.debuggle.main import app
+from src.debuggle.app_factory import create_app
+app = create_app()
 
 
 class TestMainAppEndpoints:

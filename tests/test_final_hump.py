@@ -9,7 +9,8 @@ import tempfile
 
 from src.debuggle.core.context import ContextExtractor, DevelopmentContext
 from src.debuggle.config_v2 import Settings, Environment, validate_settings
-from src.debuggle.main import app
+from src.debuggle.app_factory import create_app
+app = create_app()
 from fastapi.testclient import TestClient
 
 

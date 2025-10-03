@@ -346,7 +346,7 @@ class Settings(BaseSettings):
         Like getting your membership card to check what features you can access!
         """
         # Import here to avoid circular dependencies (like not inviting yourself to your own party)
-        from .tiers import TierManager
+        from .core.tiers import TierManager
         return TierManager(tier=self.tier)
     
     def has_feature(self, feature: str) -> bool:

@@ -5,7 +5,8 @@ Final push to 95%+ coverage - targeting remaining specific uncovered lines.
 import pytest
 from unittest.mock import patch, Mock
 from fastapi.testclient import TestClient
-from src.debuggle.main import app
+from src.debuggle.app_factory import create_app
+app = create_app()
 from src.debuggle.processor import LogProcessor
 
 client = TestClient(app)

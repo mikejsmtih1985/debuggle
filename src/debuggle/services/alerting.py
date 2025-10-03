@@ -47,8 +47,8 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import aiohttp
 
-from .realtime import connection_manager, RealtimeErrorMonitor
-from .storage.database import LogEntry, LogSeverity
+from ..realtime import connection_manager, RealtimeErrorMonitor
+from ..storage.database import LogEntry, LogSeverity
 
 logger = logging.getLogger(__name__)
 

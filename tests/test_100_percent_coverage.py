@@ -6,7 +6,8 @@ Targeting the remaining uncovered lines in processor.py and main.py.
 import pytest
 from unittest.mock import patch, Mock
 from fastapi.testclient import TestClient
-from src.debuggle.main import app
+from src.debuggle.app_factory import create_app
+app = create_app()
 from src.debuggle.processor import LogProcessor
 
 client = TestClient(app)

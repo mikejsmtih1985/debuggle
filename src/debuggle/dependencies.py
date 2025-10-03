@@ -55,7 +55,7 @@ except ImportError:
 try:
     from src.debuggle.alerting import AlertManager
 except ImportError:
-    from .alerting import AlertManager
+    from .services.alerting import AlertManager
 
 # Set up logging for our supply chain operations
 logger = logging.getLogger(__name__)
