@@ -14,10 +14,10 @@ from .core.context import ContextExtractor
 # Initialize settings
 settings = get_settings()
 
-# Conditionally import FastAPI app (only when needed)
-try:
+# Define available exports (app is imported on-demand)
+__all__ = ["settings", "LogProcessor", "ContextExtractor"]
+
+def get_app():
+    """Get the FastAPI app instance (imported on-demand to avoid import issues)"""
     from .main import app
-    __all__ = ["app", "settings", "LogProcessor", "ContextExtractor"]
-except ImportError:
-    # FastAPI not available, skip web app
-    __all__ = ["settings", "LogProcessor", "ContextExtractor"]
+    return app
