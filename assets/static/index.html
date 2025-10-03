@@ -1796,21 +1796,37 @@ on a document so translation services know how to handle it properly.
             }
         });
 
+        /*
+        🏆 HIGH SCHOOL EXPLANATION:
+        This function is like a restaurant host who greets customers at the door
+        and decides where to seat them. When someone brings files to our web page,
+        this function looks at how many files they brought and decides what to do:
+        - If they brought 1 file: "Right this way to your table, we'll start cooking immediately!"
+        - If they brought multiple files: "Please take a seat, here's the menu to decide what you want"
+        
+        Just like a good host clears the previous table before seating new customers,
+        this function clears any old error messages or results before handling new files.
+        */
         function handleFiles(files) {
-            // Reset UI
+            // 🧹 CLEAR THE DINING ROOM - Reset the web page interface
+            // Like clearing tables and wiping down surfaces before new customers arrive
             hideError();
             hideResults();
             
             if (files.length === 1) {
-                // Single file: auto-process immediately
+                // 🍽️ SINGLE CUSTOMER SERVICE - One file gets immediate attention
+                // Like seating a solo diner at a table and immediately bringing the menu
                 selectedFile = files[0];
                 showFilePreview(files[0]);
-                // Auto-process after a brief delay to show the preview
+                
+                // ⏰ BRIEF PAUSE FOR PRESENTATION - Let the customer see the menu first
+                // Like giving someone a moment to look at their table setting before taking their order
                 setTimeout(() => {
                     processFile();
                 }, 500);
             } else {
-                // Multiple files: show selection and require manual processing
+                // 👥 GROUP PARTY HANDLING - Multiple files need coordination  
+                // Like seating a large party and letting them browse the menu together
                 selectedFiles = files;
                 showMultipleFilePreview(files);
             }
@@ -1821,51 +1837,105 @@ on a document so translation services know how to handle it properly.
             handleFiles([file]);
         }
 
+        /*
+        🏆 HIGH SCHOOL EXPLANATION:
+        This function is like a waiter showing a single customer to their table
+        and immediately preparing their dining experience. When someone selects
+        one file, we want to make it feel personal and immediate - like getting
+        VIP treatment at a restaurant where they know your name and preferences.
+        
+        The function updates the visual appearance to show "someone is seated here"
+        and displays information about their order (file name and size), then
+        smoothly guides their attention to the right spot on the page.
+        */
         function showFilePreview(file) {
-            // Update drag drop area appearance
+            // 💺 TABLE RESERVATION - Mark this table as occupied
+            // Like putting down a "Reserved" sign and adjusting the table setting
             dragDropArea.classList.add('file-selected');
             
-            // Update file details - show it's auto-processing
+            // 📋 ORDER TAKING - Display what the customer brought
+            // Like writing down their name and special requests on the order pad
             fileName.textContent = file.name;
-                    fileSize.textContent = `${formatFileSize(file.size)} • ${getFileIcon(file.name)} Auto-analyzing...`;            // Show file preview section
+            fileSize.textContent = `${formatFileSize(file.size)} • ${getFileIcon(file.name)} Auto-analyzing...`;
+            
+            // 🎭 STAGE LIGHTING - Highlight the dining area
+            // Like turning on a spotlight over their table to show they're being served
             filePreview.classList.add('show');
             
-            // Reset action buttons - hide process button since it's auto-processing
+            // 🎛️ SERVICE SETUP - Prepare the service experience
+            // Like clearing unnecessary items from the table since this is express service
             uploadSuccess.style.display = 'none';
             processBtn.style.display = 'none';
             processBtn.textContent = 'Process File';
             processBtn.disabled = false;
             
-            // Scroll to show the file preview
+            // 🎯 GUIDED ATTENTION - Smoothly direct their focus
+            // Like a gentle "right this way" gesture guiding them to look at their table
             filePreview.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
 
+        /*
+        🏆 HIGH SCHOOL EXPLANATION:
+        This function is like a restaurant manager handling a large party reservation.
+        When a group of people (multiple files) arrives, you can't just seat them
+        anywhere - you need to organize them, give each person a number, and create
+        a system to track their orders and preferences.
+        
+        Think of it like managing a busy restaurant during dinner rush:
+        - Each person gets a unique table number (ID)
+        - Everyone starts with "waiting to order" status (pending)
+        - You create a organized waiting list and seating chart
+        - Then guide the group's attention to where they should look
+        */
         function showMultipleFilePreview(files) {
-            // Update drag drop area appearance
+            // 🏢 BANQUET HALL SETUP - Prepare for group service
+            // Like setting up a large dining area and clearing previous events
             dragDropArea.classList.add('file-selected');
             hideResults();
             
-            // Initialize file queue
+            // 📋 GUEST LIST CREATION - Organize each file with tracking information
+            // Like creating a reservation list where each guest gets a table number and status
             fileQueue = files.map((file, index) => ({
-                id: `file_${Date.now()}_${index}`,
-                file: file,
-                status: 'pending', // pending, processing, completed, error
-                data: null,
-                error: null
+                id: `file_${Date.now()}_${index}`,     // Unique table number (like "Table 5A")
+                file: file,                            // The guest's information
+                status: 'pending',                     // Current service status (pending, processing, completed, error)
+                data: null,                           // Their completed order (results)
+                error: null                           // Any service problems
             }));
             
-            // Hide single file preview, show file queue
+            // 🎭 STAGE TRANSITION - Switch from single-person to group layout
+            // Like converting a small intimate table setup to a large banquet arrangement
             filePreview.classList.remove('show');
             
-            // Create and show file queue UI
+            // 🏗️ BANQUET SETUP - Build the group service interface
+            // Like arranging tables, place cards, and service stations for the event
             createFileQueueUI();
             
-            // Scroll to show the file queue
+            // 🎯 GROUP GUIDANCE - Direct the party's attention to their area
+            // Like a "right this way, your banquet hall is ready" gesture
             document.getElementById('fileQueue').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
 
+        /*
+        🏆 HIGH SCHOOL EXPLANATION:
+        This function is like a restaurant manager designing the layout for a large
+        banquet event. When you have many guests (files) to serve, you need to create
+        an organized system with clear sections:
+        - A welcome area with event information (header)
+        - Service options like "serve everyone" or "clear the hall" (action buttons)
+        - Individual table assignments for each guest (file list)
+        - Areas for displaying each guest's meal results (tabs and content areas)
+        
+        It's like setting up a wedding reception with proper signage, service stations,
+        and areas for each part of the event to run smoothly.
+        */
         function createFileQueueUI() {
+            // 📊 GUEST COUNT - Figure out how many people are waiting for service
+            // Like counting how many people still need to place their orders
             const pendingCount = fileQueue.filter(f => f.status === 'pending').length;
+            
+            // 🏗️ BANQUET HALL BLUEPRINT - Design the complete event layout
+            // Like creating a floor plan with all the necessary areas and stations
             const fileQueueHtml = `
                 <div class="file-queue show" id="fileQueue">
                     <div class="queue-header">
@@ -1888,26 +1958,46 @@ on a document so translation services know how to handle it properly.
                 </div>
             `;
             
-            // Insert after the main upload section
+            // 🏠 VENUE PREPARATION - Set up the banquet hall in the right location
+            // Like finding the right room and clearing out any previous event setup
             const uploadSection = document.querySelector('.upload-section');
             const existingQueue = document.getElementById('fileQueue');
             if (existingQueue) {
-                existingQueue.remove();
+                existingQueue.remove();  // Clear any previous banquet setup
             }
             uploadSection.insertAdjacentHTML('afterend', fileQueueHtml);
         }
 
+        /*
+        🏆 HIGH SCHOOL EXPLANATION:
+        This function is like creating individual place cards or table settings
+        for each guest at a banquet. For every person (file) at the event, you
+        create a personalized card that shows:
+        - Their name and details (file name and size)
+        - Their current service status (waiting, being served, finished, or had problems)
+        - Available actions (like "take order" or "view bill")
+        
+        Think of it like those electronic menus at modern restaurants that show
+        your order status in real-time, with different icons and buttons depending
+        on whether your food is being prepared, ready, or needs attention.
+        */
         function createFileItemHTML(item) {
+            // 🎭 STATUS THEATER - Visual symbols for each service state
+            // Like traffic lights or status boards that instantly communicate what's happening
             const statusIcons = {
-                pending: '⏳',
-                processing: '🔄',
-                completed: '✅',
-                error: '❌'
+                pending: '⏳',      // Waiting in line (like a "Please Wait" sign)
+                processing: '🔄',   // Being served (like a spinning "Preparing Order" indicator)
+                completed: '✅',    // Successfully served (like a "Ready!" notification)
+                error: '❌'         // Service problem (like a "Need Help" alert)
             };
             
+            // 🏷️ NAME TAG CREATION - Format the status text professionally
+            // Like printing name tags that say "Hello, my status is: Processing"
             const statusClass = item.status;
             const statusText = item.status.charAt(0).toUpperCase() + item.status.slice(1);
             
+            // 🃏 PLACE CARD DESIGN - Create the complete table setting
+            // Like designing a fancy place card with the guest's info and service options
             return `
                 <div class="file-item ${statusClass}" id="${item.id}">
                     <div class="file-info-left">
@@ -1926,73 +2016,133 @@ on a document so translation services know how to handle it properly.
             `;
         }
 
+        /*
+        🏆 HIGH SCHOOL EXPLANATION:
+        This function is like a restaurant manager deciding how to handle an order.
+        When someone clicks "Process" they look at the situation and decide:
+        - If there's a group of people (multiple files): "Let's handle this as a banquet order"
+        - If there's just one person (single file): "This is a simple individual order"
+        
+        It's like a smart traffic controller that looks at the situation and directs
+        traffic to the right processing lane - group service or individual service.
+        */
         function processFile() {
+            // 🚦 TRAFFIC CONTROL - Decide which processing lane to use
+            // Like a restaurant host deciding between banquet service or individual table service
             if (selectedFiles.length > 0) {
-                // Process multiple files
+                // 🏢 GROUP BANQUET SERVICE - Handle multiple files together
+                // Like coordinating a large event with many guests
                 processMultipleFiles();
             } else if (selectedFile) {
-                // Process single file
+                // 🍽️ INDIVIDUAL TABLE SERVICE - Handle single file with personal attention
+                // Like serving a single customer at their own table
                 processSingleFile(selectedFile);
             }
         }
 
+        /*
+        🏆 HIGH SCHOOL EXPLANATION:
+        This function is like a dedicated waiter taking care of a single customer's
+        complete dining experience. When someone orders, the waiter:
+        1. Updates the customer that their order is being prepared (show progress)
+        2. Writes down all their preferences on the order slip (create form data)
+        3. Takes the order to the kitchen (send to server)
+        4. Waits for the kitchen to prepare the meal (handle response)
+        5. Brings the finished meal to the customer (display results)
+        6. Handles any problems that come up (error handling)
+        
+        It's like having a personal concierge who takes care of everything from
+        start to finish for one special customer.
+        */
         function processSingleFile(file) {
-            // Show processing state
+            // 📱 ORDER STATUS UPDATE - Let the customer know their order is being prepared
+            // Like updating a digital order board to show "Now Preparing Your Order"
             showProgress();
             
-            // Create form data
+            // 📋 ORDER SLIP PREPARATION - Write down all the customer's preferences
+            // Like a waiter carefully noting "extra hot sauce, no onions, gluten-free"
             const formData = new FormData();
-            formData.append('file', file);
-            formData.append('language', 'auto'); // Always auto-detect
-            formData.append('highlight', document.getElementById('highlight').checked);
-            formData.append('summarize', document.getElementById('summarize').checked);
-            formData.append('tags', document.getElementById('tags').checked);
-            formData.append('max_lines', '1000'); // Default to 1000 lines
+            formData.append('file', file);                    // The main dish (the file to analyze)
+            formData.append('language', 'auto');              // Let the kitchen decide the cooking style
+            formData.append('highlight', document.getElementById('highlight').checked);  // "Make it colorful"
+            formData.append('summarize', document.getElementById('summarize').checked);  // "Give me the highlights"
+            formData.append('tags', document.getElementById('tags').checked);            // "Label the ingredients"
+            formData.append('max_lines', '1000');             // "Don't make it too big" (portion control)
 
-            // Upload and process file
+            // 🚚 ORDER DELIVERY TO KITCHEN - Send the order slip to the cooking staff
+            // Like a waiter taking the order ticket to the kitchen and waiting for the meal
             fetch('/api/v1/upload-log', {
                 method: 'POST',
                 body: formData
             })
             .then(response => {
+                // 🍽️ KITCHEN QUALITY CHECK - Make sure the order was prepared correctly
+                // Like checking if the kitchen successfully made the dish or had problems
                 if (!response.ok) {
                     return response.json().then(err => Promise.reject(err));
                 }
                 return response.json();
             })
             .then(data => {
-                // Store data for live filtering
+                // 💾 MEAL MEMORY - Remember this customer's order for future reference
+                // Like keeping a record of what they ordered in case they want the same thing again
                 lastProcessedData = data;
                 
-                // Show success state
+                // 🎉 SUCCESS CELEBRATION - Show the customer everything went perfectly
+                // Like putting up a "Order Complete!" sign and bringing out the beautifully plated meal
                 uploadSuccess.style.display = 'flex';
                 
-                // Update file size display
+                // 📱 STATUS UPDATE - Update the order board with success message
+                // Like changing the display from "Preparing..." to "Ready to Enjoy!"
                 fileSize.textContent = `${formatFileSize(file.size)} • ${getFileIcon(file.name)} Processed successfully!`;
                 
-                // Display results
+                // 🍽️ MEAL PRESENTATION - Bring the finished dish to the customer
+                // Like a waiter presenting the beautifully prepared meal with a flourish
                 displayResults(data);
             })
             .catch(error => {
+                // 🚨 KITCHEN EMERGENCY - Handle any problems that occurred
+                // Like when the kitchen burns the food or runs out of ingredients
                 console.error('Error:', error);
                 showError(error.detail?.error || 'An error occurred while analyzing the file.');
                 
-                // Reset file size display
+                // 📱 APOLOGY UPDATE - Let the customer know there was a problem
+                // Like updating the order board to "Sorry, there was an issue with your order"
                 fileSize.textContent = `${formatFileSize(file.size)} • ${getFileIcon(file.name)} Analysis failed`;
             })
             .finally(() => {
+                // 🧹 CLEANUP SERVICE - Always tidy up, whether successful or not
+                // Like clearing the "Preparing Order" indicator regardless of outcome
                 hideProgress();
             });
         }
 
+        /*
+        🏆 HIGH SCHOOL EXPLANATION:
+        This function is like a banquet manager coordinating a large event where
+        multiple dishes need to be prepared for many guests. Unlike individual
+        table service, this requires:
+        - Checking that there are actually guests to serve (file count check)
+        - Setting up the kitchen for mass production (processing state)
+        - Coordinating the service team (disable controls during service)
+        - Starting the assembly line process (begin sequential processing)
+        
+        Think of it like managing a wedding reception where you need to serve
+        200 guests - you can't do it one-by-one, you need a coordinated system.
+        */
         function processMultipleFiles() {
+            // 🔍 GUEST COUNT VERIFICATION - Make sure there are actually people to serve
+            // Like double-checking the guest list before starting a banquet
             if (selectedFiles.length === 0) return;
             
-            // Show processing state
-            processBtn.textContent = 'Analyzing...';
-            processBtn.disabled = true;
-            showProgress();
+            // 🏭 MASS PRODUCTION MODE - Set up for large-scale service
+            // Like switching the kitchen from "single order" to "banquet production" mode
+            processBtn.textContent = 'Analyzing...';          // Update the service indicator
+            processBtn.disabled = true;                       // Prevent interruptions during service
+            showProgress();                                   // Show the "Event In Progress" sign
             
+            // 📋 STARTING POSITION - Begin with the first guest
+            // Like starting the banquet service with table #1
             currentFileIndex = 0;
             const allResults = [];
             
@@ -2202,28 +2352,48 @@ on a document so translation services know how to handle it properly.
             progressFill.style.width = '0%';
         }
 
+        /*
+        🏆 HIGH SCHOOL EXPLANATION:
+        This function is like a restaurant server presenting the finished meal
+        to the customer with all their requested customizations. When the kitchen
+        finishes preparing the order, this function:
+        - Opens the curtains to reveal the dining area (show results section)
+        - Checks what the customer requested (summary? colorful? tags?)
+        - Plates the food according to their preferences (format the data)
+        - Presents it beautifully on the table (display in the web page)
+        
+        It's like having a smart waiter who remembers exactly how you like
+        your food presented and automatically adjusts the presentation style.
+        */
         function displayResults(data) {
-            // Show results section
+            // 🎭 STAGE REVEAL - Open the curtains to show the dining area
+            // Like dramatically revealing a beautifully set table after preparation
             resultsSection.style.display = 'block';
             
-            // Apply live filtering based on current toggle states
-            const showSummary = document.getElementById('summarize').checked;
-            const showTags = document.getElementById('tags').checked;
-            const showFormatting = document.getElementById('highlight').checked;
+            // 📋 CUSTOMER PREFERENCE CHECK - Read their customization requests
+            // Like checking the order slip to see "extra sauce, no onions, fancy plating"
+            const showSummary = document.getElementById('summarize').checked;      // "Give me the highlights"
+            const showTags = document.getElementById('tags').checked;             // "Label the ingredients"  
+            const showFormatting = document.getElementById('highlight').checked;  // "Make it colorful and fancy"
             
-            // Display cleaned log with conditional formatting
+            // 🍽️ MEAL PRESENTATION - Plate the food according to customer preferences
+            // Like choosing between elegant fine dining plating vs. simple casual presentation
             if (showFormatting) {
+                // 🎨 FINE DINING PRESENTATION - Colorful, artistic plating with garnishes
+                // Like a fancy restaurant where every dish is a work of art
                 const formattedLog = formatLogOutput(data.cleaned_log);
                 resultsContent.innerHTML = formattedLog;
                 resultsContent.classList.remove('plain-mode');
             } else {
-                // Plain text mode - no fancy formatting, just basic text
+                // 🥪 CASUAL PRESENTATION - Simple, straightforward, no frills
+                // Like a deli sandwich - tasty and functional, but not fancy
                 const plainLog = formatPlainLogOutput(data.cleaned_log);
                 resultsContent.innerHTML = plainLog;
                 resultsContent.classList.add('plain-mode');
             }
             
-            // Display summary conditionally
+            // 📄 MEAL SUMMARY - Provide description if customer wants it
+            // Like a waiter explaining "Today's special features locally sourced ingredients..."
             if (showSummary && data.summary) {
                 summarySection.style.display = 'block';
                 summaryContent.textContent = data.summary;
@@ -2271,26 +2441,49 @@ on a document so translation services know how to handle it properly.
             `;
         }
 
+        /*
+        🏆 HIGH SCHOOL EXPLANATION:
+        This function is like a professional food stylist who makes every dish
+        look amazing for a cooking show or magazine photo. When you have raw
+        text (like plain ingredients), this function transforms it into a
+        beautiful, colorful presentation where:
+        - Each line gets its own "plate" (HTML div)
+        - Different types of messages get different "garnishes" (colors and styles)
+        - Timestamps become elegant "table settings" (special formatting)
+        - Error messages get "warning labels" (red styling)
+        - Success messages get "celebration decorations" (green styling)
+        
+        It's like taking a simple home-cooked meal and presenting it like
+        a five-star restaurant would - same food, but beautiful presentation.
+        */
         function formatLogOutput(logText) {
-            // Split into lines and format each one (ENHANCED MODE)
+            // 📄 RECIPE BREAKDOWN - Separate the ingredients into individual portions
+            // Like cutting a large dish into individual servings for plating
             const lines = logText.split('\n');
+            
+            // 🎨 ARTISTIC PLATING - Style each line like a master chef presenting food
+            // Like carefully arranging each component of a meal on the plate
             const formattedLines = lines.map((line, index) => {
-                if (!line.trim()) return '';
+                if (!line.trim()) return '';  // Skip empty plates
                 
-                // Determine which tags this line relates to
+                // 🏷️ INGREDIENT LABELING - Figure out what category this line belongs to
+                // Like a nutritionist adding tags to identify allergens or dietary info
                 const lineTags = getLineTagMapping(line);
                 const tagDataAttr = lineTags.length > 0 ? `data-tags="${lineTags.join(',')}"` : '';
                 
-                // Color-code different types of messages
+                // 🎯 BASE PRESENTATION - Prepare the basic styling foundation
+                // Like putting the main food item on a clean plate before decoration
                 let formattedLine = escapeHtml(line);
                 
-                // Style timestamps (look for "At HH:MM:SS AM/PM on Mon DD" pattern)
+                // ⏰ ELEGANT TIMESTAMP STYLING - Make time information look sophisticated
+                // Like adding a beautiful clock-shaped garnish to show when the dish was prepared
                 formattedLine = formattedLine.replace(
                     /(At \d{1,2}:\d{2}:\d{2} (?:AM|PM) on \w{3} \d{1,2})/g, 
                     '<span class="timestamp">$1</span>'
                 );
                 
-                // Style different emoji categories with tag data
+                // 🚨 MESSAGE CATEGORY STYLING - Use visual cues like a smart restaurant
+                // Like using different colored plates for different types of dishes
                 if (line.startsWith('❌')) {
                     return `<div class="log-error log-entry" ${tagDataAttr}>${formattedLine}</div>`;
                 } else if (line.startsWith('🔒')) {
@@ -2797,23 +2990,43 @@ on a document so translation services know how to handle it properly.
             return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
         }
 
+        /*
+        🏆 HIGH SCHOOL EXPLANATION:
+        This function is like a smart restaurant server who can instantly
+        change how your meal is presented based on your preferences. When
+        you tap a button (like "make it spicy" or "hold the onions"), this
+        function:
+        1. Checks what you currently prefer (checkbox state)
+        2. Switches to the opposite preference (toggle)
+        3. Updates the button to show your new choice (visual feedback)
+        4. If you already have food, instantly re-plates it with your new preference
+        
+        Think of it like those modern restaurants where you can instantly
+        customize your meal presentation - tap "colorful" and your food
+        gets beautiful garnishes, tap it again and it goes back to simple.
+        */
         function toggleOption(optionId, buttonElement) {
+            // 🔍 PREFERENCE CHECK - See what the customer currently wants
+            // Like checking a customer's order card to see their current preferences
             const checkbox = document.getElementById(optionId);
             const isCurrentlyChecked = checkbox.checked;
             
-            // Toggle the checkbox state
+            // 🔄 PREFERENCE FLIP - Switch to the opposite choice
+            // Like changing "yes please" to "no thanks" or vice versa
             checkbox.checked = !isCurrentlyChecked;
             
-            // Update button appearance
+            // 💡 VISUAL FEEDBACK - Update the button to show the new choice
+            // Like a smart button that lights up when active, dims when inactive
             if (checkbox.checked) {
-                buttonElement.classList.add('active');
+                buttonElement.classList.add('active');      // Light up the button (feature ON)
             } else {
-                buttonElement.classList.remove('active');
+                buttonElement.classList.remove('active');   // Dim the button (feature OFF)
             }
             
-            // Trigger live reprocessing if we have processed data
+            // 🔄 INSTANT RE-PLATING - If there's already food, re-present it with new style
+            // Like instantly changing how your meal looks without cooking it again
             if (lastProcessedData) {
-                liveReprocess();
+                liveReprocess();  // Re-style the existing results with new preferences
             }
         }
     </script>
