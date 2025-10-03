@@ -45,12 +45,6 @@ jobs:
           
           - os: macos-latest
             platform: macos
-            arch: x64
-            executable_name: debuggle
-            archive_format: tar.gz
-            
-          - os: macos-latest
-            platform: macos
             arch: arm64
             executable_name: debuggle
             archive_format: tar.gz
@@ -212,7 +206,6 @@ jobs:
           ### 📦 Downloads Available:
           - **Windows (x64)**: `debuggle-windows-x64.zip`
           - **Linux (x64)**: `debuggle-linux-x64.tar.gz` 
-          - **macOS Intel (x64)**: `debuggle-macos-x64.tar.gz`
           - **macOS Apple Silicon (arm64)**: `debuggle-macos-arm64.tar.gz`
           
           ### ✨ New Features:
