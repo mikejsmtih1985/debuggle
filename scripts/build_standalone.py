@@ -62,6 +62,14 @@ def ensure_pyinstaller():
 def create_spec_file(system, arch):
     """Create PyInstaller spec file for Debuggle"""
     
+    # Convert arch names for PyInstaller on macOS
+    pyinstaller_arch = arch
+    if system == 'macos':
+        if arch == 'x64':
+            pyinstaller_arch = 'x86_64'
+        elif arch == 'arm64':
+            pyinstaller_arch = 'arm64'
+    
     spec_content = f'''# -*- mode: python ; coding: utf-8 -*-
 import os
 from pathlib import Path
@@ -115,7 +123,6 @@ a = Analysis(
         'langdetect',
         'langdetect.detector',
         'multipart',
-        'python_multipart',
         'slowapi',
         # Claude AI integration (optional)
         'anthropic',
@@ -162,7 +169,7 @@ exe = EXE(
     console=True,
     disable_windowed_traceback=False,
     argv_emulation=False,
-    target_arch='{arch}',
+    target_arch='{pyinstaller_arch}',
     codesign_identity=None,
     entitlements_file=None,
     icon=None,  # Add icon path here if you have one
