@@ -22,6 +22,17 @@ pytest==7.4.3
 pytest-asyncio==0.21.1
 httpx==0.25.2
 
+# Search and analytics (Pro tier)
+whoosh==2.7.4
+aiofiles==23.2.1
+
+# Email notifications (Pro tier)
+aiohttp==3.9.1
+aiosmtplib==3.0.1
+
 # Development tools
 black==23.11.0
 flake8==6.1.0
+
+# Testing and coverage
+pytest-cov==4.1.0

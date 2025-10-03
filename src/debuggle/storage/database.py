@@ -43,6 +43,13 @@ from enum import Enum
 logger = logging.getLogger(__name__)
 
 
+class TierLevel(str, Enum):
+    """🎯 DEBUGGLE TIER LEVELS - Feature Access Control"""
+    FREE = "free"           # Basic error analysis, 7-day retention
+    PRO = "pro"             # Advanced retention, search, analytics  
+    ENTERPRISE = "enterprise" # Custom integrations, SSO, compliance
+
+
 class LogSeverity(str, Enum):
     """
     🌡️ ERROR TEMPERATURE SCALE - How Serious Is This Problem?
