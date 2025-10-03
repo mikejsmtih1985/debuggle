@@ -72,7 +72,7 @@ jobs:
     - name: 🧪 Run Quick Tests (Ensure Code Quality)
       run: |
         python -m pytest tests/test_claude_integration.py -v --cov=src/debuggle/integrations/claude --cov-report=term --cov-fail-under=0
-        python -c "import src.debuggle.integrations.claude; print('✅ Claude integration available')"
+        python -c "import src.debuggle.integrations.claude; print('Claude integration available')"
         
     - name: 🔨 Build Executable
       run: |
