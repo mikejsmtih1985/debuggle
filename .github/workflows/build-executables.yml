@@ -82,18 +82,19 @@ jobs:
         TARGET_ARCH: ${{ matrix.arch }}
         
     - name: 📋 Create Release Info
+      shell: bash
       run: |
-        echo "## 🐞 Debuggle Standalone - ${{ matrix.platform }}-${{ matrix.arch }}" > release_notes.md
+        echo "## Debuggle Standalone - ${{ matrix.platform }}-${{ matrix.arch }}" > release_notes.md
         echo "" >> release_notes.md
-        echo "### ✨ Features Included:" >> release_notes.md
-        echo "- 🤖 **Claude AI Integration** - Enhanced error analysis with --claude flag" >> release_notes.md
-        echo "- 🎯 **Smart Error Detection** - AI-powered pattern recognition" >> release_notes.md
-        echo "- 🔍 **Context-Aware Analysis** - Full project context extraction" >> release_notes.md
-        echo "- 🛡️ **Privacy First** - Local processing, optional AI enhancement" >> release_notes.md
-        echo "- 📊 **SQLite Database** - Persistent error tracking and analytics" >> release_notes.md
-        echo "- 🎨 **Rich Terminal Output** - Beautiful, informative error reports" >> release_notes.md
+        echo "### Features Included:" >> release_notes.md
+        echo "- **Claude AI Integration** - Enhanced error analysis with --claude flag" >> release_notes.md
+        echo "- **Smart Error Detection** - AI-powered pattern recognition" >> release_notes.md
+        echo "- **Context-Aware Analysis** - Full project context extraction" >> release_notes.md
+        echo "- **Privacy First** - Local processing, optional AI enhancement" >> release_notes.md
+        echo "- **SQLite Database** - Persistent error tracking and analytics" >> release_notes.md
+        echo "- **Rich Terminal Output** - Beautiful, informative error reports" >> release_notes.md
         echo "" >> release_notes.md
-        echo "### 🚀 Quick Start:" >> release_notes.md
+        echo "### Quick Start:" >> release_notes.md
         echo '```bash' >> release_notes.md
         if [ "${{ matrix.platform }}" = "windows" ]; then
           echo "# Extract the .zip file" >> release_notes.md
@@ -104,7 +105,7 @@ jobs:
         fi
         echo '```' >> release_notes.md
         echo "" >> release_notes.md
-        echo "### 🤖 Claude AI Enhancement:" >> release_notes.md
+        echo "### Claude AI Enhancement:" >> release_notes.md
         echo '```bash' >> release_notes.md
         echo "# Install Claude support (optional)" >> release_notes.md
         echo "pip install anthropic" >> release_notes.md
@@ -114,8 +115,8 @@ jobs:
         echo "python your_app.py 2>&1 | ./debuggle --claude" >> release_notes.md
         echo '```' >> release_notes.md
         echo "" >> release_notes.md
-        echo "📅 **Built:** $(date)" >> release_notes.md
-        echo "🔗 **Source:** $(git rev-parse --short HEAD)" >> release_notes.md
+        echo "**Built:** $(date)" >> release_notes.md
+        echo "**Source:** $(git rev-parse --short HEAD)" >> release_notes.md
         
     - name: 📁 Prepare Distribution
       run: |
@@ -199,29 +200,29 @@ jobs:
         tag_name: ${{ github.event.inputs.version_tag || github.event.release.tag_name }}
         name: "Debuggle ${{ github.event.inputs.version_tag || github.event.release.tag_name }} - With Claude AI"
         body: |
-          ## 🤖 Debuggle with Claude AI Integration
+          ## Debuggle with Claude AI Integration
           
           This release includes the latest Claude AI integration for enhanced error analysis!
           
-          ### 📦 Downloads Available:
+          ### Downloads Available:
           - **Windows (x64)**: `debuggle-windows-x64.zip`
           - **Linux (x64)**: `debuggle-linux-x64.tar.gz` 
           - **macOS Apple Silicon (arm64)**: `debuggle-macos-arm64.tar.gz`
           
-          ### ✨ New Features:
-          - 🤖 **Claude AI Integration** - Optional AI-enhanced error analysis
-          - 🎯 **Smart Context Extraction** - Understands your project structure
-          - 🛡️ **Privacy First** - Works great offline, AI is optional
-          - 📊 **Usage Tracking** - Transparent Claude API usage monitoring
-          - 🔧 **Graceful Degradation** - Never breaks if AI unavailable
+          ### New Features:
+          - **Claude AI Integration** - Optional AI-enhanced error analysis
+          - **Smart Context Extraction** - Understands your project structure
+          - **Privacy First** - Works great offline, AI is optional
+          - **Usage Tracking** - Transparent Claude API usage monitoring
+          - **Graceful Degradation** - Never breaks if AI unavailable
           
-          ### 🚀 Quick Start:
+          ### Quick Start:
           1. Download the package for your platform
           2. Extract the archive
           3. Run the launcher script (`start_debuggle.bat` or `start_debuggle.sh`)
           4. Open http://localhost:8000 in your browser
           
-          ### 🤖 Enable Claude AI (Optional):
+          ### Enable Claude AI (Optional):
           ```bash
           pip install anthropic
           export ANTHROPIC_API_KEY=your_key
