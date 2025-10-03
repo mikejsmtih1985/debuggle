@@ -1,53 +1,123 @@
 #!/usr/bin/env python3
 """
-Debuggle CLI - The command-line version of Debuggle (for terminal lovers!)
+🔧 DEBUGGLE SWISS ARMY KNIFE - The Professional's Portable Debugging Toolkit
+============================================================================
 
-Think of this as Debuggle's "text mode" - instead of clicking buttons in a web browser,
-you type commands in your terminal. This is especially useful for:
-- Quick error analysis without opening a browser
-- Integrating Debuggle into scripts and automated workflows
-- Piping error output directly from your programs (no copy/paste!)
+This CLI (Command Line Interface) tool is like having a Swiss Army knife for
+debugging - a compact, powerful, multi-tool that fits in your pocket and
+handles most common debugging tasks without needing a full workshop setup.
 
-This shows why Debuggle is better than copying errors to ChatGPT:
-- No copy/paste required - just pipe your errors directly: `python app.py 2>&1 | debuggle`
-- Automatic context extraction - Debuggle sees your project files and structure
-- Privacy-preserving - your code never leaves your computer
-- Integrates with development workflow - works with any terminal or script
+🏆 HIGH SCHOOL EXPLANATION:
+Think of this like the difference between:
+- 🏪 FULL STORE EXPERIENCE: Going to a big department store (web interface)
+  - Beautiful displays, helpful staff, comfortable environment
+  - Great for browsing and complex tasks
+  - Requires time to travel there and navigate
 
-Usage examples:
-    debuggle error.log                    # Analyze a saved log file
-    python app.py 2>&1 | debuggle         # Pipe errors directly (the magic way!)
-    debuggle --watch server.log           # Watch a log file for new errors
+- 🔧 PORTABLE TOOLKIT: Using a Swiss Army knife (this CLI tool)
+  - Instant access, no setup required
+  - Perfect for quick fixes and emergencies
+  - Works anywhere, anytime, in any environment
+  - Integrates seamlessly with your existing workflow
+
+🎯 WHY DEBUGGLE CLI BEATS COPY/PASTING TO CHATGPT:
+
+🚫 OLD WORKFLOW (Copy/Paste to ChatGPT):
+   1. Error occurs → 2. Copy error text → 3. Open browser → 4. Paste to ChatGPT 
+   5. Wait for response → 6. Copy suggestion → 7. Go back to code
+
+✅ NEW WORKFLOW (Debuggle CLI):
+   1. Error occurs → 2. Pipe directly: `python app.py 2>&1 | debuggle` → 3. Get instant analysis
+
+🔥 PROFESSIONAL ADVANTAGES:
+- 🚀 ZERO FRICTION: No copy/paste, no browser switching, no context loss
+- 🔐 PRIVACY FORTRESS: Your code never leaves your computer - enterprise safe
+- 🧠 CONTEXT AWARENESS: Sees your entire project structure and files
+- ⚡ WORKFLOW INTEGRATION: Works with any terminal, script, or automation
+- 🎯 PRECISION ANALYSIS: Understands your specific codebase and patterns
+
+🛠️ SWISS ARMY KNIFE TOOLS:
+    debuggle error.log                    # 🔍 File analyzer tool
+    python app.py 2>&1 | debuggle         # ⚡ Live error interceptor (the magic!)
+    debuggle --watch server.log           # 👁️ Continuous monitoring tool
+    debuggle --project /path/to/code      # 🗂️ Project context analyzer
+    
+EDUCATIONAL METAPHORS USED IN THIS FILE:
+🔧 Swiss Army Knife - Multi-purpose tool with many specialized functions
+👨‍🔧 Professional Toolkit - Organized collection of specialized instruments  
+⚡ Emergency Response - Quick response tools for urgent situations
+🔍 Detective Kit - Investigation tools for analyzing evidence
+📡 Communication Hub - Connecting different systems and workflows
 """
 
-# Import the tools we need - like getting the right ingredients for cooking
-import argparse     # Handles command-line arguments (--help, --version, etc.)
-import sys          # System utilities (reading from stdin, exit codes, etc.)
-import os           # Operating system tools (file paths, directories, etc.)
-from pathlib import Path        # Modern way to handle file and directory paths
-from typing import Optional     # Type hints to make code clearer (Optional = might be None)
+#
+# 🧰 TOOLKIT INVENTORY - Essential instruments for our debugging Swiss Army knife
+# ===============================================================================
+#
+# Like a well-organized professional's toolkit, we need specific instruments
+# for different aspects of command-line debugging and error analysis.
+#
+import argparse     # 🎛️ Command interface controller (handles --help, --version, etc.)
+import sys          # 🔧 System integration tools (stdin/stdout pipes, exit codes)
+import os           # 🗂️ File system navigator (paths, directories, file operations)
+from pathlib import Path        # 🗺️ Modern GPS for file and directory navigation
+from typing import Optional     # 📋 Code clarity enhancer (documents what might be None)
 
-# Tell Python where to find our Debuggle modules
-# This is like giving directions: "The Debuggle tools are in the folder above this one"
+#
+# 📍 TOOLKIT LOCATION SETUP - Connecting to our main debugging arsenal
+# ====================================================================
+#
+# This is like telling our Swiss Army knife where to find the main toolbox
+# so it can access all the specialized debugging instruments and analysis engines.
+#
 import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
-# Import the actual Debuggle analysis tools - like getting the right tools from a toolbox
-from src.debuggle.core.processor import LogProcessor    # The main error analysis engine
-from src.debuggle.core.context import ContextExtractor  # Extracts context from your project
+#
+# 🔬 SPECIALIZED ANALYSIS INSTRUMENTS - The core debugging engines
+# ================================================================
+#
+# These are like importing the high-precision instruments from our main
+# laboratory - the sophisticated analysis engines that do the actual
+# error investigation and context extraction work.
+#
+from src.debuggle.core.processor import LogProcessor    # 🧠 Master error analysis engine
+from src.debuggle.core.context import ContextExtractor  # 🔍 Project context detective
 
 
 def analyze_error_from_file(log_file: str, project_root: Optional[str] = None):
-    """Analyze error from log file with full context."""
+    """
+    🔍 FILE FORENSICS ANALYZER - Professional error investigation from saved evidence
+    
+    This function is like a crime scene investigator who can analyze evidence
+    (log files) to reconstruct what happened and provide expert analysis
+    of the situation, complete with context and recommendations.
+    
+    🏆 HIGH SCHOOL EXPLANATION:
+    Think of this like being a detective investigating a case:
+    1. 📂 Open evidence file (log file) and read all the details
+    2. 🗂️ Establish crime scene location (project directory context)
+    3. 🔬 Deploy forensic analysis tools (LogProcessor)
+    4. 📊 Generate comprehensive investigation report
+    5. 💡 Provide actionable recommendations for resolution
+    
+    Args:
+        log_file: Path to the evidence file (error log) to analyze
+        project_root: The "crime scene" directory (defaults to current location)
+    """
     try:
+        # 📂 EVIDENCE COLLECTION - Reading the case file
         with open(log_file, 'r', encoding='utf-8') as f:
             log_content = f.read()
         
+        # 🗺️ CRIME SCENE ESTABLISHMENT - Setting investigation boundaries  
         if not project_root:
-            project_root = os.getcwd()
+            project_root = os.getcwd()  # Use current directory as investigation zone
         
+        # 🔬 FORENSIC LAB SETUP - Initialize analysis instruments
         processor = LogProcessor()
         
+        # 📢 INVESTIGATION ANNOUNCEMENT - Professional toolkit activation
         print("🚀 Debuggle CLI - Better than copy/pasting into ChatGPT!")
         print("=" * 60)
         

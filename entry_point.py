@@ -1,67 +1,143 @@
 #!/usr/bin/env python3
 """
-Debuggle Entry Point - The main door into the Debuggle application
+🚉 DEBUGGLE CENTRAL STATION - The Main Transportation Hub
+========================================================
 
-Think of this file like the front door of a building - it's where everyone enters
-and it decides which room (feature) they should go to.
+This entry_point.py file is like the main terminal at a major airport or train station -
+it's the central hub where all passengers (users) arrive and get directed to their
+correct destination (web interface or command-line tools).
 
-This file provides two main ways to use Debuggle:
-1. CLI mode: Type commands in terminal to analyze error logs directly
-2. Server mode: Open a web browser to use Debuggle with a nice interface
+🏆 HIGH SCHOOL EXPLANATION:
+Think of this like the main information desk at a large airport:
+- Passengers arrive with different needs (analyze files, start server, get help)
+- The information agent (this script) asks what they want to do
+- Based on their answer, they get directed to the right terminal/gate
+- Some want the full-service experience (web browser interface)
+- Others prefer the express route (command-line analysis)
 
-Default behavior: If you just run "python entry_point.py", it starts a web server
-that you can visit at http://localhost:8000 in your browser
+This file provides multiple transportation methods to reach your debugging destination:
 
-Usage examples:
-    python entry_point.py                    # Start web server (easiest way)
-    python entry_point.py serve --port 8080  # Start server on different port
-    python entry_point.py analyze file.log   # Analyze a log file in terminal
+🌐 LUXURY EXPRESS SERVICE (Web Interface):
+    python entry_point.py                    # First-class web experience
+    python entry_point.py serve --port 8080  # Custom departure gate
+
+⚡ RAPID TRANSIT (Command Line):
+    python entry_point.py analyze file.log   # Direct express route to results
+
+🆘 INFORMATION SERVICES:
+    python entry_point.py --help            # Station directory and schedules
+
+EDUCATIONAL METAPHORS USED IN THIS FILE:
+🚉 Transportation Hub - Central station directing traffic to destinations
+🎫 Ticket Counter - Command-line argument processing and validation
+🚌 Route Planning - Deciding which service (web/CLI) to launch
+📢 Station Announcements - User feedback and status messages
+🧳 Baggage Handling - File processing and path management
 """
 
-# Import the tools we need - like getting ingredients before cooking
-import sys        # System tools (like command line arguments)
-import os         # Operating system tools (like checking if files exist)
-import argparse   # Command line argument parser (handles --port, --help, etc.)
-from pathlib import Path  # Modern way to work with file paths
+#
+# 🧳 STATION EQUIPMENT AND SUPPLIES - Essential tools for running our transportation hub
+# ====================================================================================
+#
+# Like a well-equipped train station needs ticketing systems, announcement boards,
+# and navigation tools, our entry point needs these Python modules to operate.
+#
+import sys        # 🎛️ System control panel (command line arguments, Python paths)
+import os         # 🗂️ File system navigator (checking files, directories, permissions)
+import argparse   # 🎫 Ticket booth system (processes user commands and options)
+from pathlib import Path  # 🗺️ Modern GPS navigation for file paths and directories
 
-# IMPORTANT: Tell Python where to find our Debuggle code
-# This is like telling someone "the kitchen is down the hall" - we're giving
-# directions to Python so it knows where to find our Debuggle modules
-current_dir = Path(__file__).parent.absolute()  # Get the folder this file is in
-sys.path.insert(0, str(current_dir))  # Add it to Python's search path
+#
+# 📍 STATION DIRECTORY SETUP - Telling Python where to find our services
+# ======================================================================
+#
+# This is like posting clear directional signs throughout the station so
+# passengers (and Python) can find the right departments and services.
+# Without these directions, Python wouldn't know where our Debuggle
+# modules are located.
+#
+# 🏆 HIGH SCHOOL EXPLANATION:
+# Think of this like setting up GPS navigation in a car:
+# 1. Figure out where we are now (current_dir = where this file lives)
+# 2. Add our location to the "places Python knows about" (sys.path)
+# 3. Now Python can find and import our custom Debuggle modules
+#
+current_dir = Path(__file__).parent.absolute()  # 📍 Determine our station's location
+sys.path.insert(0, str(current_dir))           # 🗺️ Add to Python's navigation system
 
 def main():
     """
-    The main function - like the receptionist at a hotel front desk
+    🎫 CENTRAL DISPATCH CENTER - The main traffic controller for all Debuggle services
     
-    This function figures out what the user wants to do based on what they typed
-    in the command line, then directs them to the right place (serve or analyze).
+    This function is like the master control room at a major transportation hub
+    that coordinates all incoming requests and routes them to the appropriate
+    service departments based on what passengers (users) need.
+    
+    🏆 HIGH SCHOOL EXPLANATION:
+    Think of this like the main operator at a large company who answers the phone:
+    - Customer calls and says what they want
+    - Operator asks clarifying questions if needed  
+    - Based on the request, transfers them to the right department
+    - Web interface department: "I want the full graphical experience"
+    - Command-line department: "Just analyze this file quickly"
+    - Help desk: "I'm not sure what I can do"
+    
+    The function processes command-line arguments (what the user typed) and
+    routes them to the correct service handler.
     """
-    # Create an argument parser - think of this like a smart assistant that
-    # understands what users type after "python entry_point.py"
-    # For example: "python entry_point.py serve --port 8080"
+    
+    # 🎫 SMART TICKETING SYSTEM - Understanding what users want
+    # ========================================================
+    #
+    # This argument parser is like having an intelligent ticket machine that
+    # can understand different requests and provide appropriate options.
+    # It handles complex commands like "python entry_point.py serve --port 8080"
+    #
     parser = argparse.ArgumentParser(
         description="🐞 Debuggle - Intelligent Log Analysis",
-        formatter_class=argparse.RawDescriptionHelpFormatter,  # Keeps our formatting nice
+        formatter_class=argparse.RawDescriptionHelpFormatter,  # 📋 Preserve formatting for help text
         epilog="""
-Examples:
-  %(prog)s serve                    # Start web server (default)
-  %(prog)s serve --port 8080       # Start on custom port
-  %(prog)s analyze mylog.txt       # Analyze file via CLI
-  %(prog)s --help                  # Show this help
+🚀 TRANSPORTATION OPTIONS:
+
+  %(prog)s serve                    # 🌐 Launch luxury web interface (most popular)
+  %(prog)s serve --port 8080       # 🚪 Custom departure gate (different port)
+  %(prog)s analyze mylog.txt       # ⚡ Express command-line service  
+  %(prog)s --help                  # 📚 Station information and schedules
         """
     )
     
-    # Create subparsers - these handle different "commands" like "serve" and "analyze"
-    # Think of this like having different departments in a store (electronics, clothing, etc.)
-    subparsers = parser.add_subparsers(dest='command', help='Available commands')
+    # 🏢 DEPARTMENT DIRECTORY - Setting up specialized service counters
+    # ================================================================
+    #
+    # Subparsers are like having different service counters in a large facility:
+    # - Counter #1: Web Interface Services ("serve" command)
+    # - Counter #2: Express Analysis Services ("analyze" command)  
+    # - Counter #3: Information Services ("help" command)
+    #
+    # Each counter has its own specialists who understand specific types of requests.
+    #
+    subparsers = parser.add_subparsers(dest='command', help='Available service departments')
     
-    # Set up the "serve" command (starts the web server)
-    # This is like setting up the "web interface department"
-    serve_parser = subparsers.add_parser('serve', help='Start web server')
-    serve_parser.add_argument('--host', default='0.0.0.0', help='Host to bind to (0.0.0.0 means any computer can connect)')
-    serve_parser.add_argument('--port', type=int, default=8000, help='Port number (like apartment number for network connections)')
-    serve_parser.add_argument('--reload', action='store_true', help='Restart server when code changes (useful for development)')
+    # 🌐 WEB INTERFACE SERVICE COUNTER - Full-featured graphical experience
+    # ====================================================================
+    #
+    # This sets up the "luxury service" counter where users can request
+    # the full web interface experience with all visual features and
+    # interactive capabilities.
+    #
+    serve_parser = subparsers.add_parser('serve', help='🌐 Start web interface server')
+    
+    # 🏠 HOST CONFIGURATION - Which address to broadcast from
+    serve_parser.add_argument('--host', default='0.0.0.0', 
+                             help='🌍 Network address (0.0.0.0 = accept connections from anywhere)')
+    
+    # 🚪 PORT CONFIGURATION - Which "doorway" to use for connections  
+    serve_parser.add_argument('--port', type=int, default=8000,
+                             help='🔢 Network port number (like apartment number for internet connections)')
+    
+    # 🔄 DEVELOPMENT MODE - Auto-restart when files change
+    serve_parser.add_argument('--reload', action='store_true',
+                             help='🔧 Development mode (restart when code changes - like hot reload)')
     
     # Set up the "analyze" command (command-line analysis)
     # This is like setting up the "quick service department" for direct analysis
