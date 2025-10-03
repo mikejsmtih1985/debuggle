@@ -26,6 +26,15 @@
 
 ---
 
+## 📋 Prerequisites
+
+- **Python 3.8+** (3.12+ recommended)
+- **Node.js 18.19+** (for VS Code extension)
+- **Git** (for project context analysis)
+- **VS Code** (for real-time integration)
+
+> **Note**: Java is optional but recommended for multi-language project analysis
+
 ## ⚡ Quick Start (30 seconds to wow)
 
 ```bash

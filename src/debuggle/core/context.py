@@ -423,10 +423,14 @@ class ContextExtractor:
             if result.returncode == 0:
                 context.node_version = result.stdout.strip()
             
-            # Get Java version
-            result = subprocess.run(['java', '-version'], capture_output=True, text=True, timeout=5)
-            if result.returncode == 0:
-                context.java_version = result.stderr.split('\n')[0] if result.stderr else result.stdout.split('\n')[0]
+            # Get Java version (if available)
+            try:
+                result = subprocess.run(['java', '-version'], capture_output=True, text=True, timeout=5)
+                if result.returncode == 0:
+                    context.java_version = result.stderr.split('\n')[0] if result.stderr else result.stdout.split('\n')[0]
+            except FileNotFoundError:
+                # Java not installed - this is optional, so continue gracefully
+                context.java_version = None
             
             # Get relevant environment variables
             env_vars_of_interest = ['VIRTUAL_ENV', 'NODE_ENV', 'PYTHONPATH', 'PATH']

@@ -1,0 +1,610 @@
+"""
+🔍 COMPREHENSIVE CORE CONTEXT TESTS  
+
+Following Debuggle's educational philosophy: Think of context extraction as 
+being a "forensic investigator" who examines the crime scene to understand
+what happened before the error occurred.
+
+Like a forensic investigator who:
+- 📁 Maps the scene (understands project structure)
+- 🧩 Gathers evidence (extracts relevant code context)  
+- 🔗 Connects relationships (understands dependencies)
+- 📊 Builds timeline (traces execution flow)
+
+TARGET: Boost core/context.py from 14% → 75% coverage
+FOCUS: Real project structures and context scenarios users encounter
+"""
+
+import pytest
+import tempfile
+import os
+from pathlib import Path
+from unittest.mock import Mock, patch, mock_open
+import json
+
+from src.debuggle.core.context import (
+    ContextExtractor,
+    ProjectContext, 
+    FileContext,
+    FunctionContext,
+    VariableContext
+)
+
+
+class TestContextExtractorInitialization:
+    """Test context extractor setup - setting up the forensic lab"""
+    
+    def test_context_extractor_creates_successfully(self):
+        """Basic context extractor creation"""
+        extractor = ContextExtractor()
+        assert extractor is not None
+        assert hasattr(extractor, 'extract_context')
+    
+    def test_context_extractor_with_project_path(self):
+        """Context extractor with specific project path"""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            extractor = ContextExtractor(project_path=temp_dir)
+            assert extractor.project_path == Path(temp_dir)
+    
+    def test_context_extractor_detects_project_type(self):
+        """Should detect different project types"""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            # Create Python project markers
+            (Path(temp_dir) / "requirements.txt").touch()
+            (Path(temp_dir) / "setup.py").touch()
+            
+            extractor = ContextExtractor(project_path=temp_dir)
+            project_type = extractor.detect_project_type()
+            
+            assert "python" in project_type.lower()
+
+
+class TestProjectStructureAnalysis:
+    """Test project structure analysis - mapping the crime scene"""
+    
+    @pytest.fixture
+    def temp_project(self):
+        """Create a temporary project structure for testing"""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            project_path = Path(temp_dir)
+            
+            # Create Python project structure
+            src_dir = project_path / "src" / "myapp"
+            src_dir.mkdir(parents=True)
+            
+            (src_dir / "__init__.py").write_text("")
+            (src_dir / "main.py").write_text('''
+def main():
+    """Main application entry point"""
+    user_data = get_user_data()
+    process_data(user_data)
+
+def get_user_data():
+    """Fetch user data from database"""
+    return {"id": 1, "name": "John"}
+
+def process_data(data):
+    """Process user data"""
+    print(f"Processing {data['name']}")
+''')
+            
+            (src_dir / "utils.py").write_text('''
+def helper_function(value):
+    """Helper utility function"""
+    return value.upper()
+
+class DataProcessor:
+    """Data processing class"""
+    def __init__(self):
+        self.cache = {}
+    
+    def process(self, data):
+        """Process data with caching"""
+        if data in self.cache:
+            return self.cache[data]
+        result = self._internal_process(data)
+        self.cache[data] = result
+        return result
+    
+    def _internal_process(self, data):
+        """Internal processing logic"""
+        return data.strip().lower()
+''')
+            
+            # Create requirements.txt
+            (project_path / "requirements.txt").write_text("requests==2.28.0\nflask==2.0.1\n")
+            
+            # Create test directory
+            tests_dir = project_path / "tests"
+            tests_dir.mkdir()
+            (tests_dir / "test_main.py").write_text("# Test file")
+            
+            yield project_path
+    
+    def test_extract_project_structure(self, temp_project):
+        """Test extraction of complete project structure"""
+        extractor = ContextExtractor(project_path=temp_project)
+        
+        project_context = extractor.extract_project_context()
+        
+        assert isinstance(project_context, ProjectContext)
+        assert project_context.project_type == "python"
+        assert len(project_context.source_files) > 0
+        assert any("main.py" in str(f) for f in project_context.source_files)
+        assert len(project_context.dependencies) > 0
+        assert "requests" in project_context.dependencies
+    
+    def test_extract_file_context(self, temp_project):
+        """Test extraction of specific file context"""
+        extractor = ContextExtractor(project_path=temp_project)
+        main_file = temp_project / "src" / "myapp" / "main.py"
+        
+        file_context = extractor.extract_file_context(str(main_file))
+        
+        assert isinstance(file_context, FileContext)
+        assert file_context.file_path == str(main_file)
+        assert len(file_context.functions) >= 3  # main, get_user_data, process_data
+        assert any(f.name == "main" for f in file_context.functions)
+        assert any(f.name == "get_user_data" for f in file_context.functions)
+    
+    def test_extract_function_context(self, temp_project):
+        """Test extraction of specific function context"""
+        extractor = ContextExtractor(project_path=temp_project)
+        main_file = temp_project / "src" / "myapp" / "main.py"
+        
+        function_context = extractor.extract_function_context(str(main_file), "process_data")
+        
+        assert isinstance(function_context, FunctionContext)
+        assert function_context.function_name == "process_data"
+        assert "data" in function_context.parameters
+        assert len(function_context.local_variables) > 0
+    
+    def test_extract_class_context(self, temp_project):
+        """Test extraction of class context"""
+        extractor = ContextExtractor(project_path=temp_project) 
+        utils_file = temp_project / "src" / "myapp" / "utils.py"
+        
+        class_context = extractor.extract_class_context(str(utils_file), "DataProcessor")
+        
+        assert class_context.class_name == "DataProcessor"
+        assert len(class_context.methods) >= 3  # __init__, process, _internal_process
+        assert any(m.name == "process" for m in class_context.methods)
+        assert "cache" in class_context.instance_variables
+
+
+class TestCodeAnalysisAndParsing:
+    """Test code parsing and analysis capabilities"""
+    
+    @pytest.fixture
+    def extractor(self):
+        return ContextExtractor()
+    
+    def test_parse_python_file(self, extractor):
+        """Test parsing of Python file with AST"""
+        python_code = '''
+import requests
+from datetime import datetime
+
+class UserManager:
+    """Manages user operations"""
+    
+    def __init__(self, api_url):
+        self.api_url = api_url
+        self.session = requests.Session()
+    
+    def fetch_user(self, user_id):
+        """Fetch user by ID"""
+        url = f"{self.api_url}/users/{user_id}"
+        response = self.session.get(url)
+        if response.status_code == 200:
+            return response.json()
+        return None
+
+def process_users(user_ids):
+    """Process multiple users"""
+    manager = UserManager("https://api.example.com")
+    results = []
+    for user_id in user_ids:
+        user = manager.fetch_user(user_id)
+        if user:
+            results.append(user)
+    return results
+'''
+        
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False) as f:
+            f.write(python_code)
+            f.flush()
+            
+            try:
+                file_context = extractor.extract_file_context(f.name)
+                
+                # Verify imports are detected
+                assert "requests" in file_context.imports
+                assert "datetime" in file_context.imports
+                
+                # Verify classes are detected
+                assert len(file_context.classes) == 1
+                assert file_context.classes[0].name == "UserManager"
+                
+                # Verify functions are detected
+                function_names = [f.name for f in file_context.functions]
+                assert "process_users" in function_names
+                
+                # Verify class methods are detected
+                user_manager_class = file_context.classes[0]
+                method_names = [m.name for m in user_manager_class.methods]
+                assert "__init__" in method_names
+                assert "fetch_user" in method_names
+                
+            finally:
+                os.unlink(f.name)
+    
+    def test_parse_javascript_file(self, extractor):
+        """Test parsing of JavaScript file"""
+        js_code = '''
+const express = require('express');
+const { DatabaseManager } = require('./database');
+
+class UserController {
+    constructor() {
+        this.db = new DatabaseManager();
+    }
+    
+    async getUser(req, res) {
+        try {
+            const userId = req.params.id;
+            const user = await this.db.findUser(userId);
+            res.json(user);
+        } catch (error) {
+            res.status(500).json({ error: error.message });
+        }
+    }
+    
+    async createUser(req, res) {
+        const userData = req.body;
+        const newUser = await this.db.createUser(userData);
+        res.status(201).json(newUser);
+    }
+}
+
+module.exports = UserController;
+'''
+        
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.js', delete=False) as f:
+            f.write(js_code)
+            f.flush()
+            
+            try:
+                file_context = extractor.extract_file_context(f.name)
+                
+                # Should detect JavaScript context
+                assert file_context.language == "javascript"
+                assert len(file_context.classes) >= 1
+                
+            finally:
+                os.unlink(f.name)
+
+
+class TestDependencyAnalysis:
+    """Test dependency and import analysis"""
+    
+    @pytest.fixture  
+    def extractor(self):
+        return ContextExtractor()
+    
+    def test_analyze_python_dependencies(self, extractor):
+        """Test analysis of Python dependencies"""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            project_path = Path(temp_dir)
+            
+            # Create requirements.txt
+            requirements = project_path / "requirements.txt"
+            requirements.write_text('''
+requests==2.28.0
+flask==2.0.1
+pandas>=1.3.0
+numpy
+pytest==7.0.0  # development dependency
+''')
+            
+            # Create Python file with imports
+            main_py = project_path / "main.py"
+            main_py.write_text('''
+import os
+import sys
+import requests
+import pandas as pd
+from flask import Flask, request
+from mymodule import helper_function
+''')
+            
+            extractor.project_path = project_path
+            dependencies = extractor.analyze_dependencies()
+            
+            # Should detect external dependencies
+            assert "requests" in dependencies["external"]
+            assert "flask" in dependencies["external"] 
+            assert "pandas" in dependencies["external"]
+            
+            # Should detect standard library imports
+            assert "os" in dependencies["stdlib"]
+            assert "sys" in dependencies["stdlib"]
+            
+            # Should detect local imports
+            assert "mymodule" in dependencies["local"]
+    
+    def test_analyze_package_json_dependencies(self, extractor):
+        """Test analysis of Node.js package.json dependencies"""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            project_path = Path(temp_dir)
+            
+            # Create package.json
+            package_json = project_path / "package.json"
+            package_json.write_text(json.dumps({
+                "name": "test-app",
+                "dependencies": {
+                    "express": "^4.18.0",
+                    "lodash": "^4.17.21",
+                    "axios": "^0.27.0"
+                },
+                "devDependencies": {
+                    "jest": "^28.0.0",
+                    "eslint": "^8.0.0"
+                }
+            }))
+            
+            extractor.project_path = project_path
+            dependencies = extractor.analyze_dependencies()
+            
+            assert "express" in dependencies["dependencies"]
+            assert "jest" in dependencies["devDependencies"]
+
+
+class TestVariableAndScopeAnalysis:
+    """Test variable scope and usage analysis"""
+    
+    @pytest.fixture
+    def extractor(self):
+        return ContextExtractor()
+    
+    def test_analyze_variable_scope(self, extractor):
+        """Test analysis of variable scope and usage"""
+        python_code = '''
+global_var = "global"
+
+def outer_function():
+    outer_var = "outer"
+    
+    def inner_function():
+        inner_var = "inner"
+        return global_var + outer_var + inner_var
+    
+    return inner_function()
+
+class MyClass:
+    class_var = "class"
+    
+    def __init__(self):
+        self.instance_var = "instance"
+    
+    def method(self):
+        local_var = "local"
+        return self.instance_var + local_var
+'''
+        
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False) as f:
+            f.write(python_code)
+            f.flush()
+            
+            try:
+                file_context = extractor.extract_file_context(f.name)
+                
+                # Should detect global variables
+                assert "global_var" in file_context.global_variables
+                
+                # Should detect function-level variables
+                outer_func = next(f for f in file_context.functions if f.name == "outer_function")
+                assert "outer_var" in outer_func.local_variables
+                
+                # Should detect class variables
+                my_class = next(c for c in file_context.classes if c.name == "MyClass")
+                assert "class_var" in my_class.class_variables
+                assert "instance_var" in my_class.instance_variables
+                
+            finally:
+                os.unlink(f.name)
+    
+    def test_trace_variable_usage(self, extractor):
+        """Test tracing variable usage and modifications"""
+        python_code = '''
+def process_data(input_data):
+    # Variable gets modified multiple times
+    result = input_data
+    result = result.strip()
+    result = result.lower()
+    result = result.replace(" ", "_")
+    
+    # Variable used in conditions
+    if result:
+        final_result = f"processed_{result}"
+    else:
+        final_result = "empty"
+    
+    return final_result
+'''
+        
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False) as f:
+            f.write(python_code)
+            f.flush()
+            
+            try:
+                function_context = extractor.extract_function_context(f.name, "process_data")
+                
+                # Should trace variable modifications
+                assert "result" in function_context.local_variables
+                assert "final_result" in function_context.local_variables
+                assert "input_data" in function_context.parameters
+                
+            finally:
+                os.unlink(f.name)
+
+
+class TestContextIntegrationWithErrors:
+    """Test context extraction in relation to specific errors"""
+    
+    @pytest.fixture
+    def extractor(self):
+        return ContextExtractor()
+    
+    def test_context_for_name_error(self, extractor):
+        """Test context extraction for NameError scenarios"""
+        error_code = '''
+def buggy_function():
+    data = fetch_data()  # This function doesn't exist
+    result = process_data(data)  # This might exist
+    return result
+
+def existing_function():
+    return "I exist"
+'''
+        
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False) as f:
+            f.write(error_code)
+            f.flush()
+            
+            try:
+                # Simulate NameError context extraction
+                context = extractor.extract_error_context(
+                    f.name, 
+                    error_type="NameError",
+                    error_line=2,
+                    error_message="name 'fetch_data' is not defined"
+                )
+                
+                assert context.error_location.line_number == 2
+                assert "fetch_data" in context.undefined_names
+                assert "existing_function" in context.available_functions
+                
+            finally:
+                os.unlink(f.name)
+    
+    def test_context_for_attribute_error(self, extractor):
+        """Test context extraction for AttributeError scenarios"""
+        error_code = '''
+class DataManager:
+    def __init__(self):
+        self.data = []
+    
+    def process(self):
+        return self.data.process()  # list doesn't have process method
+
+def use_manager():
+    manager = DataManager()
+    return manager.process()
+'''
+        
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False) as f:
+            f.write(error_code)
+            f.flush()
+            
+            try:
+                context = extractor.extract_error_context(
+                    f.name,
+                    error_type="AttributeError", 
+                    error_line=6,
+                    error_message="'list' object has no attribute 'process'"
+                )
+                
+                assert context.error_location.line_number == 6
+                assert "DataManager" in context.available_classes
+                
+            finally:
+                os.unlink(f.name)
+
+
+class TestPerformanceAndScalability:
+    """Test context extraction performance with large codebases"""
+    
+    @pytest.fixture
+    def extractor(self):
+        return ContextExtractor()
+    
+    def test_handles_large_project(self, extractor):
+        """Test context extraction on large project structure"""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            project_path = Path(temp_dir)
+            
+            # Create large project structure
+            for i in range(10):  # 10 modules
+                module_dir = project_path / f"module_{i}"
+                module_dir.mkdir()
+                
+                for j in range(5):  # 5 files per module
+                    file_path = module_dir / f"file_{j}.py"
+                    file_path.write_text(f'''
+# Module {i}, File {j}
+class Class_{i}_{j}:
+    def method_{k}(self):
+        return "method_{k}"
+    
+def function_{i}_{j}():
+    return "function"
+''' * 10)  # Multiply content
+            
+            extractor.project_path = project_path
+            
+            import time
+            start_time = time.time()
+            project_context = extractor.extract_project_context()
+            end_time = time.time()
+            
+            # Should complete within reasonable time (under 5 seconds)
+            assert (end_time - start_time) < 5.0
+            assert len(project_context.source_files) == 50  # 10 modules * 5 files
+    
+    def test_handles_deeply_nested_structures(self, extractor):
+        """Test handling of deeply nested project structures"""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            project_path = Path(temp_dir)
+            
+            # Create deeply nested structure
+            current_path = project_path
+            for i in range(10):  # 10 levels deep
+                current_path = current_path / f"level_{i}"
+                current_path.mkdir()
+                
+                # Add Python file at each level
+                py_file = current_path / f"module_{i}.py"
+                py_file.write_text(f"# Level {i} module")
+            
+            extractor.project_path = project_path
+            project_context = extractor.extract_project_context()
+            
+            # Should handle deeply nested structures
+            assert len(project_context.source_files) == 10
+
+
+def test_context_extractor_integration():
+    """Test context extractor integration with other Debuggle components"""
+    extractor = ContextExtractor()
+    
+    # Should integrate with analyzer for enhanced error analysis
+    assert hasattr(extractor, 'extract_context')
+    assert hasattr(extractor, 'extract_project_context')
+    
+    # Should provide context that enhances error analysis
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False) as f:
+        f.write('''
+def main():
+    undefined_variable = some_function()
+    return undefined_variable
+''')
+        f.flush()
+        
+        try:
+            file_context = extractor.extract_file_context(f.name)
+            assert file_context.language == "python"
+            assert len(file_context.functions) == 1
+            
+        finally:
+            os.unlink(f.name)

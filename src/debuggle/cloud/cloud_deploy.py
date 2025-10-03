@@ -457,7 +457,7 @@ class CloudDeploymentHelper:
                 "command": "pip install -r requirements.txt"
             },
             "start": {
-                "command": "python entry_point.py server --host 0.0.0.0 --port $PORT"
+                "command": "python entry_point.py serve --host 0.0.0.0 --port $PORT"
             },
             "env": {
                 "PYTHON_VERSION": "3.11"
