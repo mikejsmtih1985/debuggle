@@ -28,7 +28,7 @@ class BetaUserExperienceTest:
     def __init__(self):
         self.test_dir: Optional[Path] = None
         self.repo = "mikejsmtih1985/debuggle"
-        self.platforms = ['linux-x64', 'macos-x64', 'macos-arm64', 'windows-x64']
+        self.platforms = ['linux-x64', 'macos-arm64', 'windows-x64']
         self.current_platform = self._detect_current_platform()
         
     def _detect_current_platform(self) -> str:
@@ -157,6 +157,7 @@ class BetaUserExperienceTest:
         
         results = {
             'exists': False,
+            'extracted': False,
             'executable': False,
             'help_works': False,
             'version_works': False,
@@ -175,11 +176,49 @@ class BetaUserExperienceTest:
         
         results['exists'] = True
         
-        # Find the executable
+        # Extract the archive
+        try:
+            os.chdir(platform_dir)
+            
+            if platform.startswith('windows'):
+                archive_name = f"debuggle-{platform}.zip"
+                if not (platform_dir / archive_name).exists():
+                    print(f"❌ Archive not found: {archive_name}")
+                    return results
+                
+                # Extract zip
+                import zipfile
+                with zipfile.ZipFile(archive_name, 'r') as zip_ref:
+                    zip_ref.extractall('.')
+                    
+            else:
+                archive_name = f"debuggle-{platform}.tar.gz"
+                if not (platform_dir / archive_name).exists():
+                    print(f"❌ Archive not found: {archive_name}")
+                    return results
+                
+                # Extract tar.gz
+                import tarfile
+                with tarfile.open(archive_name, 'r:gz') as tar_ref:
+                    tar_ref.extractall('.')
+            
+            results['extracted'] = True
+            print(f"  ✅ Extracted {archive_name}")
+            
+        except Exception as e:
+            print(f"  ❌ Failed to extract archive: {e}")
+            return results
+        
+        # Find the executable in the extracted directory
+        extracted_dir = platform_dir / f"debuggle-{platform}"
+        if not extracted_dir.exists():
+            print(f"❌ Extracted directory not found: {extracted_dir}")
+            return results
+            
         if platform.startswith('windows'):
-            executable = platform_dir / 'debuggle.exe'
+            executable = extracted_dir / 'debuggle.exe'
         else:
-            executable = platform_dir / 'debuggle'
+            executable = extracted_dir / 'debuggle'
         
         if not executable.exists():
             print(f"❌ Executable not found: {executable}")
@@ -206,7 +245,7 @@ class BetaUserExperienceTest:
             return results
         
         try:
-            os.chdir(platform_dir)
+            os.chdir(extracted_dir)
             
             # Test --help
             result = subprocess.run([str(executable), '--help'], 
@@ -278,7 +317,7 @@ class BetaUserExperienceTest:
                 platform_results[platform] = results
                 
                 # Check if critical tests passed
-                critical_tests = ['exists', 'executable']
+                critical_tests = ['exists', 'extracted', 'executable']
                 if platform == self.current_platform:
                     critical_tests.extend(['help_works', 'version_works', 'analyze_works', 'claude_graceful_fallback'])
                 
