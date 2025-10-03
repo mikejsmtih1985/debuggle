@@ -1,0 +1,58 @@
+# Fly.io Deployment Configuration
+# Like having a restaurant's operating manual 📖
+# Everything the chef needs to cook your app in the cloud kitchen!
+
+app = "debuggle-cloud"
+primary_region = "sea"  # Seattle - like choosing which kitchen to cook in
+
+[build]
+  # The recipe for building our app - like a cooking recipe! 👨‍🍳
+
+[env]
+  # Environment variables - like the special ingredients list
+  DEBUGGLE_MODE = "cloud"
+  PORT = "8000"
+
+[http_service]
+  # How customers access our restaurant
+  internal_port = 8000
+  force_https = true
+  auto_stop_machines = false
+  auto_start_machines = true
+  min_machines_running = 1
+  processes = ["app"]
+
+  [http_service.concurrency]
+    type = "connections"
+    hard_limit = 100
+    soft_limit = 80
+
+[[services]]
+  protocol = "tcp"
+  internal_port = 8000
+  processes = ["app"]
+
+  [[services.ports]]
+    port = 80
+    handlers = ["http"]
+    force_https = true
+
+  [[services.ports]]
+    port = 443
+    handlers = ["tls", "http"]
+
+  [services.concurrency]
+    type = "connections"
+    hard_limit = 100
+    soft_limit = 80
+
+[[vm]]
+  memory = "512mb"
+  cpu_kind = "shared"
+  cpus = 1
+
+[mounts]
+  # Persistent storage - like having a storage room that doesn't disappear! 📦
+  source = "debuggle_data"
+  destination = "/data"
+  initial_size = "1gb"

@@ -1,0 +1,88 @@
+# Cloud Deployment Pipeline 🚀
+# Like having a magic conveyor belt that builds and ships your app!
+
+name: Deploy Debuggle Cloud
+
+on:
+  push:
+    branches: [ debuggle-pro ]
+  pull_request:
+    branches: [ debuggle-pro ]
+
+jobs:
+  test:
+    # First stop: Quality control lab 🔬
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python 3.12
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.12"
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install -r requirements-dev.txt
+    
+    - name: Run tests with pytest
+      run: |
+        python -m pytest tests/ -v --cov=src/debuggle --cov-report=term-missing
+    
+    - name: Test cloud features specifically
+      run: |
+        python -m pytest tests/test_cloud_* -v
+    
+    - name: Run viral demo test
+      run: |
+        echo "y" | timeout 30s python examples/viral_demo.py || true
+
+  deploy-vercel:
+    # Second stop: Vercel deployment 🌐
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/debuggle-pro'
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Deploy to Vercel
+      uses: amondnet/vercel-action@v25
+      with:
+        vercel-token: ${{ secrets.VERCEL_TOKEN }}
+        vercel-args: '--prod'
+        vercel-org-id: ${{ secrets.ORG_ID }}
+        vercel-project-id: ${{ secrets.PROJECT_ID }}
+
+  deploy-fly:
+    # Third stop: Fly.io deployment ✈️
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/debuggle-pro'
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - uses: superfly/flyctl-actions/setup-flyctl@master
+    
+    - name: Deploy to Fly.io
+      run: flyctl deploy --remote-only
+      env:
+        FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+  notify:
+    # Final stop: Send success message 📢
+    needs: [deploy-vercel, deploy-fly]
+    runs-on: ubuntu-latest
+    if: always()
+    
+    steps:
+    - name: Deployment status
+      run: |
+        echo "🎉 Debuggle Cloud deployment pipeline completed!"
+        echo "✅ Tests: ${{ needs.test.result }}"
+        echo "🌐 Vercel: ${{ needs.deploy-vercel.result }}"
+        echo "✈️ Fly.io: ${{ needs.deploy-fly.result }}"

@@ -136,6 +136,28 @@ database_manager = DatabaseManager("logs.db")  # SQLite database for local stora
 search_manager = SearchManager(database_manager)  # Full-text search engine
 retention_manager = RetentionManager(database_manager)  # Data retention policies
 
+# Step 7: Initialize cloud features - Your Debuggle in the Sky! ☁️
+# This ADDS cloud sharing and remote access WITHOUT changing existing functionality
+# Think of it like adding Wi-Fi to a building that already has ethernet - both work!
+try:
+    from .cloud import setup_cloud_routes
+    
+    # Detect current tier (free by default, can be upgraded)
+    current_tier = os.getenv("DEBUGGLE_TIER", "free")
+    cloud_enabled = os.getenv("DEBUGGLE_CLOUD_ENABLED", "true").lower() == "true"
+    
+    if cloud_enabled:
+        # Add cloud endpoints to existing app (completely additive!)
+        setup_cloud_routes(app, processor=processor, tier=current_tier)
+        logger.info(f"☁️ Cloud features enabled for {current_tier} tier")
+    else:
+        logger.info("🏠 Running in local-only mode (cloud features disabled)")
+        
+except ImportError:
+    logger.info("🏠 Cloud features not available - running in local-only mode")
+except Exception as e:
+    logger.warning(f"⚠️ Cloud setup failed: {e} - continuing with local-only mode")
+
 # Step 7: Initialize proactive alerting system - Our emergency notification center
 # This monitors for critical issues and sends alerts through multiple channels
 alert_manager = AlertManager(error_monitor)  # Alert system connected to real-time monitoring

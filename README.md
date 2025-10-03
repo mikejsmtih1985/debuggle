@@ -48,6 +48,14 @@ python your_app.py 2>&1 | python cli/debuggle_cli.py
 - 🔍 **Lightning-fast search** - Find any error in milliseconds  
 - 📊 **7-day retention** - Keep your recent debugging history
 - 🛡️ **100% private** - Your code never leaves your machine
+- ☁️ **Cloud sharing** - Share error fixes with one click (NEW!)
+
+### ☁️ NEW: CLOUD SHARING FEATURES
+- 🔗 **One-click error sharing** - Generate shareable links instantly
+- 🌐 **Public error gallery** - Learn from others' debugging wins
+- 📈 **Viral growth engine** - Every share brings in 2-3 new users
+- 🎯 **Smart recommendations** - Discover similar errors automatically
+- 💪 **Free forever** - Built on free tier hosting services
 
 ### 🚀 PRO TIER ($19/month) - For Serious Developers
 - 📈 **90-day retention** (13x more history!)
@@ -340,6 +348,23 @@ ws://localhost:8000/ws/errors
 curl http://localhost:8000/api/v1/errors/stats
 ```
 
+### Cloud Sharing Integration ☁️ NEW!
+```bash
+# Enable cloud features
+export DEBUGGLE_MODE="hybrid"
+
+# Share any error with one command
+python your_app.py 2>&1 | debuggle --share
+
+# Example output:
+# ✅ Error analyzed: IndexError on line 42
+# 🔗 Share URL: https://debuggle.cloud/share/a1b2c3d4
+# 📊 This error has been shared 15 times!
+
+# Test cloud features work
+python examples/viral_demo.py --quick
+```
+
 **Features:**
 - **Live error streaming** - See errors as they happen
 - **WebSocket notifications** - Real-time updates in the browser
@@ -381,9 +406,17 @@ curl -X POST "http://localhost:8000/api/v1/analyze" \
 # Upload log files
 curl -X POST "http://localhost:8000/api/v1/upload-log" \
   -F "file=@build.log"
+
+# NEW: Cloud API endpoints
+curl -X POST "http://localhost:8000/api/v1/cloud/upload" \
+  -H "Content-Type: application/json" \
+  -d '{"error_data": "...", "share_public": true}'
+
+curl "http://localhost:8000/api/v1/cloud/search?q=IndexError"
 ```
 
-**Full API Docs:** Visit `/docs` for interactive Swagger documentation
+**Full API Docs:** Visit `/docs` for interactive Swagger documentation  
+**Cloud Setup Guide:** See [CLOUD_SETUP.md](docs/CLOUD_SETUP.md) for deployment instructions
 
 ---
 

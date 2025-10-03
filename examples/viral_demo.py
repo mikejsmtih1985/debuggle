@@ -34,6 +34,15 @@ try:
     from src.debuggle.storage.search_engine import DebuggleSearchEngine, SearchResult
     from src.debuggle.processor import LogProcessor
     from src.debuggle.models import AnalyzeRequest, LanguageEnum
+    
+    # Try to import cloud features (graceful fallback if not available)
+    try:
+        from src.debuggle.cloud import CloudStorageManager, CloudShareManager
+        CLOUD_AVAILABLE = True
+    except ImportError:
+        CLOUD_AVAILABLE = False
+        print("ℹ️  Cloud features not available - running local-only demo")
+        
 except ImportError as e:
     print(f"⚠️  Import error: {e}")
     print("Run this from the debuggle root directory: python examples/viral_demo.py")
@@ -49,6 +58,15 @@ class ViralDemo:
             tier="pro"  # Show off Pro features
         )
         self.processor = LogProcessor()
+        
+        # Initialize cloud features if available
+        if CLOUD_AVAILABLE:
+            self.cloud_storage = CloudStorageManager(tier="pro")
+            self.cloud_share = CloudShareManager(tier="pro")
+            print("☁️ Cloud features enabled for enhanced viral demo!")
+        else:
+            self.cloud_storage = None
+            self.cloud_share = None
         self.demo_errors = self._generate_realistic_errors()
         
     def _generate_realistic_errors(self) -> List[Dict]:
@@ -199,7 +217,7 @@ Urgency: IMMEDIATE FIX REQUIRED''',
                 print(f"\n   📋 Result {i} (Score: {result.relevance_score:.2f})")
                 print(f"      🏷️  {result.title}")
                 print(f"      📅 {result.timestamp.strftime('%Y-%m-%d %H:%M')}")
-                print(f"      🏷️  Tags: {', '.join(result.tags)}")
+                print(f"      🏷️  Tags: {', '.join(result.tags or [])}")
                 # Skip highlights for now - not implemented in basic search engine
                 print(f"      � {result.content[:100]}...")
                         
@@ -275,6 +293,60 @@ Urgency: IMMEDIATE FIX REQUIRED''',
         
         print("\n🎁 SPECIAL OFFER: Use code GITHUB50 for 50% off first month!")
         
+    def demo_cloud_sharing(self):
+        """Demo cloud sharing features that make Debuggle go viral."""
+        print("\n" + "="*60)
+        print("☁️ DEMO 3: CLOUD SHARING - Make Debugging Social! 🌐")
+        print("="*60)
+        
+        print("\n🌤️ UPLOADING ERROR TO DEBUGGLE CLOUD:")
+        print("   Perfect for getting help from teammates, Stack Overflow, etc.")
+        
+        # Show cloud upload simulation
+        sample_error = """
+IndexError: list index out of range
+  File "user_signup.py", line 42, in process_signup
+    user_data = request_data['users'][0]  # ← The bug is here!
+    
+Traceback (most recent call last):
+  File "/app/routes/auth.py", line 28, in create_user
+    return UserController.signup(request.json)
+"""
+        
+        print("   📤 Uploading error log to cloud...")
+        time.sleep(1)
+        print("   ..." * 10)
+        
+        if self.cloud_storage:
+            # Simulate cloud upload
+            print(f"   ✅ Upload complete!")
+            print(f"   🔗 Share URL: https://debuggle.cloud/share/a1b2c3d4")
+            print(f"   ⏰ Expires: {(datetime.now() + timedelta(hours=24)).strftime('%Y-%m-%d %H:%M')}")
+        else:
+            # Fallback demo without actual cloud features
+            print(f"   ✅ Upload complete! (simulated)")
+            print(f"   🔗 Share URL: https://debuggle.cloud/share/a1b2c3d4")
+            print(f"   ⏰ Expires: 24 hours (free tier)")
+        
+        print("\n🤝 SHARE WITH YOUR TEAM:")
+        print("   💬 Slack: 'Hey team, can someone help with this? debuggle.cloud/share/a1b2c3d4'")
+        print("   🐦 Twitter: 'Anyone seen this IndexError before? debuggle.cloud/share/a1b2c3d4 #programming'")
+        print("   📧 Email: 'Stuck on this bug, here's the full analysis: debuggle.cloud/share/a1b2c3d4'")
+        
+        print("\n✨ WHEN TEAMMATES CLICK THE LINK THEY SEE:")
+        print("   📋 Full error analysis (same as you saw)")
+        print("   💡 Suggested fixes and explanations")
+        print("   🔍 Syntax highlighting and context")
+        print("   🚀 'Try Debuggle for your own errors' (viral growth!)")
+        
+        print("\n🎯 CONVERSION MAGIC:")
+        print("   👥 5 teammates see your shared analysis")
+        print("   💭 2 think 'Wow, this is way better than copy-pasting errors'")
+        print("   📥 1 downloads Debuggle for their own projects")
+        print("   🔄 They share their errors → more viral growth!")
+        
+        time.sleep(3)
+        
     def demo_viral_shareability(self):
         """Create shareable moments for social media."""
         print("\n" + "="*60)
@@ -316,6 +388,11 @@ Urgency: IMMEDIATE FIX REQUIRED''',
         
         self.demo_pro_analytics() 
         time.sleep(2)
+        
+        # NEW: Cloud sharing demo (if available)
+        if CLOUD_AVAILABLE:
+            self.demo_cloud_sharing()
+            time.sleep(2)
         
         self.demo_monetization_hook()
         time.sleep(2)

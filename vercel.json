@@ -1,0 +1,33 @@
+{
+  "version": 2,
+  "name": "debuggle-cloud",
+  "functions": {
+    "entry_point.py": {
+      "runtime": "@vercel/python"
+    }
+  },
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/entry_point.py"
+    },
+    {
+      "src": "/share/(.*)",
+      "dest": "/entry_point.py"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/assets/static/index.html"
+    }
+  ],
+  "env": {
+    "DEBUGGLE_MODE": "cloud",
+    "REDIS_URL": "@redis_url",
+    "DATABASE_URL": "@database_url"
+  },
+  "build": {
+    "env": {
+      "PYTHON_VERSION": "3.12"
+    }
+  }
+}
