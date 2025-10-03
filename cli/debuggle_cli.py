@@ -60,8 +60,12 @@ EDUCATIONAL METAPHORS USED IN THIS FILE:
 import argparse     # 🎛️ Command interface controller (handles --help, --version, etc.)
 import sys          # 🔧 System integration tools (stdin/stdout pipes, exit codes)
 import os           # 🗂️ File system navigator (paths, directories, file operations)
+import logging      # 📋 Professional logging system (track what happens when)
 from pathlib import Path        # 🗺️ Modern GPS for file and directory navigation
 from typing import Optional     # 📋 Code clarity enhancer (documents what might be None)
+
+# 📊 CONFIGURE LOGGING - Set up professional event tracking
+logger = logging.getLogger(__name__)
 
 #
 # 📍 TOOLKIT LOCATION SETUP - Connecting to our main debugging arsenal
@@ -83,9 +87,119 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 #
 from src.debuggle.core.processor import LogProcessor    # 🧠 Master error analysis engine
 from src.debuggle.core.context import ContextExtractor  # 🔍 Project context detective
+from src.debuggle.integrations.claude import ClaudeAnalyzer  # 🤖 AI-powered enhancement specialist
 
 
-def analyze_error_from_file(log_file: str, project_root: Optional[str] = None):
+def _enhance_with_claude(
+    original_analysis: str,
+    error_message: str,
+    cleaned_log: str,
+    summary: str,
+    tags: list,
+    metadata: dict,
+    project_root: str
+) -> str:
+    """
+    🤖 CLAUDE AI ENHANCEMENT - Supercharge analysis with artificial intelligence
+    
+    This function takes Debuggle's solid local analysis and asks Claude AI
+    to provide additional insights, specific fix suggestions, and prevention
+    advice. It's like getting a second opinion from a senior developer.
+    
+    🏆 HIGH SCHOOL EXPLANATION:
+    You've solved a math problem and checked your work (Debuggle's analysis).
+    Now you're asking the teacher to:
+    - Explain the underlying concepts (why did this happen?)
+    - Suggest better approaches (how to fix it properly?)
+    - Share wisdom about avoiding similar mistakes (prevention tips)
+    
+    The key insight: Claude enhances rather than replaces Debuggle's analysis!
+    """
+    try:
+        # 🚀 INITIALIZE CLAUDE CONSULTANT - Set up the AI advisor
+        claude = ClaudeAnalyzer()
+        
+        if not claude.is_available():
+            # 🤷‍♂️ GRACEFUL DEGRADATION - Still provide value without AI
+            fallback_message = [
+                original_analysis,
+                "",
+                "=" * 50,
+                "🤖 Claude AI: Not available",
+                "💡 To enable AI enhancement:",
+                "   1. Install: pip install anthropic",
+                "   2. Set API key: export ANTHROPIC_API_KEY=your_key",
+                "   3. Get API key: https://console.anthropic.com/",
+                "",
+                "✅ Debuggle works great without AI too!"
+            ]
+            return "\n".join(fallback_message)
+        
+        # 🎯 EXTRACT ERROR DETAILS - Prepare context for Claude
+        error_type = _extract_error_type(error_message, tags)
+        language = metadata.get('detected_language', 'unknown')
+        severity = _determine_severity(tags, error_message)
+        file_path = metadata.get('file_path')
+        
+        # 🧠 REQUEST CLAUDE'S EXPERTISE - Get AI-powered insights
+        enhanced_analysis = claude.enhance_analysis(
+            original_analysis=original_analysis,
+            error_message=error_message,
+            error_type=error_type,
+            language=language,
+            severity=severity,
+            file_path=file_path,
+            project_context={
+                'framework': metadata.get('framework'),
+                'dependencies': metadata.get('dependencies', []),
+                'project_root': project_root
+            }
+        )
+        
+        # 🎨 FORMAT PROFESSIONAL REPORT - Present enhanced analysis beautifully
+        return claude.format_enhanced_output(enhanced_analysis)
+        
+    except Exception as e:
+        # 🛡️ ERROR HANDLING - Never let AI failure break basic functionality
+        logger.warning(f"Claude enhancement failed: {e}")
+        return f"{original_analysis}\n\n🤖 Claude AI: Enhancement failed, but local analysis completed successfully!"
+
+
+def _extract_error_type(error_message: str, tags: list) -> str:
+    """🔍 ERROR TYPE DETECTIVE - Identify the specific type of error"""
+    # Look for error types in tags first (more reliable)
+    for tag in tags:
+        if 'error' in tag.lower() or 'exception' in tag.lower():
+            return tag
+    
+    # Fallback to parsing error message
+    error_types = ['IndexError', 'KeyError', 'AttributeError', 'TypeError', 'ValueError', 
+                   'FileNotFoundError', 'ImportError', 'NullPointerException', 'RuntimeError']
+    
+    for error_type in error_types:
+        if error_type in error_message:
+            return error_type
+    
+    return 'UnknownError'
+
+
+def _determine_severity(tags: list, error_message: str) -> str:
+    """📊 SEVERITY ASSESSOR - Determine how serious this error is"""
+    # Check tags for severity indicators
+    if any('critical' in tag.lower() for tag in tags):
+        return 'critical'
+    if any('warning' in tag.lower() for tag in tags):
+        return 'warning'
+    
+    # Analyze error message for severity clues
+    critical_keywords = ['segmentation fault', 'memory error', 'fatal', 'crash']
+    if any(keyword in error_message.lower() for keyword in critical_keywords):
+        return 'critical'
+    
+    return 'error'  # Default severity
+
+
+def analyze_error_from_file(log_file: str, project_root: Optional[str] = None, use_claude: bool = False):
     """
     🔍 FILE FORENSICS ANALYZER - Professional error investigation from saved evidence
     
@@ -118,7 +232,8 @@ def analyze_error_from_file(log_file: str, project_root: Optional[str] = None):
         processor = LogProcessor()
         
         # 📢 INVESTIGATION ANNOUNCEMENT - Professional toolkit activation
-        print("🚀 Debuggle CLI - Better than copy/pasting into ChatGPT!")
+        ai_status = " + Claude AI" if use_claude else ""
+        print(f"🚀 Debuggle CLI{ai_status} - Better than copy/pasting into ChatGPT!")
         print("=" * 60)
         
         # Process with full context
@@ -130,7 +245,20 @@ def analyze_error_from_file(log_file: str, project_root: Optional[str] = None):
             tags=True
         )
         
-        print(rich_context)
+        # 🤖 CLAUDE ENHANCEMENT - Optional AI-powered analysis
+        if use_claude:
+            output = _enhance_with_claude(
+                original_analysis=rich_context,
+                error_message=log_content,
+                cleaned_log=cleaned_log,
+                summary=summary or "No summary available",
+                tags=tags or [],
+                metadata=metadata or {},
+                project_root=project_root or os.getcwd()
+            )
+            print(output)
+        else:
+            print(rich_context)
         
         print("\n" + "=" * 60)
         print("🎯 Why this is better than ChatGPT:")
@@ -149,7 +277,7 @@ def analyze_error_from_file(log_file: str, project_root: Optional[str] = None):
         return False
 
 
-def analyze_error_from_stdin():
+def analyze_error_from_stdin(use_claude: bool = False):
     """Analyze error from stdin (pipe support)."""
     try:
         log_content = sys.stdin.read()
@@ -161,7 +289,8 @@ def analyze_error_from_stdin():
         project_root = os.getcwd()
         processor = LogProcessor()
         
-        print("🚀 Debuggle CLI - Analyzing piped error...")
+        ai_status = " + Claude AI" if use_claude else ""
+        print(f"🚀 Debuggle CLI{ai_status} - Analyzing piped error...")
         print("=" * 50)
         
         # Process with context
@@ -173,7 +302,20 @@ def analyze_error_from_stdin():
             tags=True
         )
         
-        print(rich_context)
+        # 🤖 CLAUDE ENHANCEMENT - Optional AI-powered analysis for piped input
+        if use_claude:
+            output = _enhance_with_claude(
+                original_analysis=rich_context,
+                error_message=log_content,
+                cleaned_log=cleaned_log,
+                summary=summary or "No summary available",
+                tags=tags or [],
+                metadata=metadata or {},
+                project_root=project_root
+            )
+            print(output)
+        else:
+            print(rich_context)
         
         return True
         
@@ -248,6 +390,7 @@ Examples:
   debuggle error.log                    # Analyze log file
   debuggle -p /path/to/project error.log # Analyze with specific project root
   python app.py 2>&1 | debuggle         # Pipe errors directly
+  python app.py 2>&1 | debuggle --claude # Pipe with AI enhancement
   debuggle --watch server.log           # Watch log file for new errors
         """,
         formatter_class=argparse.RawDescriptionHelpFormatter
@@ -256,6 +399,7 @@ Examples:
     parser.add_argument('logfile', nargs='?', help='Log file to analyze')
     parser.add_argument('-p', '--project-root', help='Project root directory for context')
     parser.add_argument('-w', '--watch', action='store_true', help='Watch log file for new errors')
+    parser.add_argument('--claude', action='store_true', help='🤖 Enhance analysis with Claude AI (requires API key)')
     parser.add_argument('--version', action='version', version='Debuggle CLI 1.0.0')
     
     args = parser.parse_args()
@@ -274,11 +418,11 @@ Examples:
         
     elif args.logfile:
         # Analyze file
-        success = analyze_error_from_file(args.logfile, args.project_root)
+        success = analyze_error_from_file(args.logfile, args.project_root, args.claude)
         
     elif not sys.stdin.isatty():
         # Analyze from stdin (piped input)
-        success = analyze_error_from_stdin()
+        success = analyze_error_from_stdin(args.claude)
         
     else:
         parser.print_help()

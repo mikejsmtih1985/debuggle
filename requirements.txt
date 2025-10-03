@@ -36,3 +36,6 @@ flake8==6.1.0
 
 # Testing and coverage
 pytest-cov==4.1.0
+
+# AI Integration (optional)
+anthropic==0.7.8
