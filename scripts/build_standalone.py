@@ -16,6 +16,14 @@ def get_platform_info():
     system = platform.system().lower()
     arch = platform.machine().lower()
     
+    # Normalize system names to match GitHub Actions matrix
+    if system == 'darwin':
+        system = 'macos'
+    elif system == 'win32' or system == 'windows':
+        system = 'windows'
+    elif system == 'linux':
+        system = 'linux'
+    
     # Normalize architecture names
     if arch in ['x86_64', 'amd64']:
         arch = 'x64'
@@ -23,6 +31,15 @@ def get_platform_info():
         arch = 'x86'
     elif arch in ['aarch64', 'arm64']:
         arch = 'arm64'
+    
+    # Handle environment variables from GitHub Actions
+    target_platform = os.environ.get('TARGET_PLATFORM')
+    target_arch = os.environ.get('TARGET_ARCH')
+    
+    if target_platform:
+        system = target_platform.lower()
+    if target_arch:
+        arch = target_arch.lower()
     
     return system, arch
 
