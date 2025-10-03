@@ -2150,16 +2150,32 @@ on a document so translation services know how to handle it properly.
             processNextFile(allResults);
         }
 
+        /*
+        🏆 HIGH SCHOOL EXPLANATION:
+        This function is like a banquet coordinator managing a multi-course meal
+        service. When serving many guests (files), you can't serve everyone at once -
+        you need to serve them one by one in order, keeping track of progress:
+        - Check if there are more guests to serve
+        - If everyone's been served, present the final banquet results
+        - If more guests remain, prepare the next course
+        
+        Think of it like a wedding reception where the coordinator ensures
+        each table gets served in sequence, then announces when dinner is complete.
+        */
         function processNextFile(allResults) {
+            // 📊 GUEST COUNT CHECK - See if we've served everyone at the banquet
+            // Like checking the guest list to see if any tables are still waiting
             if (currentFileIndex >= selectedFiles.length) {
-                // All files processed - combine results
+                // 🎉 BANQUET COMPLETION - All guests have been served!
+                // Like announcing "Ladies and gentlemen, dinner is served!" at the end
                 displayMultipleResults(allResults);
                 
-                // Update UI
+                // 🎭 SUCCESS CELEBRATION - Show the event was successful
+                // Like putting up "Event Complete" banners and thanking guests
                 uploadSuccess.style.display = 'flex';
-                processBtn.textContent = 'Reprocess All';
-                processBtn.disabled = false;
-                hideProgress();
+                processBtn.textContent = 'Reprocess All';  // Change button to "Plan Another Event"
+                processBtn.disabled = false;               // Re-enable the event planning button
+                hideProgress();                           // Remove the "Service in Progress" sign
                 return;
             }
             
@@ -2212,46 +2228,84 @@ on a document so translation services know how to handle it properly.
             });
         }
 
+        /*
+        🏆 HIGH SCHOOL EXPLANATION:
+        This function is like a restaurant manager doing a complete "table reset"
+        after customers leave. When someone wants to start fresh, this function:
+        - Clears all customer records (files and queues)
+        - Resets all table settings (UI elements)
+        - Cleans up any leftover dishes (results and errors)
+        - Prepares for the next customers (reset file input)
+        
+        It's like that moment between restaurant customers when staff quickly
+        clear everything and set up fresh place settings for the next party.
+        */
         function removeFile() {
-            // Clear selected files
-            selectedFile = null;
-            selectedFiles = [];
-            currentFileIndex = 0;
+            // 🗂️ CLEAR CUSTOMER RECORDS - Remove all current reservations
+            // Like tearing up all the order slips and reservation cards
+            selectedFile = null;        // Clear single customer
+            selectedFiles = [];         // Clear group reservation
+            currentFileIndex = 0;       // Reset service counter to start
             
-            // Reset UI
-            dragDropArea.classList.remove('file-selected');
-            filePreview.classList.remove('show');
-            hideResults();
-            hideError();
+            // 🧹 TABLE RESET - Clean and prepare all surfaces
+            // Like clearing dishes, wiping tables, and folding napkins fresh
+            dragDropArea.classList.remove('file-selected');  // Remove "occupied" sign
+            filePreview.classList.remove('show');            // Hide customer information
+            hideResults();                                   // Clear previous meal displays
+            hideError();                                     // Remove any problem notices
             
-            // Reset file input
+            // 📋 FRESH START PREPARATION - Ready for new customers
+            // Like putting out a fresh guest book for new visitors to sign
             fileInput.value = '';
         }
 
+        /*
+        🏆 HIGH SCHOOL EXPLANATION:
+        This function is like a banquet coordinator presenting the final feast
+        after serving many guests (multiple files). Instead of showing each guest's
+        meal separately, this function creates one grand buffet display that
+        combines everyone's results into a unified presentation:
+        - Saves the complete banquet record for later reference
+        - Opens the grand dining hall for the presentation
+        - Combines all individual meals into one magnificent spread
+        - Counts successes and problems for the final report
+        
+        Think of it like a wedding reception where individual table meals
+        get combined into a beautiful buffet presentation for everyone to see.
+        */
         function displayMultipleResults(allResults) {
-            // Store data for live filtering
+            // 💾 BANQUET MEMORY - Save the complete event details for future reference
+            // Like keeping a photo album of the entire wedding reception
             lastProcessedData = { 
                 type: 'multiple', 
                 results: allResults 
             };
             
-            // Show results section
+            // 🎭 GRAND REVEAL - Open the curtains to show the magnificent banquet hall
+            // Like revealing the beautifully decorated reception hall to the guests
             resultsSection.style.display = 'block';
             
-            // Combine all logs with file separators
-            let combinedLog = '';
-            let allTags = new Set();
-            let successCount = 0;
-            let errorCount = 0;
+            // 🍽️ BUFFET PREPARATION - Combine all individual meals into one grand display
+            // Like arranging all the dishes from different tables into one spectacular buffet
+            let combinedLog = '';         // The grand buffet table (empty at start)
+            let allTags = new Set();      // Collection of all ingredient labels
+            let successCount = 0;         // Count of successfully served dishes
+            let errorCount = 0;           // Count of dishes that had problems
             
+            // 👨‍🍳 MEAL COMBINATION - Go through each guest's meal and add it to the buffet
+            // Like a head chef combining all the individual table orders into one presentation
             allResults.forEach((result, index) => {
                 if (result.error) {
+                    // 🚨 PROBLEM DISH - Note which meals had issues
+                    // Like marking "unavailable" on buffet items that couldn't be prepared
                     combinedLog += `\n📁 File: ${result.filename}\n❌ Error: ${result.error}\n\n`;
                     errorCount++;
                 } else {
+                    // 🎉 SUCCESS DISH - Add beautifully prepared meals to the buffet
+                    // Like placing each successful dish on the buffet with proper labels
                     combinedLog += `\n📁 File: ${result.filename}\n${result.cleaned_log}\n\n`;
                     if (result.tags) {
-                        result.tags.forEach(tag => allTags.add(tag));
+                        result.tags.forEach(tag => allTags.add(tag));  // Collect all ingredient labels
                     }
                     successCount++;
                 }
@@ -2326,30 +2380,68 @@ on a document so translation services know how to handle it properly.
             `;
         }
 
+        /*
+        🏆 HIGH SCHOOL EXPLANATION:
+        This function is like a smart restaurant host who can instantly recognize
+        what type of "dish" (file) a customer brought just by looking at it.
+        Just like how an experienced server knows the difference between a salad
+        and a steak by sight, this function looks at the file extension and
+        assigns the perfect emoji "garnish" to represent what type it is.
+        
+        Think of it like having a smart menu system that automatically puts
+        the right icon next to each dish - 🐍 for Python files, 💛 for JavaScript,
+        📋 for log files, etc. It makes everything easier to recognize at a glance!
+        */
         function getFileIcon(filename) {
+            // 🔍 FILE TYPE DETECTION - Look at the "dish type" identifier
+            // Like checking the last part of a recipe name to know what cuisine it is
             const ext = filename.split('.').pop().toLowerCase();
+            
+            // 🎭 ICON CATALOG - Our collection of visual "garnishes" for each file type
+            // Like having the perfect emoji decoration for every type of dish
             const icons = {
-                'log': '📋',
-                'txt': '📄',
-                'err': '❌',
-                'out': '📤',
-                'json': '🔧',
-                'py': '🐍',
-                'js': '💛',
-                'java': '☕',
-                'xml': '📜'
+                'log': '📋',   // Log files = clipboard (record keeping)
+                'txt': '📄',   // Text files = document page
+                'err': '❌',   // Error files = X mark (something went wrong)
+                'out': '📤',   // Output files = outbox (results going out)
+                'json': '🔧',  // Data files = wrench (technical tools)
+                'py': '🐍',    // Python files = snake (Python's mascot)
+                'js': '💛',    // JavaScript files = yellow heart (JS color)
+                'java': '☕',  // Java files = coffee (Java's name origin)
+                'xml': '📜'    // Markup files = scroll (formatted documents)
             };
+            
+            // 🎨 VISUAL GARNISH SELECTION - Pick the perfect icon or use default
+            // Like choosing the right garnish, or using a basic document if we don't have anything specific
             return icons[ext] || '📄';
         }
 
+        /*
+        🏆 HIGH SCHOOL EXPLANATION:
+        These functions are like the "Order Status" display at a modern restaurant.
+        When you order food, you want to know if it's being prepared, so restaurants
+        show progress indicators like "Order Received -> Cooking -> Ready".
+        
+        showProgress() is like turning on the "Your Order is Being Prepared" sign
+        hideProgress() is like turning off the sign when service is complete
+        */
         function showProgress() {
-            progressBar.style.display = 'block';
-            progressFill.style.width = '100%';
+            // 📱 ACTIVATE STATUS DISPLAY - Turn on the "Order in Progress" indicator
+            // Like lighting up a progress bar that shows "We're working on your request"
+            progressBar.style.display = 'block';  // Make the progress bar visible
+            progressFill.style.width = '100%';    // Show full progress animation
         }
 
+        /*
+        🏆 HIGH SCHOOL EXPLANATION:
+        This function turns off the progress indicator when work is finished.
+        Like switching off the "Preparing Your Order" sign when the meal is ready.
+        */
         function hideProgress() {
-            progressBar.style.display = 'none';
-            progressFill.style.width = '0%';
+            // 🔌 DEACTIVATE STATUS DISPLAY - Turn off the progress indicator
+            // Like switching off the "Order in Progress" light when service is complete
+            progressBar.style.display = 'none';   // Hide the progress bar completely
+            progressFill.style.width = '0%';       // Reset progress to empty for next time
         }
 
         /*
@@ -2615,20 +2707,37 @@ on a document so translation services know how to handle it properly.
             }
         }
 
+        /*
+        🏆 HIGH SCHOOL EXPLANATION:
+        This function is like a smart restaurant server who can instantly re-plate
+        your meal when you change your preferences. If you already have food but
+        decide "actually, I want this spicy" or "can you make it less colorful",
+        this function takes your existing meal and re-presents it with your new
+        preferences WITHOUT having to cook it all over again.
+        
+        Think of it like having a magical food stylist who can instantly change
+        how your meal looks based on your current mood - same food, new presentation!
+        */
         function liveReprocess() {
+            // 🔍 MEAL CHECK - Make sure there's actually food to re-style
+            // Like checking if there's a meal on the table before trying to re-plate it
             if (!lastProcessedData) return;
             
-            // Add visual feedback
+            // 🎭 VISUAL FEEDBACK - Show that re-styling is happening
+            // Like putting up a small "Adjusting your presentation" sign
             showLiveProcessingIndicator();
             
-            // Small delay to show the processing indicator
+            // ⏰ BRIEF STYLING PAUSE - Give a moment to show the re-styling process
+            // Like a brief dramatic pause before revealing the newly styled meal
             setTimeout(() => {
+                // 🍽️ SMART RE-PRESENTATION - Choose the right re-styling method
+                // Like knowing whether to re-style a single dish or an entire banquet
                 if (lastProcessedData.type === 'multiple') {
-                    displayMultipleResults(lastProcessedData.results);
+                    displayMultipleResults(lastProcessedData.results);  // Re-style the banquet
                 } else {
-                    displayResults(lastProcessedData);
+                    displayResults(lastProcessedData);                  // Re-style the single dish
                 }
-                hideLiveProcessingIndicator();
+                hideLiveProcessingIndicator();  // Remove the "styling in progress" sign
             }, 200);
         }
 
@@ -2958,35 +3067,107 @@ on a document so translation services know how to handle it properly.
             }
         }
 
+        /*
+        🏆 HIGH SCHOOL EXPLANATION:
+        This function is like a restaurant manager clearing away the dining area
+        when it's time to reset for new customers. When someone wants to start
+        fresh or there's no meal to display, this function:
+        - Closes the dining room curtains (hides results)
+        - Puts away the menu tabs (hides file tabs)
+        - Prepares for the next dining experience
+        
+        Think of it like the "closed for cleaning" moment between customers
+        when everything gets tidied up and put away.
+        */
         function hideResults() {
+            // 🎭 CLOSE THE DINING ROOM - Hide the main results display
+            // Like drawing curtains over the dining area when no meal is being served
             resultsSection.style.display = 'none';
-            // Hide tabs as well
+            
+            // 📑 PUT AWAY MENUS - Hide the tab navigation as well
+            // Like collecting all the menus and putting them away until needed again
             const fileTabs = document.getElementById('fileTabs');
             if (fileTabs) {
                 fileTabs.style.display = 'none';
             }
         }
 
+        /*
+        🏆 HIGH SCHOOL EXPLANATION:
+        This function is like a restaurant manager politely informing customers
+        about any problems with their order. Instead of ignoring issues or
+        letting customers wonder what went wrong, this function displays
+        a clear, helpful message explaining what happened.
+        
+        Think of it like a good waiter coming to your table to say "I'm sorry,
+        but we're out of salmon tonight. Would you like to try something else?"
+        */
         function showError(message) {
+            // 📝 PROBLEM NOTIFICATION - Write down the issue for the customer to see
+            // Like a waiter writing "Kitchen issue" on a note and showing it politely
             errorMessage.textContent = message;
+            
+            // 🚨 DISPLAY ALERT - Make the problem message visible
+            // Like putting up a small, polite sign that says "We're working on this issue"
             errorMessage.style.display = 'block';
         }
 
+        /*
+        🏆 HIGH SCHOOL EXPLANATION:
+        This function clears away any error messages when they're no longer needed.
+        Like removing the "Sorry for the inconvenience" sign after the problem
+        is fixed and service returns to normal.
+        */
         function hideError() {
+            // 🧹 CLEAR PROBLEM DISPLAY - Remove the error message from view
+            // Like taking down the "temporarily out of service" sign when everything's working again
             errorMessage.style.display = 'none';
         }
 
+        /*
+        🏆 HIGH SCHOOL EXPLANATION:
+        This function is like a restaurant's food safety protocol that makes sure
+        no harmful "ingredients" (dangerous HTML code) get mixed into the "meal"
+        (web page display). When customers send text that might contain special
+        characters, this function "sanitizes" it to prevent any security problems.
+        
+        Think of it like washing vegetables before serving - you want to make sure
+        everything is safe and clean before it goes to the customer.
+        */
         function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
+            // 🧼 FOOD SAFETY SANITIZATION - Clean the text to prevent contamination
+            // Like washing ingredients before cooking to remove any harmful substances
+            const div = document.createElement('div');  // Create a clean "prep station"
+            div.textContent = text;                     // Put the text through the "washing process"
+            return div.innerHTML;                       // Return the clean, safe version
         }
 
+        /*
+        🏆 HIGH SCHOOL EXPLANATION:
+        This function is like a smart waiter who can instantly tell customers
+        "Your file is about the size of a photo" instead of saying "Your file
+        is 2,547,392 bytes." It converts technical numbers into human-friendly
+        descriptions that anyone can understand.
+        
+        Think of it like translating computer language into normal conversation -
+        instead of "1048576 bytes" it says "1 MB" which people recognize.
+        */
         function formatFileSize(bytes) {
+            // 🤏 ZERO SIZE CHECK - Handle the "empty plate" case
+            // Like recognizing when there's literally nothing to measure
             if (bytes === 0) return '0 Bytes';
-            const k = 1024;
-            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            
+            // 📏 MEASUREMENT SYSTEM - Set up our "portion size" categories
+            // Like having small, medium, large, and super-size portion descriptions
+            const k = 1024;  // Computer counting system (like how we count by 10s, computers count by 1024s)
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];  // Portion size names from tiny to huge
+            
+            // 🧮 SMART CALCULATION - Figure out which "portion size" category fits best
+            // Like a waiter automatically knowing to say "large" instead of "847 grams"
             const i = Math.floor(Math.log(bytes) / Math.log(k));
+            
+            // 🏷️ FRIENDLY DESCRIPTION - Convert to human-readable portion size
+            // Like saying "2.5 MB" instead of "2,621,440 bytes"
             return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
         }
 
