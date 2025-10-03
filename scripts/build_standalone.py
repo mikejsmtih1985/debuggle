@@ -47,16 +47,16 @@ def ensure_pyinstaller():
     """Ensure PyInstaller is installed"""
     try:
         import PyInstaller
-        print(f"✅ PyInstaller {PyInstaller.__version__} is installed")
+        print(f"PyInstaller {PyInstaller.__version__} is installed")
         return True
     except ImportError:
-        print("❌ PyInstaller not found. Installing...")
+        print("PyInstaller not found. Installing...")
         try:
             subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'pyinstaller'])
-            print("✅ PyInstaller installed successfully")
+            print("PyInstaller installed successfully")
             return True
         except subprocess.CalledProcessError:
-            print("❌ Failed to install PyInstaller")
+            print("Failed to install PyInstaller")
             return False
 
 def create_spec_file(system, arch):
@@ -189,7 +189,7 @@ def create_launcher_script(system, output_dir):
         launcher_content = '''@echo off
 echo Starting Debuggle...
 echo.
-echo 🐞 Debuggle - Log File Processor
+echo Debuggle - Log File Processor
 echo ================================
 echo.
 echo Starting web server on http://localhost:8000
@@ -209,7 +209,7 @@ pause
         launcher_content = '''#!/bin/bash
 echo "Starting Debuggle..."
 echo ""
-echo "🐞 Debuggle - Log File Processor"
+echo "Debuggle - Log File Processor"
 echo "================================"
 echo ""
 echo "Starting web server on http://localhost:8000"
@@ -236,7 +236,7 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 def create_readme(output_dir):
     """Create README for standalone distribution"""
     
-    readme_content = '''# 🐞 Debuggle - Standalone Distribution
+    readme_content = '''# Debuggle - Standalone Distribution
 
 ## Quick Start
 
@@ -253,13 +253,13 @@ def create_readme(output_dir):
 
 ## Features
 
-✨ **Drag & Drop Interface** - Simply drag your log files into the browser
-🧠 **Smart Analysis** - AI-powered error detection and summaries
-🏷️ **Interactive Tags** - Click tags to highlight related log entries
-🎨 **Enhanced Formatting** - Color-coded log output with syntax highlighting
-📊 **Multi-file Support** - Process multiple files with tabbed interface
-⚡ **Fast Processing** - Local processing, no internet required
-🔒 **Privacy First** - Your logs never leave your computer
+* **Drag & Drop Interface** - Simply drag your log files into the browser
+* **Smart Analysis** - AI-powered error detection and summaries
+* **Interactive Tags** - Click tags to highlight related log entries
+* **Enhanced Formatting** - Color-coded log output with syntax highlighting
+* **Multi-file Support** - Process multiple files with tabbed interface
+* **Fast Processing** - Local processing, no internet required
+* **Privacy First** - Your logs never leave your computer
 
 ## What's Included
 
@@ -313,7 +313,7 @@ You can also use Debuggle from the command line:
 
 ---
 
-Made with ❤️ by the Debuggle team
+Made with love by the Debuggle team
 '''
     
     readme_path = output_dir / 'README.txt'
@@ -325,12 +325,12 @@ Made with ❤️ by the Debuggle team
 def build_executable():
     """Build the standalone executable"""
     
-    print("🚀 Building Debuggle Standalone Executable")
+    print("Building Debuggle Standalone Executable")
     print("=" * 50)
     
     # Get platform info
     system, arch = get_platform_info()
-    print(f"📱 Platform: {system}-{arch}")
+    print(f"Platform: {system}-{arch}")
     
     # Ensure PyInstaller is available
     if not ensure_pyinstaller():
@@ -346,15 +346,15 @@ def build_executable():
         shutil.rmtree(output_dir)
     output_dir.mkdir(exist_ok=True)
     
-    print(f"📁 Build directory: {build_dir}")
-    print(f"📁 Output directory: {output_dir}")
+    print(f"Build directory: {build_dir}")
+    print(f"Output directory: {output_dir}")
     
     # Create spec file
-    print("📝 Creating PyInstaller spec file...")
+    print("Creating PyInstaller spec file...")
     spec_path = create_spec_file(system, arch)
     
     # Build the executable
-    print("🔨 Building executable (this may take a few minutes)...")
+    print("Building executable (this may take a few minutes)...")
     try:
         cmd = [
             sys.executable, '-m', 'PyInstaller',
@@ -367,27 +367,27 @@ def build_executable():
         result = subprocess.run(cmd, capture_output=True, text=True)
         
         if result.returncode != 0:
-            print(f"❌ Build failed: {result.stderr}")
+            print(f"Build failed: {result.stderr}")
             return False
             
-        print("✅ Executable built successfully!")
+        print("Executable built successfully!")
         
     except subprocess.CalledProcessError as e:
-        print(f"❌ Build failed: {e}")
+        print(f"Build failed: {e}")
         return False
     
     # Create launcher script
-    print("📝 Creating launcher script...")
+    print("Creating launcher script...")
     launcher_path = create_launcher_script(system, output_dir)
-    print(f"✅ Launcher created: {launcher_path}")
+    print(f"Launcher created: {launcher_path}")
     
     # Create README
-    print("📝 Creating README...")
+    print("Creating README...")
     readme_path = create_readme(output_dir)
-    print(f"✅ README created: {readme_path}")
+    print(f"README created: {readme_path}")
     
     # Create archive
-    print("📦 Creating distribution archive...")
+    print("Creating distribution archive...")
     archive_name = f'debuggle-{system}-{arch}'
     
     if system == 'windows':
@@ -409,15 +409,15 @@ def build_executable():
         )
         archive_path = build_dir / f'{archive_name}.tar.gz'
     
-    print(f"✅ Distribution archive created: {archive_path}")
+    print(f"Distribution archive created: {archive_path}")
     
     # Cleanup
     if spec_path.exists():
         spec_path.unlink()
     
-    print("\n🎉 Build completed successfully!")
-    print(f"📦 Distribution: {archive_path}")
-    print(f"📁 Extracted files: {output_dir}")
+    print("\nBuild completed successfully!")
+    print(f"Distribution: {archive_path}")
+    print(f"Extracted files: {output_dir}")
     print("\nTo test:")
     print(f"1. Extract {archive_path}")
     if system == 'windows':
