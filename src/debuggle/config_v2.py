@@ -270,7 +270,11 @@ class Settings(BaseSettings):
     enable_file_logging: bool = Field(default=False, description="Enable file logging")
     log_format: str = Field(default="detailed", description="Log format style")
     
-    # Feature flags
+    # 🎯 TIER MANAGEMENT - The Membership Level System
+    # Like having different Netflix plans - same app, different features unlocked!
+    tier: str = Field(default="free", description="Service tier: free, pro, enterprise")
+    
+    # Feature flags (some controlled by tier, others always available)
     enable_summarization: bool = Field(default=True, description="Enable error summarization")
     enable_context_extraction: bool = Field(default=True, description="Enable context extraction")
     enable_web_interface: bool = Field(default=True, description="Enable web interface")
@@ -333,6 +337,29 @@ class Settings(BaseSettings):
             'enable_file': self.enable_file_logging,
             'log_format': self.log_format
         }
+    
+    def get_tier_manager(self):
+        """
+        🎯 Get the tier manager for this settings instance
+        Like getting your membership card to check what features you can access!
+        """
+        # Import here to avoid circular dependencies (like not inviting yourself to your own party)
+        from .tiers import TierManager
+        return TierManager(tier=self.tier)
+    
+    def has_feature(self, feature: str) -> bool:
+        """
+        ✨ Check if a feature is available in the current tier
+        Like checking if your gym membership includes the pool!
+        """
+        return self.get_tier_manager().has_feature(feature)
+    
+    def require_feature(self, feature: str) -> None:
+        """
+        🚫 Require a feature or raise an exception
+        Like a bouncer checking your VIP pass at the club!
+        """
+        return self.get_tier_manager().require_feature(feature)
 
 
 class DevelopmentSettings(Settings):

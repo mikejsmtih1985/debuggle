@@ -31,13 +31,11 @@ This is like having a "temporary shared folder" for error debugging!
 """
 
 import os
-import json
-import asyncio
 import hashlib
 import logging
 from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Any, Tuple
-from dataclasses import dataclass, asdict
+from typing import List, Optional
+from dataclasses import dataclass
 from pathlib import Path
 
 # For cloud storage implementations
@@ -126,6 +124,11 @@ class CloudStorageManager:
         self.storage_backend = storage_backend
         self.tier = tier
         self.base_url = base_url
+        
+        # 🎯 Initialize tier management system
+        # Like getting your membership card that shows what features you can access!
+        from ..tiers import TierManager
+        self.tier_manager = TierManager(tier=tier)
         
         # Rate limiting for free tier (like free Google Drive upload limits)
         self.rate_limits = {
@@ -224,6 +227,12 @@ class CloudStorageManager:
         Returns:
             CloudLogEntry with sharing URL, or None if upload failed
         """
+        # 🎯 Check if cloud sharing is allowed in current tier
+        # Like checking if your gym membership includes pool access!
+        if not self.tier_manager.has_feature("cloud_sharing"):
+            logger.warning(f"🚫 Cloud sharing not available in {self.tier.upper()} tier")
+            return None
+            
         if not CLOUD_DEPS_AVAILABLE or not self.storage:
             logger.warning("🌤️ Cloud upload not available - check dependencies")
             return None
@@ -302,6 +311,12 @@ class CloudStorageManager:
         - Filter by tags (["python", "critical"])
         - Get results ranked by relevance
         """
+        # 🎯 Check if advanced search is allowed in current tier
+        # Like checking if your Netflix plan includes 4K streaming!
+        if not self.tier_manager.has_feature("advanced_analytics"):
+            logger.warning(f"🚫 Advanced cloud search not available in {self.tier.upper()} tier")
+            return []
+            
         if not self.storage:
             return []
         

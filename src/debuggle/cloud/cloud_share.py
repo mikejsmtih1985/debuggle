@@ -37,16 +37,11 @@ NEW WAY (with Debuggle Cloud Sharing):
 This makes getting help with errors as easy as sharing a Google Doc!
 """
 
-import os
-import json
-import uuid
 import hashlib
 import logging
 from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Any, Tuple
+from typing import Dict, List, Optional, Any
 from dataclasses import dataclass, asdict
-from pathlib import Path
-from urllib.parse import quote
 
 logger = logging.getLogger(__name__)
 
@@ -128,6 +123,11 @@ class CloudShareManager:
         self.base_url = base_url
         self.tier = tier
         self.analytics_enabled = analytics_enabled
+        
+        # 🎯 Initialize tier management system  
+        # Like getting your membership card that shows what sharing features you can access!
+        from ..tiers import TierManager
+        self.tier_manager = TierManager(tier=tier)
         
         # Sharing limits by tier (like social media post limits)
         self.sharing_limits = {
@@ -220,6 +220,12 @@ class CloudShareManager:
         Returns:
             Share URL like "https://debuggle.cloud/share/abc123def456"
         """
+        # 🎯 Check if cloud sharing is allowed in current tier
+        # Like checking if your streaming service includes sharing features!
+        if not self.tier_manager.has_feature("cloud_sharing"):
+            logger.warning(f"🚫 Cloud sharing not available in {self.tier.upper()} tier")
+            return None
+            
         try:
             # Check sharing limits for current tier
             if not await self._check_sharing_limits():
@@ -331,6 +337,12 @@ class CloudShareManager:
         - Where did the traffic come from?
         - How many clicked "Try Debuggle"?
         """
+        # 🎯 Check if advanced analytics are allowed in current tier
+        # Like checking if your social media plan includes detailed metrics!
+        if not self.tier_manager.has_feature("advanced_analytics"):
+            logger.warning(f"🚫 Advanced analytics not available in {self.tier.upper()} tier")
+            return None
+            
         if not self.analytics_enabled:
             return None
         
