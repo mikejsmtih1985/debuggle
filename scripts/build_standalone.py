@@ -367,17 +367,21 @@ def build_executable():
     archive_name = f'debuggle-{system}-{arch}'
     
     if system == 'windows':
+        # Create zip archive from the output directory contents
         shutil.make_archive(
             str(build_dir / archive_name), 
             'zip', 
-            str(output_dir)
+            str(output_dir.parent),  # Parent directory
+            str(output_dir.name)     # Directory name to archive
         )
         archive_path = build_dir / f'{archive_name}.zip'
     else:
+        # Create tar.gz archive from the output directory contents
         shutil.make_archive(
             str(build_dir / archive_name), 
             'gztar', 
-            str(output_dir)
+            str(output_dir.parent),  # Parent directory
+            str(output_dir.name)     # Directory name to archive
         )
         archive_path = build_dir / f'{archive_name}.tar.gz'
     
