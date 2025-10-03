@@ -32,6 +32,8 @@
 - **Node.js 18.19+** (for VS Code extension)
 - **Git** (for project context analysis)
 - **VS Code** (for real-time integration)
+  - **WSL Users**: Install "Remote-WSL" extension for best experience
+  - **Extension Path**: `/home/[user]/debuggle/vscode-extension/`
 
 > **Note**: Java is optional but recommended for multi-language project analysis
 

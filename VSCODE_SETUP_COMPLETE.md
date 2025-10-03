@@ -26,16 +26,25 @@ python entry_point.py serve
 
 ### 3. Install VS Code Extension (Development Mode)
 
-**Option A: Direct Loading (Recommended)**
+**WSL Users (Recommended Approach):**
+```bash
+cd /home/mikej/debuggle/vscode-extension
+code .  # Opens VS Code connected to WSL
+```
+Then press **F5** to launch Extension Development Host
+
+**Option A: Direct Loading (WSL or Local)**
 1. Open VS Code
 2. File → Open Folder → Select `/home/mikej/debuggle/vscode-extension/`
+   - **WSL Path**: `/home/mikej/debuggle/vscode-extension/`
+   - **Windows Path**: `\\wsl$\Ubuntu\home\mikej\debuggle\vscode-extension\`
 3. Press **F5** to launch Extension Development Host  
 4. New VS Code window opens with Debuggle extension loaded
 
 **Option B: Command Palette**
 1. Open VS Code
 2. **Ctrl+Shift+P** → Type "Extensions: Install from VSIX"
-3. Navigate to `/home/mikej/debuggle/vscode-extension/`
+3. Navigate to extension directory
 4. Select the extension (once packaged)
 
 ## 🎮 Using Debuggle + VS Code Integration
