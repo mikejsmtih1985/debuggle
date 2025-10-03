@@ -26,6 +26,7 @@ from .alerts import router as alerts_router
 from .ingestion import router as ingestion_router
 from .storage import router as storage_router
 from .common import router as common_router
+from .realtime import router as realtime_router
 
 # Create the main hospital router that connects all departments
 main_router = APIRouter()
@@ -38,6 +39,7 @@ main_router.include_router(dashboard_router)  # Analytics dashboard department
 main_router.include_router(alerts_router)     # Alert system department
 main_router.include_router(ingestion_router)  # Data ingestion department
 main_router.include_router(storage_router)    # Storage and search department
+main_router.include_router(realtime_router)   # Real-time WebSocket department
 
 # Export the main router so the app factory can use it
 router = main_router
