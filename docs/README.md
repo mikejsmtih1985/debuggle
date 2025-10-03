@@ -10,7 +10,13 @@ Welcome to the Debuggle documentation! This directory contains comprehensive gui
 - **Tier System** - Understanding service tiers
 - **Troubleshooting** - Common issues and solutions
 
-### 🔧 API Documentation (`api/`)
+### �️ **Data Persistence & Storage** (NEW!)
+- **[SQLite Implementation](SQLITE_IMPLEMENTATION.md)** - Complete architecture overview
+- **[Database Schema](DATABASE_SCHEMA.md)** - Detailed schema and field reference
+- **[Data Persistence Guide](DATA_PERSISTENCE_GUIDE.md)** - User-friendly storage guide
+- **[Database Administration](DATABASE_ADMINISTRATION.md)** - Advanced admin and tuning guide
+
+### �🔧 API Documentation (`api/`)
 - **API Reference** - Complete endpoint documentation
 - **Authentication** - API key management
 - **Rate Limiting** - Understanding usage limits
@@ -24,8 +30,15 @@ Welcome to the Debuggle documentation! This directory contains comprehensive gui
 
 ## 🎯 Quick Links
 
-- [API Reference](./api/README.md)
+### 🚀 **Essential Documentation**
 - [Getting Started Guide](./user-guide/getting-started.md)
+- [SQLite Implementation Overview](SQLITE_IMPLEMENTATION.md) ⭐ **NEW!**
+- [Data Persistence Guide](DATA_PERSISTENCE_GUIDE.md)
+- [API Reference](./api/README.md)
+
+### 🔧 **Technical References**
+- [Database Schema Reference](DATABASE_SCHEMA.md)
+- [Database Administration Guide](DATABASE_ADMINISTRATION.md)
 - [Docker Deployment](./deployment/docker.md)
 - [Contributing Guidelines](../CONTRIBUTING.md)
 
