@@ -62,14 +62,11 @@ from .models import (
     AnalyzeRequest, AnalyzeResponse, AnalyzeMetadata,  # For basic error analysis
     FileUploadResponse, FileUploadMetadata, LanguageEnum,  # For file uploads
     HealthResponse, TiersResponse, TierFeature, ErrorResponse,  # For system info and errors
-    SearchRequest, SearchResponse, LogStorageRequest, LogStorageResponse,  # For persistent storage
-    RetentionPolicyRequest, RetentionPolicyResponse, LogAnalyticsResponse,  # For data management
+    SearchRequest, SearchResponse, RetentionPolicyRequest, RetentionPolicyResponse, LogAnalyticsResponse,  # For data management
     AlertRuleRequest, AlertRuleResponse, AlertResponse, AlertAcknowledgeRequest,  # For alert rules and alerts
     AlertStatsResponse, AlertSeverityAPI, AlertChannelAPI,  # For alert statistics and enums
     BatchIngestionRequest, StreamingIngestionRequest, IngestionJobResponse,  # For scalable ingestion
-    IngestionStatsResponse, StreamDataRequest, BulkUploadRequest,  # For ingestion system features
-    IngestionSourceAPI, ProcessingPriorityAPI, IngestionStatusAPI,  # For ingestion enums
-    ChartDataRequest, ChartDataResponse, DashboardRequest, DashboardResponse,  # For dashboard system
+    IngestionStatsResponse, StreamDataRequest, ProcessingPriorityAPI, ChartDataRequest, ChartDataResponse, DashboardRequest, DashboardResponse,  # For dashboard system
     DashboardListResponse, SystemMetricsResponse, ChartTypeAPI, TimeRangeAPI  # For dashboard features
 )
 from .processor import LogProcessor  # Our main error analysis engine - the "chief medical officer"
@@ -77,9 +74,9 @@ from .config_v2 import settings  # Configuration settings - like hospital polici
 from .realtime import connection_manager, error_monitor  # Real-time communication system - like hospital intercom
 from .self_monitor import setup_self_monitoring  # System that watches itself for problems - like security cameras
 from .storage import DatabaseManager, RetentionManager, SearchManager  # Persistent storage system
-from .alerting import AlertManager, AlertRule, Alert, AlertSeverity, AlertChannel  # Proactive alerting system
-from .ingestion import initialize_ingestion_engine, get_ingestion_engine, IngestionSource, ProcessingPriority  # Scalable ingestion system
-from .dashboard import initialize_dashboard_engine, get_dashboard_engine  # Rich dashboard system
+from .alerting import AlertManager, AlertRule, AlertSeverity, AlertChannel  # Proactive alerting system
+from .ingestion import initialize_ingestion_engine, IngestionSource, ProcessingPriority  # Scalable ingestion system
+from .dashboard import initialize_dashboard_engine  # Rich dashboard system
 
 # Step 1: Set up our "hospital security system" - rate limiting
 # This prevents any single user from overwhelming our service with too many requests
@@ -164,14 +161,30 @@ alert_manager = AlertManager(error_monitor)  # Alert system connected to real-ti
 
 # Step 8: Initialize scalable ingestion system - Our enterprise processing factory
 # This handles large-scale log processing, streaming, and batch operations
-ingestion_engine = initialize_ingestion_engine(
-    max_concurrent_jobs=10,  # Process up to 10 jobs concurrently
-    max_memory_mb=500  # 500MB memory limit for processing
-)
+# NOTE: Initialize lazily to avoid async issues during module import
+ingestion_engine = None  # Will be initialized when first needed
+
+def get_ingestion_engine():
+    """Get the ingestion engine, initializing it if needed."""
+    global ingestion_engine
+    if ingestion_engine is None:
+        ingestion_engine = initialize_ingestion_engine(
+            max_concurrent_jobs=10,  # Process up to 10 jobs concurrently
+            max_memory_mb=500  # 500MB memory limit for processing
+        )
+    return ingestion_engine
 
 # Step 9: Initialize rich dashboard system - Our visual analytics command center
 # This creates beautiful, interactive dashboards with real-time charts and metrics
-dashboard_engine = initialize_dashboard_engine(database_manager)
+# NOTE: Initialize lazily to avoid async issues during module import
+dashboard_engine = None  # Will be initialized when first needed
+
+def get_dashboard_engine():
+    """Get the dashboard engine, initializing it if needed."""
+    global dashboard_engine
+    if dashboard_engine is None:
+        dashboard_engine = initialize_dashboard_engine(database_manager)
+    return dashboard_engine
 
 
 @app.exception_handler(Exception)
@@ -1431,7 +1444,7 @@ async def submit_batch_job(
             ProcessingPriorityAPI.BATCH: ProcessingPriority.BATCH
         }
         
-        job_id = await ingestion_engine.submit_job(
+        job_id = await get_ingestion_engine().submit_job(
             source=IngestionSource.BATCH_UPLOAD,
             priority=priority_map[request.priority],
             file_path=temp_file_path,
@@ -1439,7 +1452,7 @@ async def submit_batch_job(
         )
         
         # 📋 GET JOB STATUS TO RETURN
-        job = ingestion_engine.get_job_status(job_id)
+        job = get_ingestion_engine().get_job_status(job_id)
         if not job:
             raise HTTPException(status_code=500, detail="Failed to create batch job")
         
@@ -1498,7 +1511,7 @@ async def get_job_status(job_id: str):
     - Or "Sorry, there was a problem" (failed with error details)
     """
     try:
-        job = ingestion_engine.get_job_status(job_id)
+        job = get_ingestion_engine().get_job_status(job_id)
         if not job:
             raise HTTPException(status_code=404, detail="Job not found")
         
@@ -1576,7 +1589,7 @@ async def get_ingestion_statistics():
     This helps you understand how busy the system is and how well it's performing!
     """
     try:
-        stats = ingestion_engine.get_system_stats()
+        stats = get_ingestion_engine().get_system_stats()
         
         return IngestionStatsResponse(
             jobs_created=stats['jobs_created'],
@@ -1642,7 +1655,7 @@ async def start_streaming_session(request: StreamingIngestionRequest):
         }
         
         # Submit streaming job setup
-        job_id = await ingestion_engine.submit_job(
+        job_id = await get_ingestion_engine().submit_job(
             source=IngestionSource.STREAMING,
             priority=priority_map[request.priority],
             metadata=metadata
@@ -1689,7 +1702,7 @@ async def send_stream_data(stream_id: str, request: StreamDataRequest):
             **request.metadata
         }
         
-        job_id = await ingestion_engine.submit_job(
+        job_id = await get_ingestion_engine().submit_job(
             source=IngestionSource.STREAMING,
             priority=ProcessingPriority.NORMAL,
             content=request.log_data,
@@ -1733,7 +1746,7 @@ async def list_dashboards():
     Each dashboard serves a different purpose and audience!
     """
     try:
-        dashboards = dashboard_engine.list_dashboards()
+        dashboards = get_dashboard_engine().list_dashboards()
         
         # Build summary information for each dashboard
         dashboard_summaries = []
@@ -1788,7 +1801,7 @@ async def get_dashboard(dashboard_id: str):
     You get everything needed to fully understand and display the dashboard!
     """
     try:
-        dashboard = dashboard_engine.get_dashboard(dashboard_id)
+        dashboard = get_dashboard_engine().get_dashboard(dashboard_id)
         if not dashboard:
             raise HTTPException(status_code=404, detail="Dashboard not found")
         
@@ -1870,7 +1883,7 @@ async def create_dashboard(request: DashboardRequest):
         dashboard_id = f"custom_{uuid.uuid4().hex[:8]}"
         
         # Create dashboard
-        dashboard = await dashboard_engine.create_dashboard(
+        dashboard = await get_dashboard_engine().create_dashboard(
             dashboard_id=dashboard_id,
             title=request.title,
             description=request.description,
@@ -1888,7 +1901,7 @@ async def create_dashboard(request: DashboardRequest):
         
         # Add default charts if requested
         if request.include_default_charts:
-            await dashboard_engine.create_default_charts(dashboard)
+            await get_dashboard_engine().create_default_charts(dashboard)
         
         # Add custom charts
         for chart_request in request.custom_charts:
@@ -1918,7 +1931,7 @@ async def delete_dashboard(dashboard_id: str):
     outdated information that's no longer relevant.
     """
     try:
-        success = dashboard_engine.delete_dashboard(dashboard_id)
+        success = get_dashboard_engine().delete_dashboard(dashboard_id)
         if not success:
             raise HTTPException(status_code=404, detail="Dashboard not found")
         
@@ -1948,7 +1961,7 @@ async def create_chart(dashboard_id: str, request: ChartDataRequest):
     - Result: The board now has your new chart alongside existing content
     """
     try:
-        dashboard = dashboard_engine.get_dashboard(dashboard_id)
+        dashboard = get_dashboard_engine().get_dashboard(dashboard_id)
         if not dashboard:
             raise HTTPException(status_code=404, detail="Dashboard not found")
         
@@ -1971,7 +1984,7 @@ async def create_chart(dashboard_id: str, request: ChartDataRequest):
         )
         
         # Update chart with actual data based on request
-        await dashboard_engine._update_chart_data(chart)
+        await get_dashboard_engine()._update_chart_data(chart)
         
         # Add to dashboard
         dashboard.add_chart(chart)
@@ -2026,7 +2039,7 @@ async def get_system_metrics():
     """
     try:
         # Get metrics from dashboard engine cache
-        engine = dashboard_engine
+        engine = get_dashboard_engine()
         
         # Calculate key metrics
         total_errors = await engine._get_cached_metric('total_errors', engine._calculate_total_errors)
@@ -2083,14 +2096,17 @@ async def get_default_dashboard():
     information display in a building lobby.
     """
     try:
-        if not dashboard_engine.default_dashboard:
+        dashboard_engine = get_dashboard_engine()
+        default_dashboard = dashboard_engine.default_dashboard
+        
+        if not default_dashboard:
             raise HTTPException(status_code=404, detail="Default dashboard not found")
         
         # Ensure default dashboard has charts
-        if not dashboard_engine.default_dashboard.charts:
-            await dashboard_engine.create_default_charts(dashboard_engine.default_dashboard)
+        if not default_dashboard.charts:
+            await dashboard_engine.create_default_charts(default_dashboard)
         
-        return await get_dashboard(dashboard_engine.default_dashboard.dashboard_id)
+        return await get_dashboard(default_dashboard.dashboard_id)
         
     except HTTPException:
         raise

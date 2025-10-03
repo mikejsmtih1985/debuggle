@@ -35,25 +35,15 @@ ENTERPRISE CAPABILITIES PROVIDED:
 """
 
 import asyncio
-import json
 import logging
 from datetime import datetime, timedelta
-from typing import List, Dict, Optional, Any, Callable, AsyncGenerator, BinaryIO, TextIO
+from typing import List, Dict, Optional, Any
 from dataclasses import dataclass, field
 from enum import Enum
 # import aiofiles  # Not available, will use standard file operations
-import hashlib
-import mimetypes
 import os
-from pathlib import Path
-import tempfile
-import shutil
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
-import threading
-import queue
-import time
 from collections import deque
-import weakref
 
 logger = logging.getLogger(__name__)
 
@@ -323,8 +313,8 @@ class IngestionEngine:
         self.background_tasks: List[asyncio.Task] = []
         self.shutdown_event = asyncio.Event()
         
-        # 🚀 START THE FACTORY
-        self._start_background_systems()
+        # 🚀 FACTORY IS READY (but background systems start later)
+        self._background_started = False
         
         logger.info(f"Ingestion engine initialized with {max_concurrent_jobs} concurrent jobs")
     
@@ -335,14 +325,30 @@ class IngestionEngine:
         Launch all the background tasks that keep the ingestion system
         running smoothly. Like starting all the factory's automated
         systems and conveyor belts.
-        """
-        # Job processor task
-        task = asyncio.create_task(self._job_processor())
-        self.background_tasks.append(task)
         
-        # Metrics collector task
-        task = asyncio.create_task(self._metrics_collector())
-        self.background_tasks.append(task)
+        Note: Only starts if there's an active event loop.
+        """
+        if self._background_started:
+            return
+            
+        try:
+            # Only start if we have an event loop
+            loop = asyncio.get_running_loop()
+            
+            # Job processor task
+            task = asyncio.create_task(self._job_processor())
+            self.background_tasks.append(task)
+            
+            # Metrics collector task
+            task = asyncio.create_task(self._metrics_collector())
+            self.background_tasks.append(task)
+            
+            self._background_started = True
+            logger.info("Background ingestion systems started")
+            
+        except RuntimeError:
+            # No event loop running - background tasks will start later
+            logger.debug("No event loop available - background systems will start when needed")
         
         # Cleanup task
         task = asyncio.create_task(self._cleanup_completed_jobs())
@@ -587,8 +593,9 @@ class IngestionEngine:
         while not self.shutdown_event.is_set():
             try:
                 # 💾 CALCULATE MEMORY USAGE (optional - requires psutil)
+                # Like checking how much RAM your phone app is using! 📱
                 try:
-                    import psutil
+                    import psutil  # type: ignore # Optional dependency for monitoring
                     process = psutil.Process()
                     memory_mb = process.memory_info().rss / 1024 / 1024
                     self.stats['memory_usage_mb'] = memory_mb
@@ -660,6 +667,10 @@ class IngestionEngine:
         
         Returns the job ID for tracking progress.
         """
+        # 🔄 ENSURE BACKGROUND SYSTEMS ARE RUNNING
+        if not self._background_started:
+            self._start_background_systems()
+            
         # 🏷️ CREATE UNIQUE JOB ID
         job_id = f"job_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{hash(content or str(raw_content) or file_path) % 10000:04d}"
         

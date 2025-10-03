@@ -13,7 +13,7 @@ class CoverageHandler:
     def __init__(self):
         self.coverage_data: Optional[dict] = None
     
-    def handle_coverage_failure(self, required: float, actual: float, details: dict = None):
+    def handle_coverage_failure(self, required: float, actual: float, details: Optional[dict] = None):
         """Provide graceful handling when coverage fails below threshold."""
         
         gap = required - actual
