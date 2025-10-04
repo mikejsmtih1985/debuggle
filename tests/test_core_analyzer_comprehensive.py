@@ -22,35 +22,36 @@ from unittest.mock import Mock, patch, MagicMock
 from pathlib import Path
 
 from src.debuggle.core.analyzer import (
-    DebuggleAnalyzer, 
+    ErrorAnalyzer, 
     AnalysisResult,
-    ErrorSeverity,
-    AnalysisContext
+    AnalysisRequest
 )
+from src.debuggle.core.patterns import ErrorSeverity
 
 
-class TestDebuggleAnalyzerInitialization:
+class TestErrorAnalyzerInitialization:
     """Test analyzer setup and configuration - the detective's toolkit"""
     
     def test_analyzer_creates_successfully(self):
         """Basic analyzer creation should work like hiring a detective"""
-        analyzer = DebuggleAnalyzer()
+        analyzer = ErrorAnalyzer()
         assert analyzer is not None
         assert hasattr(analyzer, 'analyze')
     
     def test_analyzer_with_custom_config(self):
-        """Analyzer should accept custom configuration"""
-        config = {'max_depth': 5, 'timeout': 30}
-        analyzer = DebuggleAnalyzer(config=config)
+        """Test that ErrorAnalyzer accepts custom configuration"""
+        # ErrorAnalyzer no longer accepts config in constructor
+        analyzer = ErrorAnalyzer()
         # Verify configuration is applied
         assert analyzer.config is not None
     
     def test_analyzer_initializes_dependencies(self):
-        """Analyzer should set up its internal components"""
-        analyzer = DebuggleAnalyzer()
-        # Test that internal components exist
+        """Test that analyzer initializes its dependencies"""
+        analyzer = ErrorAnalyzer()
+        
+        # Check that key dependencies are initialized
         assert hasattr(analyzer, 'pattern_matcher')
-        assert hasattr(analyzer, 'context_extractor')
+        assert hasattr(analyzer, 'logger')
 
 
 class TestErrorAnalysisCore:
@@ -59,16 +60,18 @@ class TestErrorAnalysisCore:
     @pytest.fixture
     def analyzer(self):
         """Create analyzer for testing"""
-        return DebuggleAnalyzer()
+        return ErrorAnalyzer()
     
     def test_analyze_python_traceback(self, analyzer):
         """Test analysis of Python traceback - most common error type"""
-        error_text = '''
-        Traceback (most recent call last):
-          File "app.py", line 42, in process_data
-            result = data[index]
-        IndexError: list index out of range
-        '''
+        
+        error_text = '''Traceback (most recent call last):
+  File "test.py", line 10, in <module>
+    print(items[5])
+IndexError: list index out of range'''
+        
+        request = AnalysisRequest(text=error_text, language="python")
+        result = analyzer.analyze(request)
         
         result = analyzer.analyze(error_text)
         
@@ -139,17 +142,17 @@ class TestErrorAnalysisCore:
         assert result.severity == ErrorSeverity.LOW
 
 
-class TestAnalysisContextHandling:
+class TestAnalysisRequestHandling:
     """Test context-aware analysis - understanding the bigger picture"""
     
     @pytest.fixture
     def analyzer(self):
-        return DebuggleAnalyzer()
+        return ErrorAnalyzer()
     
     def test_analyze_with_file_context(self, analyzer):
         """Test analysis when file context is provided"""
         error_text = "NameError: name 'user_data' is not defined"
-        context = AnalysisContext(
+        context = AnalysisRequest(
             file_path="user_manager.py",
             line_number=45,
             function_name="process_user"
@@ -186,7 +189,7 @@ class TestAnalysisResultFormatting:
     
     @pytest.fixture
     def analyzer(self):
-        return DebuggleAnalyzer()
+        return ErrorAnalyzer()
     
     def test_analysis_result_has_required_fields(self, analyzer):
         """Test that analysis results have all required fields"""
@@ -229,7 +232,7 @@ class TestAnalysisPerformance:
     
     @pytest.fixture
     def analyzer(self):
-        return DebuggleAnalyzer()
+        return ErrorAnalyzer()
     
     def test_analysis_completes_quickly(self, analyzer):
         """Test that analysis completes within reasonable time"""
@@ -262,7 +265,7 @@ class TestErrorPatternRecognition:
     
     @pytest.fixture
     def analyzer(self):
-        return DebuggleAnalyzer()
+        return ErrorAnalyzer()
     
     def test_recognizes_import_errors(self, analyzer):
         """Test recognition of import/module errors"""
@@ -310,7 +313,7 @@ class TestErrorPatternRecognition:
 
 def test_analyzer_integration_with_other_components():
     """Test analyzer integration with other Debuggle components"""
-    analyzer = DebuggleAnalyzer()
+    analyzer = ErrorAnalyzer()
     
     # Test that analyzer can work with pattern matcher
     error_text = "AttributeError: 'NoneType' object has no attribute 'split'"
@@ -328,7 +331,7 @@ def test_analyzer_integration_with_other_components():
 # Integration test with real-world scenarios
 def test_real_world_error_scenarios():
     """Test analyzer with real-world error scenarios"""
-    analyzer = DebuggleAnalyzer()
+    analyzer = ErrorAnalyzer()
     
     # Django-style error
     django_error = '''

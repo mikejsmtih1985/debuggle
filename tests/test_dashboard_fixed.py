@@ -15,7 +15,7 @@ from unittest.mock import Mock, patch, AsyncMock, MagicMock
 from datetime import datetime, timedelta
 from dataclasses import asdict
 
-from src.debuggle.dashboard import (
+from src.debuggle.services.dashboard import (
     ChartType, TimeRange, MetricType, ChartData, Dashboard, DashboardEngine
 )
 from src.debuggle.storage.database import DatabaseManager

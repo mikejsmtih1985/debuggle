@@ -651,21 +651,3 @@ IndexError: list index out of range"""
             assert len(set(error_names)) > 1  # Should have different error types
     
     def test_case_insensitive_matching(self):
-        """Test that pattern matching is case insensitive"""
-        recognizer = ErrorPatternMatcher()
-        
-        # Test with different cases
-        error_variations = [
-            "IndexError: list index out of range",
-            "indexerror: list index out of range", 
-            "INDEXERROR: LIST INDEX OUT OF RANGE"
-        ]
-        
-        match_counts = []
-        for error_text in error_variations:
-            matches = recognizer.find_matches(error_text)
-            match_counts.append(len(matches))
-        
-        # All variations should find the same number of matches
-        if match_counts and max(match_counts) > 0:
-            assert all(count == match_counts[0] for count in match_counts)

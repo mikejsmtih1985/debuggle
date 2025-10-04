@@ -19,7 +19,7 @@ from datetime import datetime, timedelta
 from unittest.mock import Mock, AsyncMock, patch, MagicMock
 from typing import List, Dict, Any
 
-from src.debuggle.alerting import (
+from src.debuggle.services.alerting import (
     AlertSeverity, AlertChannel, AlertRule, Alert, AlertManager
 )
 from src.debuggle.storage.database import LogEntry, LogSeverity
@@ -532,7 +532,7 @@ class TestAlertManager:
         )
         
         # Mock datetime to control time testing
-        with patch('src.debuggle.alerting.datetime') as mock_datetime:
+        with patch('src.debuggle.services.alerting.datetime') as mock_datetime:
             # Monday at 2 PM (should allow)
             mock_datetime.now.return_value = datetime(2024, 1, 8, 14, 0, 0)  # Monday
             mock_datetime.side_effect = lambda *args, **kw: datetime(*args, **kw)

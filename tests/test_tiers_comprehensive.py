@@ -15,7 +15,7 @@ These tests cover the previously untested branches and error paths.
 import pytest
 import os
 from unittest.mock import patch, Mock
-from src.debuggle.tiers import (
+from src.debuggle.core.tiers import (
     DebuggleTier, 
     TierFeatures, 
     TierManager, 

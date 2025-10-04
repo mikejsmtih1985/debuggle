@@ -18,7 +18,7 @@ from dataclasses import asdict
 import tempfile
 import os
 
-from src.debuggle.ingestion import (
+from src.debuggle.services.ingestion import (
     IngestionSource, ProcessingPriority, IngestionStatus,
     IngestionJob, StreamBuffer, IngestionEngine
 )

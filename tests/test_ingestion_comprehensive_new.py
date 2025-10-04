@@ -18,7 +18,7 @@ from unittest.mock import patch, MagicMock, mock_open
 from io import StringIO
 
 # Import what's actually available
-from src.debuggle.ingestion import LogIngestionManager
+from src.debuggle.services.ingestion import LogIngestionManager
 from src.debuggle.models import AnalyzeRequest, LanguageEnum
 
 

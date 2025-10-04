@@ -4,7 +4,7 @@ Tests error pattern matching, context extraction, and error summary generation.
 """
 
 import pytest
-from src.debuggle.error_fixes import (
+from src.debuggle.utils.error_fixes import (
     ERROR_FIX_PATTERNS,
     extract_error_context,
     generate_enhanced_error_summary

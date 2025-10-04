@@ -15,7 +15,6 @@ TARGET: Boost core/patterns.py from 40% → 75% coverage
 FOCUS: Pattern recognition algorithms, error classification, and matcher functionality
 """
 
-"""
 import pytest
 import re
 from typing import List, Optional, Pattern
@@ -145,7 +144,7 @@ class TestErrorPattern:
         
         # Should keep the original compiled pattern
         assert pattern.pattern is compiled_pattern
-        assert pattern.pattern.flags & re.DOTALL
+        assert pattern.pattern.flags & re.DOTALL  # type: ignore[attr-defined]
 
 
 class TestErrorMatch:
@@ -220,7 +219,7 @@ class TestBasePatternMatcher:
             def get_patterns(self) -> List[ErrorPattern]:
                 return []
             
-            def get_language_indicators(self) -> List[re.Pattern[str]]:
+            def get_language_indicators(self) -> List[Pattern[str]]:
                 return []
         
         matcher = TestMatcher()
@@ -253,7 +252,7 @@ line 4"""
             def get_patterns(self) -> List[ErrorPattern]:
                 return []
             
-            def get_language_indicators(self) -> List[re.Pattern[str]]:
+            def get_language_indicators(self) -> List[Pattern[str]]:
                 return []
         
         matcher = TestMatcher()

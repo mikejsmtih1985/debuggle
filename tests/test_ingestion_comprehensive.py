@@ -23,7 +23,7 @@ from unittest.mock import Mock, AsyncMock, patch, MagicMock
 from concurrent.futures import ThreadPoolExecutor
 from collections import deque
 
-from src.debuggle.ingestion import (
+from src.debuggle.services.ingestion import (
     IngestionSource, ProcessingPriority, IngestionStatus,
     IngestionJob, StreamBuffer, IngestionEngine
 )
