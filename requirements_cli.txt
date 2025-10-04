@@ -1,0 +1,7 @@
+# Core dependencies for CLI functionality only
+rich==13.7.0
+pygments==2.17.2
+langdetect==1.0.9
+
+# Optional AI enhancement (can work without)
+anthropic==0.7.8

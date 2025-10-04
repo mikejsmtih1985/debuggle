@@ -272,56 +272,24 @@ def get_error_monitor():
 # =============================================================================
 # Note: These will be implemented as we create the service layer
 
-def get_analysis_service():
-    """
-    👨‍⚕️ CHIEF DIAGNOSTICIAN - AnalysisService! 👨‍⚕️
-    
-    This will provide access to our chief diagnostician who coordinates
-    complex error analysis procedures and ensures accurate diagnoses.
-    
-    🏆 HIGH SCHOOL EXPLANATION:
-    This is like the chief diagnostician in a hospital:
-    - Coordinates complex diagnostic procedures
-    - Reviews difficult cases personally
-    - Ensures diagnostic accuracy and quality
-    - Mentors other doctors and residents
-    
-    Returns:
-        AnalysisService: The chief diagnostician
-    """
-    # TODO: Implement when we create the AnalysisService
-    logger.debug("👨‍⚕️ Chief diagnostician service not yet implemented")
-    raise NotImplementedError("AnalysisService will be implemented in Phase 4")
-
-
-def get_upload_service():
-    """
-    📋 FILE PROCESSING SPECIALIST - UploadService! 📋
-    
-    This will provide access to our file processing specialist who
-    handles all document uploads and file processing workflows.
-    
-    Returns:
-        UploadService: The file processing specialist  
-    """
-    # TODO: Implement when we create the UploadService
-    logger.debug("📋 File processing specialist not yet implemented")
-    raise NotImplementedError("UploadService will be implemented in Phase 4")
-
-
-def get_dashboard_service():
-    """
-    📊 ANALYTICS SPECIALIST - DashboardService! 📊
-    
-    This will provide access to our analytics specialist who creates
-    insights, reports, and visualizations from medical data.
-    
-    Returns:
-        DashboardService: The analytics specialist
-    """
-    # TODO: Implement when we create the DashboardService
-    logger.debug("📊 Analytics specialist not yet implemented")  
-    raise NotImplementedError("DashboardService will be implemented in Phase 4")
+# =============================================================================
+# � FUTURE ROADMAP - Advanced Services (Post-Core Implementation)
+# =============================================================================
+# 
+# These services are planned for future implementation after the core
+# CLI functionality is rock-solid. Focus: Ship what works, enhance later.
+#
+# def get_analysis_service():
+#     """Future: Advanced error analysis coordination service"""
+#     pass
+#
+# def get_upload_service():
+#     """Future: File upload and processing service"""
+#     pass
+#
+# def get_dashboard_service():
+#     """Future: Analytics and visualization service"""
+#     pass
 
 
 # =============================================================================

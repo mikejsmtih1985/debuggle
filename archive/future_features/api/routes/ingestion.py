@@ -27,13 +27,16 @@ from fastapi import APIRouter
 router = APIRouter(prefix="/api/v1", tags=["ingestion"])
 
 
-# TODO: Route definitions will be moved here from main.py
-# during the refactoring process. For now, this establishes
-# the modular structure.
-
-# The following routes will be implemented:
+# =============================================================================
+# 🚧 FUTURE ROADMAP - Advanced API Routes (Post-Core Implementation)
+# =============================================================================
+# 
+# These routes are planned for future implementation after the core
+# CLI functionality is rock-solid. Focus: Ship what works, enhance later.
+#
+# Planned routes (when there's proven demand):
 # - POST /ingestion/batch: Submit batch processing job
-# - GET /ingestion/jobs/{job_id}: Get job status
+# - GET /ingestion/jobs/{job_id}: Get job status  
 # - GET /ingestion/stats: Ingestion system statistics
 # - POST /ingestion/stream/start: Start streaming session
 # - POST /ingestion/stream/{stream_id}/data: Send data to stream
